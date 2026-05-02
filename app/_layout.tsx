@@ -4,6 +4,7 @@ import {
   Onest_500Medium,
   Onest_600SemiBold,
 } from '@expo-google-fonts/onest';
+import { Fraunces_500Medium } from '@expo-google-fonts/fraunces';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -27,6 +28,7 @@ export default function RootLayout() {
     Onest_400Regular,
     Onest_500Medium,
     Onest_600SemiBold,
+    Fraunces_500Medium,
   });
 
   const hydrated = useStoreHydrated();
