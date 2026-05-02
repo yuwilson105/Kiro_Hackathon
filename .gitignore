@@ -1,0 +1,6 @@
+# Environment variables - never commit secrets
+.env
+
+# Google OAuth tokens (generated after first auth)
+*.json
+!.env.example
