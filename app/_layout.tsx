@@ -9,6 +9,8 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { CheckinSheetMount } from '@/components/sheets/checkin-sheet';
+import { SetbackSheetMount } from '@/components/sheets/setback-sheet';
 import { useStoreHydrated } from '@/lib/store';
 import '../global.css';
 
@@ -47,6 +49,8 @@ export default function RootLayout() {
               <Stack.Screen name="wellness" options={{ presentation: 'modal' }} />
               <Stack.Screen name="reader" options={{ presentation: 'modal' }} />
             </Stack>
+            <CheckinSheetMount />
+            <SetbackSheetMount />
           </BottomSheetModalProvider>
         </SafeAreaProvider>
       </KeyboardProvider>
