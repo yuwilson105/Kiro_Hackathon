@@ -1,50 +1,33 @@
-# Welcome to your Expo app 👋
+# Second Chance
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobile companion for people coming home from incarceration. Sequenced, adaptive life plan delivered daily — real local resources, real cultural reorientation, real check-ins. Built for the Kiro Hackathon.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- Expo SDK 54 + Expo Router 6 + React Native 0.81 (new architecture)
+- TypeScript strict, NativeWind 4 (Tailwind), Reanimated 4, Skia
+- Zustand + AsyncStorage (persisted state, frontend-only)
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+npx expo start --ios     # opens iPhone Simulator (requires Xcode)
+npx expo start           # then scan QR with Expo Go on a physical phone
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Dev menu
 
-## Learn more
+Tap the **⚙ Dev menu** pill at the bottom of the Home screen (or long-press the streak badge) to:
+- Restart onboarding
+- Skip onboarding with a fake "Marcus" profile + generated plan
+- Jump to any tab or modal
+- Trigger the milestone celebration
 
-To learn more about developing your project with Expo, look at the following resources:
+## Layout
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `app/` — Expo Router routes (splash, onboarding, tabs, modals)
+- `components/` — UI atoms, screen-specific components, Skia animations
+- `lib/` — theme, motion tokens, Zustand store, plan generator, AI companion voice
+- `lib/mock/` — plan DAG, cultural feed, local resources, companion seeds
+- `leaders/` — design + engineering standards docs (formatting, animation, copy/voice, accessibility, etc.)
