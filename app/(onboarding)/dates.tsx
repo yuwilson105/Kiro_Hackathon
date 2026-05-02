@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
     height: 280,
   },
   columnLabel: {
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     fontSize: 11,
     color: colors.textMuted,
     textTransform: 'uppercase',
@@ -610,13 +610,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceDeep,
   },
   rowText: {
-    fontFamily: 'HankenGrotesk_400Regular',
+    fontFamily: 'Onest_400Regular',
     fontSize: 15,
     color: colors.textMuted,
     flex: 1,
   },
   rowTextSelected: {
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     color: colors.primaryDeep,
   },
   confirmBtn: {
@@ -627,7 +627,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmLabel: {
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     fontSize: 16,
     color: colors.textInverse,
   },

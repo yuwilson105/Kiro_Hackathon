@@ -1,9 +1,9 @@
 import {
   useFonts,
-  HankenGrotesk_400Regular,
-  HankenGrotesk_500Medium,
-  HankenGrotesk_600SemiBold,
-} from '@expo-google-fonts/hanken-grotesk';
+  Onest_400Regular,
+  Onest_500Medium,
+  Onest_600SemiBold,
+} from '@expo-google-fonts/onest';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -24,9 +24,9 @@ SplashScreen.setOptions({ duration: 220, fade: true });
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    HankenGrotesk_400Regular,
-    HankenGrotesk_500Medium,
-    HankenGrotesk_600SemiBold,
+    Onest_400Regular,
+    Onest_500Medium,
+    Onest_600SemiBold,
   });
 
   const hydrated = useStoreHydrated();

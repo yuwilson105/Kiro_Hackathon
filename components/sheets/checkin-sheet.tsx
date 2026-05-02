@@ -418,7 +418,7 @@ function FollowUpState({
             style={{
               height: 128,
               padding: 12,
-              fontFamily: 'HankenGrotesk_400Regular',
+              fontFamily: 'Onest_400Regular',
               fontSize: 16,
               color: colors.text,
               textAlignVertical: 'top',
