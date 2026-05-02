@@ -102,7 +102,7 @@ export default function HelpScreen() {
               flex: 1,
               fontSize: 14,
               color: colors.text,
-              fontFamily: 'Inter_400Regular',
+              fontFamily: 'HankenGrotesk_400Regular',
             }}
           />
           {query.length > 0 ? (

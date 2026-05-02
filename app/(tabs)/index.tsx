@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { useShallow } from 'zustand/shallow';
@@ -134,6 +134,20 @@ export default function HomeScreen() {
           onWellness={() => router.push('/wellness' as never)}
         />
       </View>
+
+      {/* DEV access — visible during development */}
+      {__DEV__ && (
+        <Pressable
+          onPress={() => router.push('/dev' as never)}
+          className="self-center mt-2 px-4 py-2 rounded-pill border border-border bg-bg"
+          accessibilityRole="button"
+          accessibilityLabel="Open developer menu"
+        >
+          <Text className="text-xs font-medium text-text-muted tracking-wider uppercase">
+            ⚙ Dev menu
+          </Text>
+        </Pressable>
+      )}
 
     </ScreenContainer>
   );

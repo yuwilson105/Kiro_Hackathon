@@ -305,14 +305,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'HankenGrotesk_400Regular',
     color: colors.text,
     paddingVertical: 0,
   },
   selectedText: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'HankenGrotesk_500Medium',
     color: colors.text,
   },
   resultsList: {
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   },
   resultText: {
     fontSize: 16,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'HankenGrotesk_500Medium',
     color: colors.text,
   },
   toggleRow: {
@@ -361,20 +361,20 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'HankenGrotesk_400Regular',
     color: colors.textMuted,
     flexShrink: 1,
   },
   toggleLabelActive: {
     color: colors.successDeep,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'HankenGrotesk_500Medium',
   },
   reassurance: {
     marginTop: 20,
   },
   reassuranceText: {
     fontSize: 12,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'HankenGrotesk_400Regular',
     color: colors.textSubtle,
     lineHeight: 18,
   },

@@ -1,4 +1,5 @@
-import { View, Text } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
 import { FlameLogo } from '@/components/animations/flame-logo';
@@ -15,19 +16,25 @@ export function StreakBadge({ streak }: Props) {
     <Animated.View
       entering={reduced ? enter.fade(80) : enter.fadeUp(80)}
       accessible={true}
-      accessibilityLabel={`${streak} day streak`}
+      accessibilityLabel={`${streak} day streak. Long-press to open dev menu.`}
     >
-      <View className="items-center gap-1">
-        <View accessible={false}>
-          <FlameLogo size={36} loop={true} />
+      <Pressable
+        onLongPress={() => router.push('/dev')}
+        delayLongPress={300}
+        hitSlop={16}
+      >
+        <View className="items-center gap-1">
+          <View accessible={false} pointerEvents="none">
+            <FlameLogo size={36} loop={true} />
+          </View>
+          <Text className="text-display font-semibold text-text leading-none">
+            {streak}
+          </Text>
+          <Text className="text-2xs font-medium uppercase tracking-wider text-text-muted">
+            day streak
+          </Text>
         </View>
-        <Text className="text-display font-semibold text-text leading-none">
-          {streak}
-        </Text>
-        <Text className="text-2xs font-medium uppercase tracking-wider text-text-muted">
-          day streak
-        </Text>
-      </View>
+      </Pressable>
     </Animated.View>
   );
 }
