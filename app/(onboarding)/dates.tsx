@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ChevronDown, ChevronRight, Info } from 'lucide-react-native';
+import { ChevronDown, ChevronRight } from 'lucide-react-native';
 import { useCallback, useRef, useState } from 'react';
 import {
   Modal,
@@ -14,6 +14,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -260,6 +261,160 @@ function DateCard({ eyebrow, month, year, onPress, entering, accessLabel }: Date
   );
 }
 
+// ── Gap math ──────────────────────────────────────────────────────────────────
+
+type Gap = { years: number; months: number; lessThanMonth: boolean };
+
+function computeGap(
+  startMonth: number,
+  startYear: number,
+  endMonth: number,
+  endYear: number,
+): Gap {
+  const totalMonths = (endYear - startYear) * 12 + (endMonth - startMonth);
+  if (totalMonths <= 0) return { years: 0, months: 0, lessThanMonth: true };
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  return { years, months, lessThanMonth: false };
+}
+
+function gapParts(g: Gap): { value: string; unit: string } {
+  if (g.lessThanMonth) return { value: 'Under', unit: 'a month' };
+  if (g.years === 0) {
+    return { value: String(g.months), unit: g.months === 1 ? 'month' : 'months' };
+  }
+  if (g.months === 0) {
+    return { value: String(g.years), unit: g.years === 1 ? 'year' : 'years' };
+  }
+  return {
+    value: String(g.years),
+    unit: `${g.years === 1 ? 'year' : 'years'}, ${g.months} ${g.months === 1 ? 'month' : 'months'}`,
+  };
+}
+
+// ── GapCard ───────────────────────────────────────────────────────────────────
+
+type GapCardProps = {
+  entering: ReturnType<typeof enter.fadeUp>;
+  startMonth: number | null;
+  startYear: number | null;
+  endMonth: number;
+  endYear: number;
+  startSet: boolean;
+  endSet: boolean;
+  isOrderWrong: boolean;
+  reduced: boolean;
+};
+
+function GapCard({
+  entering,
+  startMonth,
+  startYear,
+  endMonth,
+  endYear,
+  startSet,
+  endSet,
+  isOrderWrong,
+  reduced,
+}: GapCardProps) {
+  const filled = startSet && endSet && !isOrderWrong;
+  const target = filled ? 1 : 0;
+
+  const emptyStyle = useAnimatedStyle(() => ({
+    opacity: 1 - withTiming(target, { duration: reduced ? 0 : 280 }),
+  }));
+
+  const filledStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(target, { duration: reduced ? 0 : 280 }),
+    transform: [
+      {
+        translateY: withSpring(filled ? 0 : 6, { damping: 18, stiffness: 200 }),
+      },
+    ],
+  }));
+
+  const gap = filled
+    ? computeGap(startMonth!, startYear!, endMonth, endYear)
+    : null;
+  const parts = gap ? gapParts(gap) : null;
+
+  return (
+    <Animated.View
+      entering={entering}
+      className="rounded-2xl border border-border-subtle px-5 py-5 mt-1 overflow-hidden"
+      style={{ backgroundColor: '#FBFAF7' }}
+    >
+      <Animated.View style={emptyStyle} pointerEvents={filled ? 'none' : 'auto'}>
+        <View className="flex-row items-center gap-2 mb-1.5">
+          <View
+            style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.primary }}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
+          <Text
+            className="text-2xs font-medium uppercase tracking-wider"
+            style={{ color: colors.textMuted }}
+          >
+            Your gap
+          </Text>
+        </View>
+        <Text className="text-base leading-6" style={{ color: colors.textMuted }}>
+          {startSet
+            ? "Pick when you came out to see how much time we'll catch you up on."
+            : "The time between these two dates is what we'll catch you up on."}
+        </Text>
+      </Animated.View>
+
+      {filled && parts && (
+        <Animated.View
+          style={[
+            filledStyle,
+            { position: 'absolute', left: 20, right: 20, top: 20, bottom: 20 },
+          ]}
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={`Your gap: ${parts.value} ${parts.unit}`}
+        >
+          <View className="flex-row items-center gap-2 mb-1.5">
+            <View
+              style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.primary }}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+            <Text
+              className="text-2xs font-medium uppercase tracking-wider"
+              style={{ color: colors.textMuted }}
+            >
+              Your gap
+            </Text>
+          </View>
+
+          <View className="flex-row items-baseline gap-2">
+            <Text
+              className="font-medium tracking-tight"
+              style={{
+                color: colors.text,
+                fontSize: 36,
+                lineHeight: 40,
+                letterSpacing: -0.8,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {parts.value}
+            </Text>
+            <Text className="text-base font-medium" style={{ color: colors.text }}>
+              {parts.unit}
+            </Text>
+          </View>
+
+          <Text className="text-sm leading-5 mt-1" style={{ color: colors.textMuted }}>
+            That's what we'll catch you up on.
+          </Text>
+        </Animated.View>
+      )}
+    </Animated.View>
+  );
+}
+
 // ── DatesScreen ───────────────────────────────────────────────────────────────
 
 export default function DatesScreen() {
@@ -352,19 +507,17 @@ export default function DatesScreen() {
             </Animated.View>
           )}
 
-          <Animated.View
+          <GapCard
             entering={entering2}
-            className="bg-surface rounded-2xl border border-border-subtle px-5 py-4 mt-1"
-          >
-            <View className="flex-row items-start gap-3">
-              <View className="pt-0.5" accessibilityElementsHidden importantForAccessibility="no">
-                <Info size={15} color={colors.textMuted} strokeWidth={1.75} />
-              </View>
-              <Text className="text-sm font-sans leading-5 flex-1" style={{ color: '#5C6B7B' }}>
-                We calculate your gap — everything that happened while you were inside — and build your catch-up feed around it.
-              </Text>
-            </View>
-          </Animated.View>
+            startMonth={startMonth}
+            startYear={startYear}
+            endMonth={endMonth}
+            endYear={endYear}
+            startSet={startSet}
+            endSet={endSet}
+            isOrderWrong={isOrderWrong}
+            reduced={reduced}
+          />
         </View>
       </OnboardingShell>
 
@@ -430,7 +583,7 @@ const styles = StyleSheet.create({
     height: 280,
   },
   columnLabel: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'HankenGrotesk_500Medium',
     fontSize: 11,
     color: colors.textMuted,
     textTransform: 'uppercase',
@@ -457,13 +610,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceDeep,
   },
   rowText: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'HankenGrotesk_400Regular',
     fontSize: 15,
     color: colors.textMuted,
     flex: 1,
   },
   rowTextSelected: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'HankenGrotesk_500Medium',
     color: colors.primaryDeep,
   },
   confirmBtn: {
@@ -474,7 +627,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmLabel: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'HankenGrotesk_500Medium',
     fontSize: 16,
     color: colors.textInverse,
   },

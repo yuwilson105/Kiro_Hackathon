@@ -1,14 +1,15 @@
-import { Canvas, Group, Path, RadialGradient, Skia, vec } from '@shopify/react-native-skia';
 import { useEffect, useMemo } from 'react';
-import {
+import { View } from 'react-native';
+import Animated, {
   Easing,
-  useDerivedValue,
+  useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import Svg, { Defs, Path, RadialGradient as SvgRadialGradient, Stop } from 'react-native-svg';
 
 export type FlameTier = 'spark' | 'ember' | 'candle' | 'magma' | 'plasma';
 
@@ -103,23 +104,13 @@ export function tierFromStreak(streak: number): FlameTier {
   return 'spark';
 }
 
-const flamePath = Skia.Path.MakeFromSVGString(
-  'M52 4 C58 18, 76 30, 76 58 C76 80, 64 96, 50 96 C36 96, 24 80, 24 58 C24 30, 38 14, 52 4 Z'
-)!;
+// Asymmetric tip (52,4 not 50,6), narrower waist, smooth left side without the lower-left notch
+const OUTER_PATH =
+  'M52 4 C58 18, 76 30, 76 58 C76 80, 64 96, 50 96 C36 96, 24 80, 24 58 C24 30, 38 14, 52 4 Z';
+const INNER_PATH =
+  'M52 36 C55 46, 64 52, 64 66 C64 78, 58 86, 50 86 C42 86, 36 78, 36 66 C36 54, 44 50, 52 36 Z';
 
-const innerPath = Skia.Path.MakeFromSVGString(
-  'M52 36 C55 46, 64 52, 64 66 C64 78, 58 86, 50 86 C42 86, 36 78, 36 66 C36 54, 44 50, 52 36 Z'
-)!;
-
-const haloPath = Skia.Path.MakeFromSVGString('M0 0 L100 0 L100 100 L0 100 Z')!;
-
-function hexToRgba(hex: string, alpha: number) {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
+let idCounter = 0;
 
 type Props = {
   size?: number;
@@ -177,64 +168,94 @@ export function FlameLogo({ size = 100, loop = true, tier, streak }: Props) {
     }
   }, [breath, sway, haloPulse, loop, reduced]);
 
-  const scale = size / 100;
-
-  const transform = useDerivedValue(() => [
-    { translateY: 50 },
-    { scaleY: breath.value },
-    { scaleX: 2 - breath.value },
-    { rotateZ: sway.value },
-    { translateY: -50 },
-  ]);
-
-  const haloOpacity = useDerivedValue(() => haloPulse.value);
-
-  const haloColors = useMemo(
-    () => [
-      hexToRgba(palette.glow, 0.85),
-      hexToRgba(palette.glow, 0.4),
-      hexToRgba(palette.glow, 0),
+  const flameStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scaleY: breath.value },
+      { scaleX: 2 - breath.value },
+      { rotateZ: `${sway.value}rad` },
     ],
-    [palette.glow]
-  );
+  }));
 
-  const outerColors = useMemo(() => palette.outer.map((s) => s.color), [palette]);
-  const outerPositions = useMemo(() => palette.outer.map((s) => s.offset), [palette]);
-  const innerColors = useMemo(() => palette.inner.map((s) => s.color), [palette]);
-  const innerPositions = useMemo(() => palette.inner.map((s) => s.offset), [palette]);
+  const haloStyle = useAnimatedStyle(() => ({ opacity: haloPulse.value }));
+
+  // Stable per-instance IDs so multiple FlameLogos on a screen don't collide on gradient defs
+  const ids = useMemo(() => {
+    const n = ++idCounter;
+    return {
+      outer: `flameOuter-${n}`,
+      inner: `flameInner-${n}`,
+      halo: `flameHalo-${n}`,
+    };
+  }, []);
 
   return (
-    <Canvas style={{ width: size, height: size * 1.05 }}>
-      <Group transform={[{ scale }]}>
-        <Group opacity={haloOpacity}>
-          <Path path={haloPath} style="fill">
-            <RadialGradient
-              c={vec(50, 56)}
-              r={50}
-              colors={haloColors}
-              positions={[0, 0.45, 1]}
-            />
-          </Path>
-        </Group>
-        <Group transform={transform} origin={vec(50, 60)}>
-          <Path path={flamePath} style="fill">
-            <RadialGradient
-              c={vec(50, 72)}
-              r={58}
-              colors={outerColors}
-              positions={outerPositions}
-            />
-          </Path>
-          <Path path={innerPath} style="fill" opacity={0.78}>
-            <RadialGradient
-              c={vec(50, 74)}
-              r={32}
-              colors={innerColors}
-              positions={innerPositions}
-            />
-          </Path>
-        </Group>
-      </Group>
-    </Canvas>
+    <View
+      style={{
+        width: size,
+        height: size * 1.05,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            width: size,
+            height: size * 1.05,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          haloStyle,
+        ]}
+      >
+        <Svg width={size} height={size * 1.05} viewBox="0 0 100 105">
+          <Defs>
+            <SvgRadialGradient
+              id={ids.halo}
+              cx="50"
+              cy="56"
+              r="50"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0" stopColor={palette.glow} stopOpacity="0.85" />
+              <Stop offset="0.45" stopColor={palette.glow} stopOpacity="0.4" />
+              <Stop offset="1" stopColor={palette.glow} stopOpacity="0" />
+            </SvgRadialGradient>
+          </Defs>
+          <Path d="M0 0 H100 V105 H0 Z" fill={`url(#${ids.halo})`} />
+        </Svg>
+      </Animated.View>
+      <Animated.View style={[{ width: size, height: size }, flameStyle]}>
+        <Svg width={size} height={size} viewBox="0 0 100 100">
+          <Defs>
+            <SvgRadialGradient
+              id={ids.outer}
+              cx="50"
+              cy="72"
+              r="58"
+              gradientUnits="userSpaceOnUse"
+            >
+              {palette.outer.map((s, i) => (
+                <Stop key={i} offset={String(s.offset)} stopColor={s.color} />
+              ))}
+            </SvgRadialGradient>
+            <SvgRadialGradient
+              id={ids.inner}
+              cx="50"
+              cy="74"
+              r="32"
+              gradientUnits="userSpaceOnUse"
+            >
+              {palette.inner.map((s, i) => (
+                <Stop key={i} offset={String(s.offset)} stopColor={s.color} />
+              ))}
+            </SvgRadialGradient>
+          </Defs>
+          <Path d={OUTER_PATH} fill={`url(#${ids.outer})`} />
+          <Path d={INNER_PATH} fill={`url(#${ids.inner})`} opacity={0.78} />
+        </Svg>
+      </Animated.View>
+    </View>
   );
 }

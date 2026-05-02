@@ -43,9 +43,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter_400Regular'],
-        medium: ['Inter_500Medium'],
-        semibold: ['Inter_600SemiBold'],
+        sans: ['HankenGrotesk_400Regular'],
+        medium: ['HankenGrotesk_500Medium'],
+        semibold: ['HankenGrotesk_600SemiBold'],
       },
       fontSize: {
         '2xs': ['10px', { lineHeight: '14px', letterSpacing: '0.6px' }],
