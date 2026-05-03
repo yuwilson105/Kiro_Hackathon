@@ -14,7 +14,7 @@ The following steering files are always active and contain the full standards fo
 - `motion-physics.md` — spring configs, easing, duration tokens, stagger
 - `performance.md` — FlashList, Zustand selectors, Skia optimization
 
-For detailed formatting rules (file naming, import order, component shape, NativeWind usage, TypeScript rules) refer to `leaders/01-formatting.md`. For the full anti-slop checklist and 20 forbidden patterns refer to `leaders/03-anti-ai-slop.md`.
+For detailed formatting rules see `formatting.md`. For the full anti-slop checklist and 20 forbidden patterns see `anti-slop.md`.
 
 ## Non-negotiable rules
 
