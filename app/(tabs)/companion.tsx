@@ -27,8 +27,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FlameLogo } from '@/components/animations/flame-logo';
-
-const COMPANION_LOGO = require('@/assets/images/companion-logo-final.png');
 import { useCompanionAlertStore } from '@/lib/companion-alerts-store';
 import {
     type ChatMessage,
@@ -38,6 +36,8 @@ import {
 } from '@/lib/companion-chat';
 import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
+
+const COMPANION_LOGO = require('@/assets/images/companion-logo-final.png');
 
 function openerForMood(mood?: string): string {
   switch (mood) {
@@ -125,6 +125,15 @@ export default function CompanionScreen() {
             <FlameLogo size={28} loop={true} />
             <Text style={styles.title}>Your companion</Text>
           </View>
+          <Pressable
+            onPress={() => router.push('/dev')}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Developer menu"
+            style={({ pressed }) => ({ opacity: pressed ? 0.4 : 1 })}
+          >
+            <Text style={styles.devLabel}>dev</Text>
+          </Pressable>
         </View>
         <Text style={styles.subtitle}>Knows your story. Around when you need it.</Text>
       </View>
@@ -349,6 +358,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: colors.textMuted,
+  },
+  devLabel: {
+    fontFamily: 'Onest_500Medium',
+    fontSize: 12,
+    color: colors.textSubtle,
+    letterSpacing: 0.5,
   },
   keyboardWrap: {
     flex: 1,
