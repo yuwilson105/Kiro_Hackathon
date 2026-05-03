@@ -60,12 +60,12 @@ export function LearnAccordion({ learnCard }: Props) {
         onPress={toggle}
         hitSlop={8}
         accessibilityRole="button"
-        accessibilityLabel="Before you go — here's what you need to know"
+        accessibilityLabel="Before you go. Here's what you need to know."
         accessibilityState={{ expanded: open }}
         className="flex-row items-center justify-between px-4 py-3"
       >
         <Text className="flex-1 text-sm font-medium text-text">
-          Before you go — here's what you need to know
+          Before you go. Here's what you need to know.
         </Text>
         <Animated.View style={chevronStyle} accessibilityElementsHidden importantForAccessibility="no">
           <ChevronDown size={16} color={colors.textMuted} strokeWidth={2} />

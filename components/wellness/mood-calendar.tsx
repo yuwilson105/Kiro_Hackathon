@@ -40,7 +40,7 @@ export function MoodCalendar({ moodHistory }: Props) {
   const handleCellPress = useCallback((dateStr: string, mood: Mood | undefined) => {
     if (!mood) return;
     const label = format(new Date(dateStr + 'T12:00:00'), 'MMM d');
-    setTooltip(`${label} — ${MOOD_META[mood].label.toLowerCase()}`);
+    setTooltip(`${label}: ${MOOD_META[mood].label.toLowerCase()}`);
     setTimeout(() => setTooltip(null), 2000);
   }, []);
 

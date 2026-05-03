@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Home, Calendar, BookOpen, MapPin } from 'lucide-react-native';
@@ -10,6 +10,31 @@ type TabIconProps = {
   color: string;
   focused: boolean;
 };
+
+function CompanionTabIcon({ focused }: TabIconProps) {
+  return (
+    <View
+      style={{
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        backgroundColor: colors.primarySoft,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: focused ? 1 : 0.7,
+      }}
+    >
+      <View
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: colors.accent,
+        }}
+      />
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (
@@ -77,6 +102,14 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }: TabIconProps) => (
             <MapPin size={22} color={color} strokeWidth={focused ? 2 : 1.75} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="companion"
+        options={{
+          title: 'Companion',
+          tabBarAccessibilityLabel: 'Your companion',
+          tabBarIcon: CompanionTabIcon,
         }}
       />
     </Tabs>
