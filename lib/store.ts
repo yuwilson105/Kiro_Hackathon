@@ -23,6 +23,7 @@ type State = {
   savedFeedIds: string[];
   readFeedIds: string[];
   lastCheckinShownDate: string | null;
+  moodCheckDismissedDate: string | null;
   unlockedMilestoneId: string | null;
   setProfile: (patch: Partial<Profile>) => void;
   setPlan: (plan: Plan) => void;
@@ -32,6 +33,7 @@ type State = {
   completeStep: (stepId: string) => void;
   registerMood: (entry: MoodEntry) => void;
   markCheckinShown: (date: string) => void;
+  dismissMoodCheck: () => void;
   toggleFeedSaved: (id: string) => void;
   markFeedRead: (id: string) => void;
   setMilestoneUnlocked: (id: string | null) => void;
@@ -52,6 +54,7 @@ export const useStore = create<State>()(
       savedFeedIds: [],
       readFeedIds: [],
       lastCheckinShownDate: null,
+      moodCheckDismissedDate: null,
       unlockedMilestoneId: null,
       setProfile: (patch) =>
         set((s) => ({ profile: { ...s.profile, ...patch } })),
@@ -69,6 +72,7 @@ export const useStore = create<State>()(
           savedFeedIds: [],
           readFeedIds: [],
           lastCheckinShownDate: null,
+          moodCheckDismissedDate: null,
           unlockedMilestoneId: null,
         }),
       toggleStepInProgress: (stepId) =>
@@ -106,6 +110,7 @@ export const useStore = create<State>()(
           };
         }),
       markCheckinShown: (date) => set({ lastCheckinShownDate: date }),
+      dismissMoodCheck: () => set({ moodCheckDismissedDate: todayISO() }),
       toggleFeedSaved: (id) =>
         set((s) => {
           const has = s.savedFeedIds.includes(id);

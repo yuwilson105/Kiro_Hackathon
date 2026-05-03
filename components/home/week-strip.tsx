@@ -24,6 +24,8 @@ import type { Mood, MoodEntry } from '@/types/check-in';
 
 type Props = {
   completedSteps: Record<string, string>;
+  /** When true, hide the detail panel below the day pills (just show the strip). */
+  compact?: boolean;
 };
 
 const MOOD_LABEL: Record<Mood, string> = {
@@ -39,6 +41,33 @@ const MOOD_DOT: Record<Mood, string> = {
   struggling: colors.danger,
   'need-talk': colors.primary,
 };
+
+const MOOD_OPENING: Record<Mood, string> = {
+  good: 'A good day, on your terms.',
+  okay: "Okay, and that's recorded.",
+  struggling: 'You named the hard day.',
+  'need-talk': 'You reached out.',
+};
+
+// Indexed by step count; clamped to last entry for 4+
+const STEP_OPENING = [
+  'A full day.',
+  'One step counted.',
+  'Two steps logged.',
+  'Three steps in.',
+  'A full day.',
+] as const;
+
+// Indexed by getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+const QUIET_DAY_LINES = [
+  'Sunday went unrecorded.',
+  'A Monday with no entry.',
+  'Tuesday left no trace.',
+  'Wednesday off the page.',
+  'Thursday stayed quiet.',
+  'No entry for Friday.',
+  "Saturday wasn't written down.",
+] as const;
 
 const NUMBER_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'] as const;
 const numberWord = (n: number) => (n < NUMBER_WORDS.length ? NUMBER_WORDS[n] : String(n));
@@ -61,6 +90,16 @@ type DayMeta = {
   mood?: Mood;
   note?: string;
 };
+
+function openingLineFor(d: DayMeta): string {
+  if (d.isToday) return 'Today is yours.';
+  if (d.stepCount > 0) {
+    const idx = Math.min(d.stepCount, STEP_OPENING.length - 1);
+    return STEP_OPENING[idx];
+  }
+  if (d.mood) return MOOD_OPENING[d.mood];
+  return QUIET_DAY_LINES[d.date.getDay()];
+}
 
 function buildWeek(
   completedSteps: Record<string, string>,
@@ -97,7 +136,7 @@ function buildWeek(
   });
 }
 
-export function WeekStrip({ completedSteps }: Props) {
+export function WeekStrip({ completedSteps, compact = false }: Props) {
   const reduced = useReducedMotion();
   const moodHistory = useStore((s) => s.moodHistory);
 
@@ -118,11 +157,8 @@ export function WeekStrip({ completedSteps }: Props) {
       ruleX.value = targetX;
       return;
     }
-    if (!animated || reduced) {
-      ruleX.value = withTiming(targetX, { duration: duration.short, easing: ease.out });
-    } else {
-      ruleX.value = withSpring(targetX, spring.snap);
-    }
+    const dur = !animated || reduced ? duration.short : duration.medium;
+    ruleX.value = withTiming(targetX, { duration: dur, easing: ease.out });
   };
 
   const captureCellLayout = (i: number) => (e: LayoutChangeEvent) => {
@@ -158,11 +194,7 @@ export function WeekStrip({ completedSteps }: Props) {
   const headlineWeekday = format(selected.date, 'EEEE');
   const headlineMonthDay = format(selected.date, 'MMM d');
 
-  let openingLine: string;
-  if (selected.isToday) openingLine = 'Today is yours.';
-  else if (selected.stepCount > 0) openingLine = 'You showed up.';
-  else if (selected.mood) openingLine = 'You checked in.';
-  else openingLine = 'A quiet day.';
+  const openingLine = openingLineFor(selected);
 
   const detailParts: string[] = [];
   if (selected.stepCount > 0) {
@@ -219,7 +251,8 @@ export function WeekStrip({ completedSteps }: Props) {
         />
       </View>
 
-      {/* Detail panel */}
+      {/* Detail panel — hidden in compact mode */}
+      {compact ? null : (
       <Animated.View
         key={selectedDate}
         entering={enter.fade(80)}
@@ -249,6 +282,7 @@ export function WeekStrip({ completedSteps }: Props) {
           </Text>
         ) : null}
       </Animated.View>
+      )}
     </Animated.View>
   );
 }

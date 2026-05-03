@@ -75,15 +75,15 @@ export function useSetbackSheet() {
 
 const REASON_OPTIONS: ReasonOption[] = [
   {
-    label: 'Something came up — I need to adjust the plan',
+    label: 'Something came up. I need to adjust the plan.',
     action: 'context',
   },
   {
-    label: "I've been struggling — I need support",
+    label: "I've been struggling. I need support.",
     action: 'support',
   },
   {
-    label: "I'm fine — just forgot to mark things done",
+    label: "I'm fine. I just forgot to mark things done.",
     action: 'forgot',
   },
   {
@@ -288,7 +288,7 @@ function SetbackSheetContent({ onDismiss }: { onDismiss: () => void }) {
           accessibilityLiveRegion="polite"
           accessibilityRole="header"
         >
-          Hey — I noticed you haven't marked anything done in a few days. That's okay. Can you tell
+          Hey. I noticed you haven't marked anything done in a few days. That's okay. Can you tell
           me what's going on?
         </Animated.Text>
 
@@ -363,7 +363,7 @@ function SetbackSheetContent({ onDismiss }: { onDismiss: () => void }) {
               onChangeText={setContextText}
               placeholder="Tell me more if you want."
               placeholderTextColor={colors.textSubtle}
-              style={{ height: 96, textAlignVertical: 'top', fontFamily: 'HankenGrotesk_400Regular', fontSize: 14, color: colors.text }}
+              style={{ height: 96, textAlignVertical: 'top', fontFamily: 'Onest_400Regular', fontSize: 14, color: colors.text }}
               accessibilityLabel="Describe what changed"
               accessibilityHint="Optional. Whatever feels right to share."
               returnKeyType="default"
@@ -404,7 +404,7 @@ function SetbackSheetContent({ onDismiss }: { onDismiss: () => void }) {
             Here's your updated plan.
           </Animated.Text>
           <Animated.Text className="text-sm font-sans text-text-muted leading-5">
-            You haven't lost any progress — we just adjusted the path.
+            You haven't lost any progress. We just adjusted the path.
           </Animated.Text>
         </View>
         <RebuildButton label="Got it" onPress={onDismiss} />
@@ -474,7 +474,7 @@ function SetbackSheetContent({ onDismiss }: { onDismiss: () => void }) {
             onPress={onDismiss}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Dismiss — maybe later"
+            accessibilityLabel="Dismiss, maybe later"
           >
             <Animated.Text className="text-sm font-sans text-text-muted">
               Maybe later

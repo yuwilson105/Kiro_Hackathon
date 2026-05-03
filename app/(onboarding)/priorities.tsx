@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     borderColor: colors.success,
   },
   label: {
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     fontSize: 14,
     lineHeight: 20,
     color: colors.text,

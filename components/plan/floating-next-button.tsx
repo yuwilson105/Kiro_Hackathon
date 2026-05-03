@@ -64,7 +64,7 @@ export function FloatingNextButton({ scrollRef, onPress }: Props) {
       accessibilityHint="Jumps to the next task that isn't finished yet"
     >
       <Text
-        style={{ color: colors.textInverse, fontFamily: 'HankenGrotesk_500Medium', fontSize: 14 }}
+        style={{ color: colors.textInverse, fontFamily: 'Onest_500Medium', fontSize: 14 }}
       >
         What's next?
       </Text>

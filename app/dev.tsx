@@ -24,7 +24,7 @@ export default function DevScreen() {
 
   const goOnboarding = () => {
     resetOnboarding();
-    router.replace('/(onboarding)/dates');
+    router.push('/(onboarding)/dates');
   };
 
   const skipOnboardingWithFakeProfile = () => {
@@ -47,9 +47,13 @@ export default function DevScreen() {
       gapEnd: '2026-04-01',
       city: { city: 'San Francisco', state: 'CA' },
       conviction: 'non-violent',
+      convictionDetails: '',
       education: 'high-school-diploma',
+      educationOther: '',
       workHistory: ['warehouse', 'construction'],
+      workOther: '',
       housing: 'halfway-house',
+      housingOther: '',
       idStatus: 'no',
       priorities: ['getting-id', 'finding-job', 'finding-housing'],
       interests: ['tech', 'finance', 'criminal-justice', 'mental-health-awareness'],
@@ -127,6 +131,36 @@ export default function DevScreen() {
           <Button label="Open Wellness" variant="outline" fullWidth onPress={goWellness} />
           <Button label="Open Reader (Tech card)" variant="outline" fullWidth onPress={goReader} />
           <Button label="Trigger Milestone celebration" variant="primary" fullWidth onPress={triggerMilestone} />
+        </View>
+
+        <View className="gap-3">
+          <Text className="font-medium text-2xs uppercase tracking-wider text-text-muted">
+            Demo
+          </Text>
+          <Button
+            label="Demo: Dashboard scene"
+            variant="primary"
+            fullWidth
+            onPress={() => router.push('/demo-dashboard')}
+          />
+          <Button
+            label="Demo: Welcome flow"
+            variant="outline"
+            fullWidth
+            onPress={() => router.push('/demo-welcome')}
+          />
+        </View>
+
+        <View className="gap-3">
+          <Text className="font-medium text-2xs uppercase tracking-wider text-text-muted">
+            Learning
+          </Text>
+          <Button
+            label="Apple Pay & contactless"
+            variant="outline"
+            fullWidth
+            onPress={() => router.push('/learning')}
+          />
         </View>
 
         <View className="gap-3">

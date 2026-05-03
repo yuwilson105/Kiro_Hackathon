@@ -153,7 +153,7 @@ export default function LocationScreen() {
     <OnboardingShell
       step={2}
       header="Where are you right now?"
-      subtext="We use this to find real local resources near you — shelters, jobs, legal aid."
+      subtext="We use this to find real local resources near you: shelters, jobs, legal aid."
       onContinue={handleContinue}
       continueDisabled={!selected}
     >
@@ -227,7 +227,14 @@ export default function LocationScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Select ${cityLabel(city)}`}
                   >
-                    <Text style={styles.resultText}>{cityLabel(city)}</Text>
+                    <View style={styles.resultRowInner}>
+                      <Text style={styles.resultCity} numberOfLines={1}>
+                        {city.city}
+                      </Text>
+                      <Text style={styles.resultStateTag} numberOfLines={1}>
+                        {city.state}
+                      </Text>
+                    </View>
                   </Pressable>
                 </Animated.View>
               );
@@ -305,14 +312,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'HankenGrotesk_400Regular',
+    fontFamily: 'Onest_400Regular',
     color: colors.text,
     paddingVertical: 0,
   },
   selectedText: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     color: colors.text,
   },
   resultsList: {
@@ -324,10 +331,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   resultRow: {
-    paddingHorizontal: 14,
+    minHeight: 56,
+  },
+  resultRowInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    minHeight: 48,
-    justifyContent: 'center',
+    minHeight: 56,
   },
   resultRowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -336,10 +348,19 @@ const styles = StyleSheet.create({
   resultRowPressed: {
     backgroundColor: colors.surface,
   },
-  resultText: {
-    fontSize: 16,
-    fontFamily: 'HankenGrotesk_500Medium',
+  resultCity: {
+    flex: 1,
+    fontSize: 17,
+    fontFamily: 'Onest_500Medium',
     color: colors.text,
+    letterSpacing: -0.2,
+  },
+  resultStateTag: {
+    fontSize: 12,
+    fontFamily: 'Onest_500Medium',
+    color: colors.textMuted,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   toggleRow: {
     marginTop: 8,
@@ -351,7 +372,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 2,
+    paddingHorizontal: 14,
   },
   toggleLeft: {
     flexDirection: 'row',
@@ -361,20 +382,20 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 14,
-    fontFamily: 'HankenGrotesk_400Regular',
+    fontFamily: 'Onest_400Regular',
     color: colors.textMuted,
     flexShrink: 1,
   },
   toggleLabelActive: {
     color: colors.successDeep,
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
   },
   reassurance: {
     marginTop: 20,
   },
   reassuranceText: {
     fontSize: 12,
-    fontFamily: 'HankenGrotesk_400Regular',
+    fontFamily: 'Onest_400Regular',
     color: colors.textSubtle,
     lineHeight: 18,
   },

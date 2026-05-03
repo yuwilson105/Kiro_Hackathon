@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
 import { OnboardingShell } from '@/components/onboarding/onboarding-shell';
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { PillButton } from '@/components/ui/pill-button';
 import { enter, stagger } from '@/lib/motion';
 import { useStore } from '@/lib/store';
+import { colors } from '@/lib/theme';
 import type {
   ConvictionType,
   EducationLevel,
@@ -18,24 +19,18 @@ import type {
 
 // ── Question definitions ──────────────────────────────────────────────────────
 
-type Q1Option = { label: string; value: ConvictionType };
 type Q2Option = { label: string; value: EducationLevel };
 type Q3Option = { label: string; value: WorkType };
 type Q4Option = { label: string; value: HousingStatus };
 type Q5Option = { label: string; value: IdStatus };
 
-const Q1: Q1Option[] = [
-  { label: 'Non-violent', value: 'non-violent' },
-  { label: 'Drug-related', value: 'drug-related' },
-  { label: 'Violent', value: 'violent' },
-  { label: "I'd rather not say", value: 'rather-not-say' },
-];
-
 const Q2: Q2Option[] = [
+  { label: 'Less than high school', value: 'less-than-high-school' },
   { label: 'Some high school', value: 'some-high-school' },
   { label: 'High school / GED', value: 'high-school-diploma' },
   { label: 'Some college', value: 'some-college' },
   { label: 'College degree or higher', value: 'college-degree' },
+  { label: 'Other', value: 'other' },
 ];
 
 const Q3: Q3Option[] = [
@@ -55,6 +50,7 @@ const Q4: Q4Option[] = [
   { label: 'With family or friends', value: 'family-friends' },
   { label: 'I have my own place', value: 'own-place' },
   { label: "I don't have housing yet", value: 'no-housing' },
+  { label: 'Other', value: 'other' },
 ];
 
 const Q5: Q5Option[] = [
@@ -69,28 +65,54 @@ export default function BackgroundScreen() {
   const setProfile = useStore((s) => s.setProfile);
   const reduced = useReducedMotion();
 
-  const [conviction, setConviction] = useState<ConvictionType | null>(null);
+  const [convictionText, setConvictionText] = useState('');
+  const [skipConviction, setSkipConviction] = useState(false);
+
   const [education, setEducation] = useState<EducationLevel | null>(null);
+  const [educationOther, setEducationOther] = useState('');
+
   const [workHistory, setWorkHistory] = useState<WorkType[]>([]);
+  const [workOther, setWorkOther] = useState('');
+
   const [housing, setHousing] = useState<HousingStatus | null>(null);
+  const [housingOther, setHousingOther] = useState('');
+
   const [idStatus, setIdStatus] = useState<IdStatus | null>(null);
 
   const toggleWork = (value: WorkType) => {
     setWorkHistory((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
     );
   };
 
-  const canContinue =
-    conviction !== null &&
-    education !== null &&
-    workHistory.length > 0 &&
-    housing !== null &&
-    idStatus !== null;
+  const handleConvictionTextChange = (text: string) => {
+    setConvictionText(text);
+    if (text.length > 0 && skipConviction) setSkipConviction(false);
+  };
+
+  const handleSkipConviction = () => {
+    setSkipConviction((prev) => {
+      const next = !prev;
+      if (next) setConvictionText('');
+      return next;
+    });
+  };
 
   const handleContinue = () => {
-    if (!canContinue) return;
-    setProfile({ conviction, education, workHistory, housing, idStatus });
+    let conviction: ConvictionType | null = null;
+    if (skipConviction) conviction = 'rather-not-say';
+
+    setProfile({
+      conviction,
+      convictionDetails: skipConviction ? '' : convictionText.trim(),
+      education,
+      educationOther: education === 'other' ? educationOther.trim() : '',
+      workHistory,
+      workOther: workHistory.includes('other') ? workOther.trim() : '',
+      housing,
+      housingOther: housing === 'other' ? housingOther.trim() : '',
+      idStatus,
+    });
     router.push('/(onboarding)/priorities');
   };
 
@@ -100,31 +122,54 @@ export default function BackgroundScreen() {
   return (
     <OnboardingShell
       step={3}
-      header="Tell us a little about yourself."
-      subtext="This shapes your plan. Be as honest as you can — there's no wrong answer here."
+      header={'Tell us a little\nabout yourself.'}
+      subtext="This shapes your plan. Be as honest as you can. There's no wrong answer here."
       onContinue={handleContinue}
-      continueDisabled={!canContinue}
+      continueDisabled={false}
     >
-      {/* Q1 — Conviction */}
+      {/* Optional indicator */}
+      <Animated.View
+        entering={reduced ? enter.fade(0) : enter.fadeUp(0)}
+        style={styles.optionalRow}
+        accessible
+        accessibilityLabel="All questions are optional. Skip anything that isn't yours to share."
+      >
+        <View style={styles.optionalDot} />
+        <Text style={styles.optionalText}>
+          ALL OPTIONAL — SKIP WHAT YOU'D RATHER NOT SHARE
+        </Text>
+      </Animated.View>
+
+      {/* Q1 — Conviction (free-form) */}
       <Animated.View entering={cardEntering(0)}>
         <Card variant="plain" padding="md">
           <View
             accessible
-            accessibilityLabel="What best describes your conviction?"
+            accessibilityLabel="In your own words, what happened?"
           >
             <Text className="font-medium text-base text-text mb-3">
-              What best describes your conviction?
+              In your own words, what happened?
             </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {Q1.map((opt) => (
-                <PillButton
-                  key={opt.value}
-                  label={opt.label}
-                  selected={conviction === opt.value}
-                  onPress={() => setConviction(opt.value)}
-                  accessibilityLabel={opt.label}
-                />
-              ))}
+            <TextInput
+              value={convictionText}
+              onChangeText={handleConvictionTextChange}
+              placeholder="Whatever feels right to share. A sentence or two is plenty."
+              placeholderTextColor={colors.textSubtle}
+              multiline
+              editable={!skipConviction}
+              style={[
+                styles.textArea,
+                skipConviction && styles.textAreaDisabled,
+              ]}
+              accessibilityLabel="Describe what happened"
+            />
+            <View style={styles.skipRow}>
+              <PillButton
+                label="I'd rather not say"
+                selected={skipConviction}
+                onPress={handleSkipConviction}
+                accessibilityLabel="I'd rather not say"
+              />
             </View>
           </View>
         </Card>
@@ -151,6 +196,14 @@ export default function BackgroundScreen() {
                 />
               ))}
             </View>
+            {education === 'other' ? (
+              <OtherInput
+                value={educationOther}
+                onChangeText={setEducationOther}
+                placeholder="Tell us about your education"
+                accessibilityLabel="Other education detail"
+              />
+            ) : null}
           </View>
         </Card>
       </Animated.View>
@@ -176,6 +229,14 @@ export default function BackgroundScreen() {
                 />
               ))}
             </View>
+            {workHistory.includes('other') ? (
+              <OtherInput
+                value={workOther}
+                onChangeText={setWorkOther}
+                placeholder="What kind of work?"
+                accessibilityLabel="Other work detail"
+              />
+            ) : null}
           </View>
         </Card>
       </Animated.View>
@@ -201,6 +262,14 @@ export default function BackgroundScreen() {
                 />
               ))}
             </View>
+            {housing === 'other' ? (
+              <OtherInput
+                value={housingOther}
+                onChangeText={setHousingOther}
+                placeholder="Tell us about it"
+                accessibilityLabel="Other housing detail"
+              />
+            ) : null}
           </View>
         </Card>
       </Animated.View>
@@ -215,7 +284,7 @@ export default function BackgroundScreen() {
             <Text className="font-medium text-base text-text mb-3">
               Do you have a valid ID right now?
             </Text>
-            <View className="flex-row flex-wrap gap-2">
+            <View className="flex-row gap-2 justify-center">
               {Q5.map((opt) => (
                 <PillButton
                   key={opt.value}
@@ -232,3 +301,90 @@ export default function BackgroundScreen() {
     </OnboardingShell>
   );
 }
+
+// ── OtherInput — inline text input shown when "Other" is selected ─────────────
+
+function OtherInput({
+  value,
+  onChangeText,
+  placeholder,
+  accessibilityLabel,
+}: {
+  value: string;
+  onChangeText: (t: string) => void;
+  placeholder: string;
+  accessibilityLabel: string;
+}) {
+  return (
+    <View style={styles.otherWrap}>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textSubtle}
+        style={styles.otherInput}
+        accessibilityLabel={accessibilityLabel}
+        returnKeyType="done"
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  optionalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
+    marginBottom: 4,
+  },
+  optionalDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.accent,
+  },
+  optionalText: {
+    fontFamily: 'Onest_500Medium',
+    fontSize: 10,
+    letterSpacing: 1.2,
+    color: colors.textMuted,
+  },
+  textArea: {
+    minHeight: 92,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
+    fontFamily: 'Onest_400Regular',
+    fontSize: 16,
+    lineHeight: 22,
+    color: colors.text,
+    textAlignVertical: 'top',
+  },
+  textAreaDisabled: {
+    backgroundColor: colors.surface,
+    color: colors.textMuted,
+  },
+  skipRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+  },
+  otherWrap: {
+    marginTop: 12,
+  },
+  otherInput: {
+    height: 44,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    paddingHorizontal: 14,
+    fontFamily: 'Onest_400Regular',
+    fontSize: 16,
+    color: colors.text,
+  },
+});
