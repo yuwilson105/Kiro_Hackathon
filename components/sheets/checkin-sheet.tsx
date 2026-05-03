@@ -232,6 +232,7 @@ export function CheckinSheet() {
       <BottomSheetScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         {sheetState === 'mood' && (
           <MoodState

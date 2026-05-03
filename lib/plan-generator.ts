@@ -225,34 +225,23 @@ export function regeneratePlanFromStep(
 /**
  * Compute the display status of a single step.
  *
- * - 'locked'      - at least one prerequisite is not yet complete.
- * - 'in-progress' - the step is in the inProgressSteps set.
+ * Locking by prerequisite is intentionally disabled. Week ordering
+ * (driven by topological sort over prerequisites in week-packing) already
+ * communicates "do this later"; a separate lock state on top of that is
+ * redundant and confusing. Anything not yet complete or in-progress is
+ * simply pending and freely interactable.
+ *
  * - 'complete'    - the step id exists in completedSteps.
- * - 'pending'     - all prereqs done, not started, not complete.
+ * - 'in-progress' - the step is in the inProgressSteps set.
+ * - 'pending'     - everything else.
  */
 export function computeStepStatus(
   stepId: string,
   completedSteps: Record<string, string>,
   inProgressSteps: Record<string, true>,
-  plan: Plan,
+  _plan: Plan,
 ): StepStatus {
   if (stepId in completedSteps) return 'complete';
   if (stepId in inProgressSteps) return 'in-progress';
-
-  // Find the step in the plan to check prerequisites.
-  let step: PlanStep | undefined;
-  for (const week of plan.weeks) {
-    for (const s of week.steps) {
-      if (s.id === stepId) {
-        step = s;
-        break;
-      }
-    }
-    if (step) break;
-  }
-
-  if (!step) return 'locked';
-
-  const prereqsMet = step.prerequisites.every((prereq) => prereq in completedSteps);
-  return prereqsMet ? 'pending' : 'locked';
+  return 'pending';
 }

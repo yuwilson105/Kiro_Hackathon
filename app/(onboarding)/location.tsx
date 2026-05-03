@@ -296,9 +296,10 @@ export default function LocationScreen() {
             </Animated.Text>
           ) : selected ? (
             <>
-              <Animated.View
+              <Animated.Text
                 key={cityLabel(selected)}
-                style={{ flex: 1 }}
+                style={styles.selectedText}
+                numberOfLines={1}
                 entering={
                   reduced
                     ? FadeIn.duration(0)
@@ -307,10 +308,8 @@ export default function LocationScreen() {
                         .withInitialValues({ transform: [{ translateY: 6 }] })
                 }
               >
-                <Text style={styles.selectedText} numberOfLines={1}>
-                  {cityLabel(selected)}
-                </Text>
-              </Animated.View>
+                {cityLabel(selected)}
+              </Animated.Text>
               <Animated.View
                 entering={
                   reduced
@@ -484,15 +483,19 @@ const styles = StyleSheet.create({
   detectingText: {
     flex: 1,
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: 'Onest_400Regular',
     color: colors.textMuted,
+    includeFontPadding: false,
   },
   input: {
     flex: 1,
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: 'Onest_400Regular',
     color: colors.text,
     paddingVertical: 0,
+    includeFontPadding: false,
   },
   selectedText: {
     flex: 1,

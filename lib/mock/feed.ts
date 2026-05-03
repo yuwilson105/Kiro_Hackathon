@@ -1,10 +1,10 @@
 import type { FeedCard } from '@/types/feed';
 
 export const feedCards: FeedCard[] = [
-  // ─── LGBTQ ───────────────────────────────────────────────────────────────────
+  // ─── CIVIL RIGHTS: LGBTQ ─────────────────────────────────────────────────────
   {
     id: 'lgbtq-marriage-timeline',
-    category: 'lgbtq',
+    category: 'civil-rights',
     title: 'Same-sex marriage is now federal law: here\'s what that means',
     teaser: 'How same-sex marriage went from state-by-state patchwork to federally protected right, and what\'s still contested.',
     body: `Same-sex marriage became legal nationwide on June 26, 2015. The Supreme Court case was Obergefell v. Hodges. Before that, it was a state-by-state patchwork: legal in some, banned in others, contested everywhere.
@@ -27,7 +27,7 @@ Practical thing if you're job-searching: the EEOC website (eeoc.gov) has a plain
   },
   {
     id: 'lgbtq-trans-rights-state-map',
-    category: 'lgbtq',
+    category: 'civil-rights',
     title: 'Trans rights look very different depending on which state you\'re in',
     teaser: 'A plain breakdown of what states protect or restrict for transgender people, and which federal rules still apply everywhere.',
     body: `Since about 2021, state legislatures have passed more bills specifically targeting transgender people than at any point in American history. By 2024, more than 20 states had passed laws restricting gender-affirming medical care for minors: things like puberty blockers and hormone therapy. Courts have been blocking and reinstating these laws as the cases work through appeals.
@@ -46,7 +46,7 @@ If you're trying to figure out what applies where you are, Lambda Legal (lambdal
   },
   {
     id: 'lgbtq-language-pronoun-shifts',
-    category: 'lgbtq',
+    category: 'civil-rights',
     title: 'Pronouns, "they/them," and how the language around identity changed',
     teaser: 'What\'s behind the shift in how people talk about gender identity, and what\'s now normal in everyday workplaces and schools.',
     body: `If you've been away for a few years, you might notice that people introduce themselves with pronouns, "Hi, I'm Maria, she/her", or that email signatures include them. This is new. It became common in professional settings around 2016-2018 and spread quickly after that.
@@ -487,10 +487,10 @@ If you're in a state with no automatic process, it's worth doing the research. A
     yearsAgo: 6,
   },
 
-  // ─── WOMEN'S RIGHTS ──────────────────────────────────────────────────────────
+  // ─── CIVIL RIGHTS: WOMEN'S ───────────────────────────────────────────────────
   {
     id: 'womens-rights-post-roe-access',
-    category: 'womens-rights',
+    category: 'civil-rights',
     title: 'Abortion access after Roe: which states allow it and how people get it',
     teaser: 'A practical look at what abortion access looks like across the country since the 2022 Dobbs ruling.',
     body: `When the Supreme Court overturned Roe v. Wade in June 2022, abortion law went back to the states entirely. The result is a fragmented map where your access depends almost entirely on your zip code.
@@ -511,7 +511,7 @@ For people in restrictive states who need to travel: the National Abortion Feder
   },
   {
     id: 'womens-rights-paid-family-leave',
-    category: 'womens-rights',
+    category: 'civil-rights',
     title: 'Paid family leave: which states have it and what it actually covers',
     teaser: 'Why the US still has no national paid leave law and which states have filled in with their own programs.',
     body: `The US is one of the only developed countries without a federal paid family leave law. The Family and Medical Leave Act (FMLA) guarantees 12 weeks of unpaid leave for employees at companies with 50 or more employees. But unpaid leave doesn't help people who can't afford to go without a paycheck.
@@ -530,7 +530,7 @@ Practical thing to know: if you live in a state with a paid leave program and yo
   },
   {
     id: 'womens-rights-equal-pay-enforcement',
-    category: 'womens-rights',
+    category: 'civil-rights',
     title: 'Equal pay: what the law says, what the gap looks like, and what changed',
     teaser: 'How equal pay law works, why the wage gap persists despite laws against it, and what\'s been done recently.',
     body: `The Equal Pay Act has been federal law since 1963. It says employers can't pay women less than men for the same work. Title VII of the Civil Rights Act (1964) also prohibits pay discrimination based on sex. So the law has been on the books for 60 years.

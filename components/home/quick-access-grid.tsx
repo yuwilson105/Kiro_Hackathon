@@ -29,123 +29,52 @@ type PressKind = 'book' | 'pin' | 'heart' | 'calendar';
 
 type Stat = { number: string; label: string };
 
-// Stacked stat: a fraction like "0/19" gets a typographic stack with an
-// offset diagonal dash. Singular numbers get a colored number with a left
-// rail accent bar — no pill background, no drop shadow.
+// Big number, small uppercase label. Fractions render the numerator big and
+// "out of N <label>" small underneath as plain text. No accent bars, no slashes.
 function StatBlock({ stat }: { stat: Stat }) {
   const fraction = stat.number.match(/^(\d+)\/(\d+)$/);
+  const numberText = fraction ? fraction[1] : stat.number;
 
-  if (fraction) {
-    const numerator = fraction[1];
-    const denominator = fraction[2];
-    // Total stack width is fixed so the diagonal slash lands in a consistent spot.
-    return (
-      <View style={{ width: 52 }}>
-        {/* Numerator — top-left, primaryDeep colored */}
-        <Text
-          style={{
-            fontSize: 28,
-            lineHeight: 28,
-            fontFamily: 'Onest_600SemiBold',
-            fontWeight: '600',
-            color: colors.primaryDeep,
-            letterSpacing: -0.8,
-            alignSelf: 'flex-start',
-          }}
-        >
-          {numerator}
-        </Text>
-        {/* Diagonal slash — rotated View, off-center toward the right */}
-        <View
-          style={{
-            width: 18,
-            height: 2,
-            backgroundColor: colors.primarySoft,
-            borderRadius: 1,
-            transform: [{ rotate: '-13deg' }],
-            alignSelf: 'flex-end',
-            marginRight: 4,
-            marginTop: 1,
-            marginBottom: 1,
-          }}
-        />
-        {/* Denominator — bottom-right, smaller, muted */}
-        <Text
-          style={{
-            fontSize: 13,
-            lineHeight: 15,
-            fontFamily: 'Onest_500Medium',
-            fontWeight: '500',
-            color: colors.textMuted,
-            alignSelf: 'flex-end',
-          }}
-        >
-          {denominator}
-        </Text>
-        {/* DONE / etc. label */}
-        <Text
-          style={{
-            fontSize: 9,
-            lineHeight: 11,
-            fontFamily: 'Onest_500Medium',
-            fontWeight: '500',
-            color: colors.textMuted,
-            letterSpacing: 0.7,
-            textTransform: 'uppercase',
-            marginTop: 4,
-            alignSelf: 'flex-end',
-          }}
-        >
-          {stat.label}
-        </Text>
-      </View>
-    );
-  }
+  const labelStyle = {
+    fontSize: 9,
+    lineHeight: 11,
+    fontFamily: 'Onest_500Medium',
+    fontWeight: '500' as const,
+    color: colors.textMuted,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase' as const,
+    marginTop: 3,
+    textAlign: 'right' as const,
+  };
 
-  // Singular number: colored numeral with a short vertical left-rail bar
-  // that echoes the card's left edge — not a pill, not a background.
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 5 }}>
-      {/* Left-rail accent: a 3×22px bar in primarySoft */}
-      <View
+    <View style={{ alignItems: 'flex-end' }}>
+      <Text
         style={{
-          width: 3,
-          height: 22,
-          backgroundColor: colors.primarySoft,
-          borderRadius: 2,
-          marginTop: 3,
+          fontSize: 28,
+          lineHeight: 28,
+          fontFamily: 'Onest_600SemiBold',
+          fontWeight: '600',
+          color: colors.primaryDeep,
+          letterSpacing: -0.8,
         }}
-      />
-      <View style={{ alignItems: 'flex-end' }}>
-        <Text
-          style={{
-            fontSize: 28,
-            lineHeight: 28,
-            fontFamily: 'Onest_600SemiBold',
-            fontWeight: '600',
-            color: colors.primaryDeep,
-            letterSpacing: -0.8,
-          }}
-          numberOfLines={1}
-        >
-          {stat.number}
-        </Text>
-        <Text
-          style={{
-            fontSize: 9,
-            lineHeight: 11,
-            fontFamily: 'Onest_500Medium',
-            fontWeight: '500',
-            color: colors.textMuted,
-            letterSpacing: 0.7,
-            textTransform: 'uppercase',
-            marginTop: 3,
-          }}
-          numberOfLines={1}
-        >
+        numberOfLines={1}
+      >
+        {numberText}
+      </Text>
+      {fraction ? (
+        <Text style={labelStyle} numberOfLines={1}>
+          out of{' '}
+          <Text style={{ color: colors.primaryDeep, fontFamily: 'Onest_600SemiBold' }}>
+            {fraction[2]}
+          </Text>{' '}
           {stat.label}
         </Text>
-      </View>
+      ) : (
+        <Text style={labelStyle} numberOfLines={1}>
+          {stat.label}
+        </Text>
+      )}
     </View>
   );
 }
@@ -247,9 +176,8 @@ function AccessCard({
           <StatBlock stat={stat} />
         ) : sub ? (
           <Text
-            className="text-2xs font-medium uppercase tracking-wider text-text-muted text-right"
-            style={{ maxWidth: 90 }}
-            numberOfLines={1}
+            className="text-2xs font-medium uppercase tracking-wider text-text-muted text-right flex-shrink"
+            numberOfLines={2}
           >
             {sub}
           </Text>

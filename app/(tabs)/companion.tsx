@@ -15,22 +15,29 @@ import Animated, {
   Easing,
   FadeIn,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
   withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FlameLogo } from '@/components/animations/flame-logo';
 import {
   type ChatMessage,
   type CompanionContext,
   makeSeedMessage,
   sendCompanionMessage,
 } from '@/lib/companion-chat';
+import { useCompanionAlertStore } from '@/lib/companion-alerts-store';
 import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
+
+const STRUGGLING_OPENER =
+  "Hey. You said you were struggling. Are you okay? What happened? Anything I can help with?";
 
 export default function CompanionScreen() {
   const insets = useSafeAreaInsets();
@@ -46,6 +53,25 @@ export default function CompanionScreen() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  // Run-once on mount: if the user was flagged as struggling, prepend a
+  // companion opener and clear the alert so the tab indicator stops pulsing.
+  // We read directly from the store via getState() (not the hook) so this
+  // effect doesn't re-fire when the alert changes during the same visit.
+  useEffect(() => {
+    const alert = useCompanionAlertStore.getState().alert;
+    if (alert !== null) {
+      const openerMsg: ChatMessage = {
+        id: `c-opener-${Date.now()}`,
+        role: 'companion',
+        content: STRUGGLING_OPENER,
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [openerMsg, ...prev]);
+      useCompanionAlertStore.getState().clearAlert();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const canSend = input.trim().length > 0 && !sending;
 
@@ -86,7 +112,10 @@ export default function CompanionScreen() {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={styles.title}>Your companion</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <FlameLogo size={28} loop={true} />
+            <Text style={styles.title}>Your companion</Text>
+          </View>
           {__DEV__ && (
             <Pressable
               onPress={() => router.push('/dev')}
@@ -162,7 +191,9 @@ export default function CompanionScreen() {
                 },
               ]}
             >
-              <Send size={16} color={colors.textInverse} strokeWidth={2.25} />
+              <View style={{ transform: [{ translateX: -2 }, { translateY: 1 }] }}>
+                <Send size={16} color={colors.textInverse} strokeWidth={2.25} />
+              </View>
             </Pressable>
           </View>
         </View>
@@ -171,19 +202,87 @@ export default function CompanionScreen() {
   );
 }
 
+// Companion: spring entry from the avatar side, avatar wakes (scale + dim)
+//   80ms before the bubble lands.
+// User: decisive Apple "snappy" cubic-bezier, no spring — user-initiated
+//   actions shouldn't hesitate or bounce.
+// Reduced motion: plain 180ms fade.
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isCompanion = message.role === 'companion';
+  const reduced = useReducedMotion();
+
+  // Bubble shared values
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(isCompanion ? 0.92 : 0.94);
+  const tx = useSharedValue(isCompanion ? -4 : 6);
+  const ty = useSharedValue(isCompanion ? 8 : 14);
+
+  // Avatar shared values (only used when isCompanion)
+  const avatarOpacity = useSharedValue(0.7);
+  const avatarScale = useSharedValue(0.96);
+
+  useEffect(() => {
+    if (reduced) {
+      opacity.value = withTiming(1, { duration: 180 });
+      scale.value = 1;
+      tx.value = 0;
+      ty.value = 0;
+      avatarOpacity.value = 1;
+      avatarScale.value = 1;
+      return;
+    }
+
+    if (isCompanion) {
+      // Avatar leads by 80ms — calm "I'm awake" beat.
+      const easeOutQuart = Easing.bezier(0.22, 1, 0.36, 1);
+      avatarOpacity.value = withTiming(1, { duration: 180, easing: easeOutQuart });
+      avatarScale.value = withTiming(1, { duration: 180, easing: easeOutQuart });
+
+      // Bubble — spring with no perceivable overshoot.
+      const springCfg = { damping: 18, stiffness: 180, mass: 0.9 };
+      opacity.value = withDelay(80, withTiming(1, { duration: 240, easing: easeOutQuart }));
+      scale.value = withDelay(80, withSpring(1, springCfg));
+      tx.value = withDelay(80, withSpring(0, springCfg));
+      ty.value = withDelay(80, withSpring(0, springCfg));
+    } else {
+      // User — Apple "decisive ease" cubic-bezier, 220ms, no spring.
+      const decisive = Easing.bezier(0.32, 0.72, 0, 1);
+      opacity.value = withTiming(1, { duration: 220, easing: decisive });
+      scale.value = withTiming(1, { duration: 220, easing: decisive });
+      tx.value = withTiming(0, { duration: 220, easing: decisive });
+      ty.value = withTiming(0, { duration: 220, easing: decisive });
+    }
+  }, [reduced, isCompanion, opacity, scale, tx, ty, avatarOpacity, avatarScale]);
+
+  const bubbleStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [
+      { translateX: tx.value },
+      { translateY: ty.value },
+      { scale: scale.value },
+    ],
+  }));
+
+  const avatarStyle = useAnimatedStyle(() => ({
+    opacity: avatarOpacity.value,
+    transform: [{ scale: avatarScale.value }],
+  }));
+
   return (
-    <Animated.View
-      entering={FadeIn.duration(280).easing(Easing.out(Easing.cubic))}
+    <View
       style={[
         styles.msgRow,
         { justifyContent: isCompanion ? 'flex-start' : 'flex-end' },
       ]}
     >
-      {isCompanion ? <CompanionAvatar /> : null}
-      <View
+      {isCompanion ? (
+        <Animated.View style={avatarStyle}>
+          <CompanionAvatar />
+        </Animated.View>
+      ) : null}
+      <Animated.View
         style={[
+          bubbleStyle,
           styles.bubble,
           isCompanion ? styles.bubbleCompanion : styles.bubbleUser,
         ]}
@@ -196,8 +295,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         >
           {message.content}
         </Text>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </View>
   );
 }
 

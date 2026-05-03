@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { ArrowRight, Play } from 'lucide-react-native';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -12,13 +12,14 @@ import Animated, {
 
 import * as haptics from '@/lib/haptics';
 import { spring } from '@/lib/motion';
-import { buildYouTubeSearchUrl, formatVideoDuration, videos, type Video } from '@/lib/mock/videos';
-import { useStore } from '@/lib/store';
+import { buildYouTubeSearchUrl, formatVideoDuration, type Video } from '@/lib/mock/videos';
 import { colors } from '@/lib/theme';
 import type { InterestKey } from '@/types/profile';
 
-const CATEGORY_LABEL: Record<InterestKey, string> = {
-  'civil-rights': 'RIGHTS',
+// Mirror the labels/colors used by TodayVideo on the home screen so the visual
+// language is shared. Kept loose with `Partial<Record>` so we don't crash on
+// new InterestKey values that haven't been mapped yet.
+const CATEGORY_LABEL: Partial<Record<InterestKey, string>> = {
   tech: 'TECH',
   ai: 'AI',
   phones: 'PHONES',
@@ -30,6 +31,8 @@ const CATEGORY_LABEL: Record<InterestKey, string> = {
   'mental-health-awareness': 'WELLNESS',
   healthcare: 'HEALTHCARE',
   'criminal-justice': 'JUSTICE',
+  lgbtq: 'LGBTQ+',
+  'womens-rights': "WOMEN'S",
   immigration: 'IMMIGRATION',
   housing: 'HOUSING',
   jobs: 'JOBS',
@@ -37,9 +40,9 @@ const CATEGORY_LABEL: Record<InterestKey, string> = {
   sports: 'SPORTS',
 };
 
-const CATEGORY_COLOR: Record<InterestKey, string> = {
+const CATEGORY_COLOR: Partial<Record<InterestKey, string>> = {
   finance: colors.accent,
-  'civil-rights': colors.success,
+  lgbtq: colors.success,
   politics: colors.danger,
   voting: colors.primaryDeep,
   'criminal-justice': colors.primaryDeep,
@@ -51,6 +54,7 @@ const CATEGORY_COLOR: Record<InterestKey, string> = {
   healthcare: colors.primary,
   immigration: colors.primary,
   'music-entertainment': colors.textMuted,
+  'womens-rights': colors.textMuted,
   housing: colors.successDeep,
   jobs: colors.primaryDeep,
   climate: colors.success,
@@ -59,25 +63,11 @@ const CATEGORY_COLOR: Record<InterestKey, string> = {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-function dayOfYear(d: Date): number {
-  const start = new Date(d.getFullYear(), 0, 0);
-  const diff = d.getTime() - start.getTime();
-  return Math.floor(diff / 86400000);
-}
+type Props = { video: Video };
 
-export function TodayVideo(): React.ReactElement | null {
-  const interests = useStore((s) => s.profile.interests);
+export function VideoCard({ video }: Props): React.ReactElement {
   const reduced = useReducedMotion();
   const scale = useSharedValue(1);
-
-  const video = useMemo<Video | null>(() => {
-    if (videos.length === 0) return null;
-    const interestSet = new Set(interests);
-    const matched = interests.length > 0 ? videos.filter((v) => interestSet.has(v.category)) : videos;
-    const pool = matched.length > 0 ? matched : videos;
-    const idx = dayOfYear(new Date()) % pool.length;
-    return pool[idx];
-  }, [interests]);
 
   const animStyle = useAnimatedStyle(() =>
     reduced ? {} : { transform: [{ scale: scale.value }] },
@@ -92,10 +82,8 @@ export function TodayVideo(): React.ReactElement | null {
     if (!reduced) scale.value = withSpring(1, spring.press);
   }, [reduced, scale]);
 
-  if (!video) return null;
-
-  const eyebrowColor = CATEGORY_COLOR[video.category];
-  const eyebrowLabel = CATEGORY_LABEL[video.category];
+  const eyebrowColor = CATEGORY_COLOR[video.category] ?? colors.primaryDeep;
+  const eyebrowLabel = CATEGORY_LABEL[video.category] ?? video.category.toUpperCase();
   const duration = formatVideoDuration(video.durationSec);
 
   return (
@@ -116,13 +104,8 @@ export function TodayVideo(): React.ReactElement | null {
       accessibilityRole="button"
       accessibilityLabel={`Watch video: ${video.title}. ${duration}`}
     >
-      {/* Thumbnail with real image + dim overlay + play icon + duration badge */}
       <View
-        style={{
-          aspectRatio: 16 / 9,
-          backgroundColor: colors.primarySoft,
-          position: 'relative',
-        }}
+        style={{ aspectRatio: 16 / 9, backgroundColor: colors.primarySoft, position: 'relative' }}
       >
         <Image
           source={{ uri: video.thumbnailUrl }}
@@ -131,7 +114,6 @@ export function TodayVideo(): React.ReactElement | null {
           transition={200}
           accessibilityLabel={`Thumbnail for: ${video.title}`}
         />
-        {/* Subtle dark overlay so the play icon is always legible */}
         <View
           style={{
             position: 'absolute',
@@ -142,7 +124,6 @@ export function TodayVideo(): React.ReactElement | null {
             backgroundColor: 'rgba(31,45,61,0.18)',
           }}
         />
-        {/* Center play icon */}
         <View
           style={{
             position: 'absolute',
@@ -167,7 +148,6 @@ export function TodayVideo(): React.ReactElement | null {
             <Play size={24} color={colors.primaryDeep} strokeWidth={2} fill={colors.primaryDeep} />
           </View>
         </View>
-        {/* Duration badge bottom-right */}
         <View
           style={{
             position: 'absolute',
@@ -192,9 +172,10 @@ export function TodayVideo(): React.ReactElement | null {
         </View>
       </View>
 
-      {/* Body */}
       <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+        >
           <Text
             style={{
               fontSize: 10,

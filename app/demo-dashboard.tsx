@@ -20,7 +20,7 @@ import type { InterestKey } from '@/types/profile';
 type Phase = 'interests' | 'greeting' | 'burst' | 'done';
 
 const INTERESTS: { key: InterestKey; label: string }[] = [
-  { key: 'lgbtq', label: 'LGBTQ+ rights and culture' },
+  { key: 'civil-rights', label: 'Civil rights and equality' },
   { key: 'tech', label: 'Technology and apps' },
   { key: 'politics', label: 'Politics and law' },
   { key: 'finance', label: 'Finance and money' },
@@ -28,7 +28,6 @@ const INTERESTS: { key: InterestKey; label: string }[] = [
   { key: 'music-entertainment', label: 'Music and entertainment' },
   { key: 'mental-health-awareness', label: 'Mental health awareness' },
   { key: 'criminal-justice', label: 'Criminal justice reform' },
-  { key: 'womens-rights', label: "Women's rights" },
   { key: 'immigration', label: 'Immigration' },
   { key: 'climate', label: 'Climate and environment' },
   { key: 'sports', label: 'Sports' },
