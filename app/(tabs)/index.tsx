@@ -1,7 +1,9 @@
 import { useRouter } from 'expo-router';
+import { Settings } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useShallow } from 'zustand/shallow';
 
 import { HeroGreeting } from '@/components/home/hero-greeting';
@@ -20,8 +22,9 @@ import type { PlanStep, StepStatus } from '@/types/plan';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
-  const { profile, streak, plan, completedSteps, inProgressSteps } =
+  const { profile, streak, plan, completedSteps, inProgressSteps, resetOnboarding } =
     useStore(
       useShallow((s) => ({
         profile: s.profile,
@@ -29,10 +32,29 @@ export default function HomeScreen() {
         plan: s.plan,
         completedSteps: s.completedSteps,
         inProgressSteps: s.inProgressSteps,
+        resetOnboarding: s.resetOnboarding,
       })),
     );
 
   const reduced = useReducedMotion();
+
+  function handleReset() {
+    Alert.alert(
+      'Start over?',
+      'This clears your profile, plan, and all progress. It cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: () => {
+            resetOnboarding();
+            router.replace('/');
+          },
+        },
+      ],
+    );
+  }
 
   // Today's task count is still surfaced in the greeting subline ("3 things today.")
   // but the full task list lives only in My Plan.
@@ -65,6 +87,23 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer scroll contentClassName="px-4 pt-4 pb-12 gap-5">
+      {/* Settings row */}
+      <View
+        style={{ paddingTop: insets.top > 0 ? 0 : 8 }}
+        className="flex-row justify-end"
+        accessibilityElementsHidden={false}
+      >
+        <Pressable
+          onPress={handleReset}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Reset app"
+          accessibilityHint="Clears all data and returns to onboarding"
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+        >
+          <Settings size={20} color={colors.textMuted} strokeWidth={1.75} />
+        </Pressable>
+      </View>
       {/* 1. Hero greeting */}
       <Animated.View entering={reduced ? enter.fade(0) : enter.fadeUp(0)}>
         <HeroGreeting
