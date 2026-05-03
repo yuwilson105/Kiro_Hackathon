@@ -1,8 +1,10 @@
 import { differenceInYears } from 'date-fns';
 import { Bookmark, BookmarkCheck } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Animated, {
+    FadeOut,
+    LinearTransition,
     useAnimatedStyle,
     useReducedMotion,
     useSharedValue,
@@ -16,10 +18,10 @@ import { FeedCard } from '@/components/catchup/feed-card';
 import { FilterPills } from '@/components/catchup/filter-pills';
 import { VideoCard } from '@/components/catchup/video-card';
 import { generateFeedFromAPI } from '@/lib/api';
-import { useSavedVideosStore } from '@/lib/saved-videos-store';
 import { feedCards } from '@/lib/mock/feed';
 import { videos, type Video } from '@/lib/mock/videos';
 import { duration, ease } from '@/lib/motion';
+import { useSavedVideosStore } from '@/lib/saved-videos-store';
 import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
 import type { FeedCard as FeedCardType } from '@/types/feed';
@@ -301,10 +303,11 @@ export default function CatchUpScreen() {
       {/* FEED LIST */}
       <View style={{ flex: 1 }}>
         <Animated.View style={[{ flex: 1 }, listStyle]}>
-          <FlatList
+          <FlashList
             data={displayItems}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
+            estimatedItemSize={280}
             contentContainerStyle={{
               paddingHorizontal: 24,
               paddingTop: 8,
