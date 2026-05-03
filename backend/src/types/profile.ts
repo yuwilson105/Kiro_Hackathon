@@ -34,7 +34,7 @@ export type PriorityKey =
   | 'staying-out';
 
 export type InterestKey =
-  | 'lgbtq'
+  | 'civil-rights'
   | 'tech'
   | 'ai'
   | 'phones'
@@ -46,7 +46,6 @@ export type InterestKey =
   | 'mental-health-awareness'
   | 'healthcare'
   | 'criminal-justice'
-  | 'womens-rights'
   | 'immigration'
   | 'housing'
   | 'jobs'
@@ -64,13 +63,13 @@ export type Profile = {
   gapEnd: string | null;
   city: City | null;
   conviction: ConvictionType | null;
-  convictionDetails?: string;
+  convictionDetails: string;
   education: EducationLevel | null;
-  educationOther?: string;
+  educationOther: string;
   workHistory: WorkType[];
-  workOther?: string;
+  workOther: string;
   housing: HousingStatus | null;
-  housingOther?: string;
+  housingOther: string;
   idStatus: IdStatus | null;
   priorities: PriorityKey[];
   interests: InterestKey[];
@@ -82,9 +81,13 @@ export const emptyProfile: Profile = {
   gapEnd: null,
   city: null,
   conviction: null,
+  convictionDetails: '',
   education: null,
+  educationOther: '',
   workHistory: [],
+  workOther: '',
   housing: null,
+  housingOther: '',
   idStatus: null,
   priorities: [],
   interests: [],
