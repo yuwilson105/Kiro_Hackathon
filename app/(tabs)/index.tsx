@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useShallow } from 'zustand/shallow';
 
@@ -32,7 +32,6 @@ export default function HomeScreen() {
       })),
     );
 
-  const resetOnboarding = useStore((s) => s.resetOnboarding);
   const reduced = useReducedMotion();
 
   // Today's task count is still surfaced in the greeting subline ("3 things today.")
@@ -66,31 +65,6 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer scroll contentClassName="px-4 pt-4 pb-12 gap-5">
-      {/* DEV-only reset button */}
-      {__DEV__ && (
-        <Pressable
-          onPress={() => {
-            resetOnboarding();
-            router.replace('/');
-          }}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Reset application"
-          style={{
-            alignSelf: 'flex-end',
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.bg,
-          }}
-        >
-          <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: 'Onest_500Medium' }}>
-            ↺ Reset
-          </Text>
-        </Pressable>
-      )}
       {/* 1. Hero greeting */}
       <Animated.View entering={reduced ? enter.fade(0) : enter.fadeUp(0)}>
         <HeroGreeting
