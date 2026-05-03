@@ -1,3 +1,5 @@
+import { Image } from 'expo-image';
+import { useFocusEffect } from 'expo-router';
 import { Send } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -25,6 +27,8 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FlameLogo } from '@/components/animations/flame-logo';
+
+const COMPANION_LOGO = require('@/assets/images/companion-logo-final.png');
 import { useCompanionAlertStore } from '@/lib/companion-alerts-store';
 import {
     type ChatMessage,
@@ -35,8 +39,16 @@ import {
 import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
 
-const STRUGGLING_OPENER =
-  "Hey. You said you were struggling. Are you okay? What happened? Anything I can help with?";
+function openerForMood(mood?: string): string {
+  switch (mood) {
+    case 'struggling':
+      return "I noticed you're having a rough time. What's going on? I'm here to listen.";
+    case 'need-talk':
+      return "You wanted to talk it out. I'm right here. What's weighing on you?";
+    default:
+      return "Hey. It seems like something's off. Want to tell me what's on your mind?";
+  }
+}
 
 export default function CompanionScreen() {
   const insets = useSafeAreaInsets();
@@ -54,24 +66,21 @@ export default function CompanionScreen() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
-  // Run-once on mount: if the user was flagged as struggling, prepend a
-  // companion opener and clear the alert so the tab indicator stops pulsing.
-  // We read directly from the store via getState() (not the hook) so this
-  // effect doesn't re-fire when the alert changes during the same visit.
-  useEffect(() => {
-    const alert = useCompanionAlertStore.getState().alert;
-    if (alert !== null) {
-      const openerMsg: ChatMessage = {
-        id: `c-opener-${Date.now()}`,
-        role: 'companion',
-        content: STRUGGLING_OPENER,
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [openerMsg, ...prev]);
-      useCompanionAlertStore.getState().clearAlert();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const alert = useCompanionAlertStore.getState().alert;
+      if (alert !== null) {
+        const openerMsg: ChatMessage = {
+          id: `c-opener-${Date.now()}`,
+          role: 'companion',
+          content: openerForMood(alert.mood),
+          timestamp: Date.now(),
+        };
+        setMessages((prev) => [openerMsg, ...prev]);
+        useCompanionAlertStore.getState().clearAlert();
+      }
+    }, []),
+  );
 
   const canSend = input.trim().length > 0 && !sending;
 
@@ -275,9 +284,11 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
 function CompanionAvatar() {
   return (
-    <View style={styles.avatar}>
-      <View style={styles.avatarDot} />
-    </View>
+    <Image
+      source={COMPANION_LOGO}
+      style={{ width: 36, height: 36 }}
+      contentFit="contain"
+    />
   );
 }
 

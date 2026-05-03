@@ -400,18 +400,13 @@ export default function BackgroundScreen() {
                   accessibilityLabel={opt.label}
                 />
               ))}
-              {/* ml-auto pushes the skip pill to the right end of the row.
-                  Label shortened to "Skip" so all four pills fit comfortably
-                  on a single line at iPhone widths. */}
-              <View style={{ marginLeft: 'auto' }}>
-                <PillButton
-                  label="Skip"
-                  selected={skipId}
-                  size="sm"
-                  onPress={() => toggleSkip(setSkipId, () => setIdStatus(null))}
-                  accessibilityLabel="I'd rather not say about ID"
-                />
-              </View>
+              <PillButton
+                label="Skip"
+                selected={skipId}
+                size="sm"
+                onPress={() => toggleSkip(setSkipId, () => setIdStatus(null))}
+                accessibilityLabel="I'd rather not say about ID"
+              />
             </View>
           </View>
         </Card>

@@ -16,6 +16,7 @@ import { FeedCard } from '@/components/catchup/feed-card';
 import { FilterPills } from '@/components/catchup/filter-pills';
 import { VideoCard } from '@/components/catchup/video-card';
 import { generateFeedFromAPI } from '@/lib/api';
+import { useSavedVideosStore } from '@/lib/saved-videos-store';
 import { feedCards } from '@/lib/mock/feed';
 import { videos, type Video } from '@/lib/mock/videos';
 import { duration, ease } from '@/lib/motion';
@@ -106,6 +107,7 @@ export default function CatchUpScreen() {
       markFeedRead: s.markFeedRead,
     }))
   );
+  const savedVideoIds = useSavedVideosStore((s) => s.savedVideoIds);
 
   useEffect(() => {
     generateFeedFromAPI(profile).then((result) => {
@@ -145,17 +147,20 @@ export default function CatchUpScreen() {
 
     const final = interleave(articles, vids);
 
-    // 'saved' view: keep only articles the user has bookmarked.
-    // Videos aren't savable in the current model, so they're dropped here.
+    // 'saved' view: keep only items the user has bookmarked. Articles use
+    // savedFeedIds (main store); videos use savedVideoIds (separate store).
     if (view === 'saved') {
-      const savedSet = new Set(savedFeedIds);
-      return final.filter(
-        (item) => item.kind === 'article' && savedSet.has(item.data.id),
+      const savedFeedSet = new Set(savedFeedIds);
+      const savedVideoSet = new Set(savedVideoIds);
+      return final.filter((item) =>
+        item.kind === 'article'
+          ? savedFeedSet.has(item.data.id)
+          : savedVideoSet.has(item.data.id),
       );
     }
 
     return final;
-  }, [activeFilter, profile.interests, view, savedFeedIds, cards]);
+  }, [activeFilter, profile.interests, view, savedFeedIds, savedVideoIds, cards]);
 
   // Fade list on filter change
   const handleFilterChange = useCallback(
@@ -177,20 +182,32 @@ export default function CatchUpScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: FeedItem }) => {
-      if (item.kind === 'video') {
-        return <VideoCard video={item.data} />;
-      }
+      const child =
+        item.kind === 'video' ? (
+          <VideoCard video={item.data} />
+        ) : (
+          <FeedCard
+            card={item.data}
+            isSaved={savedFeedIds.includes(item.data.id)}
+            isRead={readFeedIds.includes(item.data.id)}
+            onToggleSaved={toggleFeedSaved}
+            onMarkRead={markFeedRead}
+          />
+        );
+
+      // exiting: when an item leaves the data array (e.g., user unsaves an
+      // article in 'saved' view), fade and shrink instead of snap-removing.
+      // layout: items below the removed one slide up to close the gap.
       return (
-        <FeedCard
-          card={item.data}
-          isSaved={savedFeedIds.includes(item.data.id)}
-          isRead={readFeedIds.includes(item.data.id)}
-          onToggleSaved={toggleFeedSaved}
-          onMarkRead={markFeedRead}
-        />
+        <Animated.View
+          exiting={reduced ? FadeOut.duration(120) : FadeOut.duration(260)}
+          layout={LinearTransition.duration(280)}
+        >
+          {child}
+        </Animated.View>
       );
     },
-    [savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead]
+    [savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead, reduced]
   );
 
   const keyExtractor = useCallback((item: FeedItem) => item.id, []);

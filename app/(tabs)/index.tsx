@@ -68,7 +68,7 @@ export default function HomeScreen() {
       {/* 1. Hero greeting */}
       <Animated.View entering={reduced ? enter.fade(0) : enter.fadeUp(0)}>
         <HeroGreeting
-          firstName={profile.firstName || 'there'}
+          firstName={(profile.firstName || '').trim().split(/\s+/)[0] || 'there'}
           streakCurrent={streak.current}
           todayTaskCount={todayTaskCount}
           hasMilestoneToday={hasMilestoneToday}

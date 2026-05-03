@@ -7,7 +7,7 @@ import {
   UIManager,
   View,
 } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOutUp, useReducedMotion } from 'react-native-reanimated';
 import { Check, ChevronRight } from 'lucide-react-native';
 
 import { StepCard } from '@/components/plan/step-card';
@@ -160,7 +160,11 @@ export function WeekSection({
 
         {/* Steps (toggleable on past weeks) */}
         {expanded && (
-          <View className="gap-3 mt-4">
+          <Animated.View
+            entering={reduced ? undefined : FadeIn.duration(180)}
+            exiting={reduced ? undefined : FadeOutUp.duration(220)}
+            className="gap-3 mt-4"
+          >
             {week.steps.map((step, i) => {
               const status = computeStepStatus(step.id, completedSteps, inProgressSteps, plan);
               const cappedI = Math.min(i, 8);
@@ -175,7 +179,7 @@ export function WeekSection({
                 </Animated.View>
               );
             })}
-          </View>
+          </Animated.View>
         )}
       </Animated.View>
     );
@@ -262,7 +266,11 @@ export function WeekSection({
 
         {/* Steps */}
         {expanded && (
-          <View className="gap-3 mt-4">
+          <Animated.View
+            entering={reduced ? undefined : FadeIn.duration(180)}
+            exiting={reduced ? undefined : FadeOutUp.duration(220)}
+            className="gap-3 mt-4"
+          >
             {week.steps.map((step, i) => {
               const status = computeStepStatus(step.id, completedSteps, inProgressSteps, plan);
               const cappedI = Math.min(i, 8);
@@ -277,7 +285,7 @@ export function WeekSection({
                 </Animated.View>
               );
             })}
-          </View>
+          </Animated.View>
         )}
       </Animated.View>
     );

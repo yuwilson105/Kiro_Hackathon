@@ -31,10 +31,10 @@ function CompanionTabIcon({ color, focused }: TabIconProps) {
     if (alert) {
       pulse.value = withRepeat(
         withSequence(
-          withTiming(0.55, { duration: 750 }),
-          withTiming(1, { duration: 750 }),
+          withTiming(0.45, { duration: 600 }),
+          withTiming(1, { duration: 600 }),
         ),
-        -1,
+        3,
         false,
       );
     } else {

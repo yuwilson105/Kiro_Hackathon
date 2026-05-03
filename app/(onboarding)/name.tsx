@@ -29,7 +29,11 @@ export default function NameScreen() {
     reduced ? enter.fade(0) : enter.fadeUp(delay);
 
   const goNext = (firstName: string) => {
-    setProfile({ firstName });
+    // Keep only the first whitespace-separated token. The greeting only
+    // ever shows the first name, so storing a full string ("Ahmed Ufuk")
+    // would just truncate awkwardly downstream.
+    const firstOnly = firstName.trim().split(/\s+/)[0] ?? '';
+    setProfile({ firstName: firstOnly });
     router.push('/(onboarding)/dates');
   };
 
