@@ -5,14 +5,13 @@ import type { InterestSearchContext, SearchResult } from "../types/search";
 // Config
 // ---------------------------------------------------------------------------
 
-const API_KEY = process.env.GOOGLE_SEARCH_API_KEY ?? "";
-const ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID ?? "";
-const BASE_URL = "https://customsearch.googleapis.com/customsearch/v1";
+const API_KEY = process.env.SERPER_API_KEY ?? "";
+const BASE_URL = "https://google.serper.dev/search";
 const RESULTS_PER_QUERY = 5;
 const REQUEST_TIMEOUT_MS = 8_000;
 
 // ---------------------------------------------------------------------------
-// Interest → search query mapping
+// Interest → search query mapping (demo: politics, sports, tech, climate)
 // ---------------------------------------------------------------------------
 
 const INTEREST_QUERIES: Record<string, string> = {
@@ -58,86 +57,80 @@ function setCache(key: string, results: InterestSearchContext[]): void {
 }
 
 // ---------------------------------------------------------------------------
-// Google Custom Search API call
+// Serper date range — uses Google's tbs parameter format
 // ---------------------------------------------------------------------------
 
-function buildDateRange(startYear: number, endYear: number): string {
-  const from = `${startYear}0101`;
-  const to = `${endYear}1231`;
-  return `date:r:${from}:${to}`;
+function buildTbs(startYear: number, endYear: number): string {
+  return `cdr:1,cd_min:01/01/${startYear},cd_max:12/31/${endYear}`;
 }
 
-type GoogleSearchItem = {
+// ---------------------------------------------------------------------------
+// Serper API types
+// ---------------------------------------------------------------------------
+
+type SerperOrganicResult = {
   title?: string;
   snippet?: string;
   link?: string;
-  pagemap?: {
-    metatags?: Array<{ "article:published_time"?: string; date?: string }>;
-  };
+  date?: string;
 };
 
-type GoogleSearchResponse = {
-  items?: GoogleSearchItem[];
+type SerperResponse = {
+  organic?: SerperOrganicResult[];
 };
 
-function extractPublishedDate(item: GoogleSearchItem): string | null {
-  const metatags = item.pagemap?.metatags?.[0];
-  if (metatags?.["article:published_time"]) {
-    return metatags["article:published_time"].slice(0, 10);
-  }
-  if (metatags?.date) {
-    return metatags.date.slice(0, 10);
-  }
-  return null;
-}
+// ---------------------------------------------------------------------------
+// Serper API call
+// ---------------------------------------------------------------------------
 
-async function searchGoogle(
+async function searchSerper(
   query: string,
   startYear: number,
   endYear: number,
 ): Promise<SearchResult[]> {
-  if (!API_KEY || !ENGINE_ID) {
-    console.warn(
-      "[webSearch] Missing GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID",
-    );
+  if (!API_KEY) {
+    console.warn("[webSearch] Missing SERPER_API_KEY");
     return [];
   }
 
-  const params = new URLSearchParams({
-    key: API_KEY,
-    cx: ENGINE_ID,
+  const body = JSON.stringify({
     q: query,
-    num: String(RESULTS_PER_QUERY),
-    sort: buildDateRange(startYear, endYear),
-    lr: "lang_en",
-    safe: "active",
+    num: RESULTS_PER_QUERY,
+    tbs: buildTbs(startYear, endYear),
+    gl: "us",
+    hl: "en",
   });
 
-  const url = `${BASE_URL}?${params.toString()}`;
-
   try {
-    const response = await fetch(url, {
+    const response = await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "X-API-KEY": API_KEY,
+        "Content-Type": "application/json",
+      },
+      body,
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
+      const text = await response.text();
       console.error(
-        `[webSearch] Google API returned ${response.status}: ${response.statusText}`,
+        `[webSearch] Serper API returned ${response.status}: ${text}`,
       );
       return [];
     }
 
-    const data = (await response.json()) as GoogleSearchResponse;
+    const data = (await response.json()) as SerperResponse;
 
-    if (!data.items || data.items.length === 0) {
+    if (!data.organic || data.organic.length === 0) {
       return [];
     }
 
-    return data.items.map((item) => ({
+    return data.organic.map((item) => ({
       title: item.title ?? "",
       snippet: item.snippet ?? "",
       link: item.link ?? "",
-      publishedDate: extractPublishedDate(item),
+      publishedDate: item.date ?? null,
     }));
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -162,14 +155,12 @@ export async function searchForInterests(
     return cached;
   }
 
-  // Only search for interests we have queries for
   const searchable = interests.filter((i) => i in INTEREST_QUERIES);
 
-  // Run all searches in parallel
   const settled = await Promise.allSettled(
     searchable.map(async (interest) => {
       const query = INTEREST_QUERIES[interest];
-      const results = await searchGoogle(
+      const results = await searchSerper(
         `${query} ${startYear} to ${endYear}`,
         startYear,
         endYear,
