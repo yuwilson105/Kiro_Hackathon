@@ -131,6 +131,18 @@ export default function DevScreen() {
 
         <View className="gap-3">
           <Text className="font-medium text-2xs uppercase tracking-wider text-text-muted">
+            Learning
+          </Text>
+          <Button
+            label="Apple Pay & contactless"
+            variant="outline"
+            fullWidth
+            onPress={() => router.push('/learning')}
+          />
+        </View>
+
+        <View className="gap-3">
+          <Text className="font-medium text-2xs uppercase tracking-wider text-text-muted">
             Reset
           </Text>
           <Button

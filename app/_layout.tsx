@@ -4,7 +4,11 @@ import {
   Onest_500Medium,
   Onest_600SemiBold,
 } from '@expo-google-fonts/onest';
-import { Fraunces_500Medium } from '@expo-google-fonts/fraunces';
+import {
+  Fraunces_300Light_Italic,
+  Fraunces_400Regular,
+  Fraunces_500Medium,
+} from '@expo-google-fonts/fraunces';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -28,6 +32,8 @@ export default function RootLayout() {
     Onest_400Regular,
     Onest_500Medium,
     Onest_600SemiBold,
+    Fraunces_300Light_Italic,
+    Fraunces_400Regular,
     Fraunces_500Medium,
   });
 
@@ -55,6 +61,7 @@ export default function RootLayout() {
               <Stack.Screen name="milestone" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
               <Stack.Screen name="wellness" options={{ presentation: 'modal' }} />
               <Stack.Screen name="reader" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="learning" />
             </Stack>
             <CheckinSheetMount />
             <SetbackSheetMount />
