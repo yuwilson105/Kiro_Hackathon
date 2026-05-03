@@ -1,37 +1,32 @@
-import { useLocalSearchParams, router } from 'expo-router';
-import { Bookmark, BookmarkCheck, Clock, X } from 'lucide-react-native';
-import { useEffect } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import { router, useLocalSearchParams } from "expo-router";
+import { Bookmark, BookmarkCheck, Clock, X } from "lucide-react-native";
+import { useEffect } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated, { useReducedMotion } from "react-native-reanimated";
 
-import { Button } from '@/components/ui/button';
-import { IconButton } from '@/components/ui/icon-button';
-import * as haptics from '@/lib/haptics';
-import { feedCards } from '@/lib/mock/feed';
-import { enter, stagger } from '@/lib/motion';
-import { colors } from '@/lib/theme';
-import { useStore } from '@/lib/store';
-import type { InterestKey } from '@/types/profile';
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import * as haptics from "@/lib/haptics";
+import { feedCards } from "@/lib/mock/feed";
+import { enter, stagger } from "@/lib/motion";
+import { useStore } from "@/lib/store";
+import { colors } from "@/lib/theme";
+import type { InterestKey } from "@/types/profile";
 
 // Category → color token mapping per Leader 06 §9
 const categoryColor: Record<InterestKey, string> = {
   finance: colors.accent,
-  'civil-rights': colors.success,
-  'criminal-justice': colors.primaryDeep,
+  "civil-rights": colors.success,
+  "criminal-justice": colors.primaryDeep,
   tech: colors.primaryDeep,
   ai: colors.primary,
   phones: colors.primary,
-  'social-media': colors.primaryDeep,
-  'mental-health-awareness': colors.primary,
+  "social-media": colors.primaryDeep,
+  "mental-health-awareness": colors.primary,
   healthcare: colors.primary,
   politics: colors.textMuted,
   voting: colors.primaryDeep,
-  'music-entertainment': colors.textMuted,
+  "music-entertainment": colors.textMuted,
   immigration: colors.textMuted,
   housing: colors.successDeep,
   jobs: colors.primaryDeep,
@@ -40,23 +35,23 @@ const categoryColor: Record<InterestKey, string> = {
 };
 
 const categoryLabel: Record<InterestKey, string> = {
-  finance: 'FINANCE',
-  'civil-rights': 'CIVIL RIGHTS',
-  'criminal-justice': 'LAW',
-  tech: 'TECH',
-  ai: 'AI',
-  phones: 'PHONES',
-  'social-media': 'SOCIAL MEDIA',
-  'mental-health-awareness': 'MENTAL HEALTH',
-  healthcare: 'HEALTHCARE',
-  politics: 'POLITICS',
-  voting: 'VOTING',
-  'music-entertainment': 'ENTERTAINMENT',
-  immigration: 'IMMIGRATION',
-  housing: 'HOUSING',
-  jobs: 'JOBS',
-  climate: 'CLIMATE',
-  sports: 'SPORTS',
+  finance: "FINANCE",
+  "civil-rights": "CIVIL RIGHTS",
+  "criminal-justice": "LAW",
+  tech: "TECH",
+  ai: "AI",
+  phones: "PHONES",
+  "social-media": "SOCIAL MEDIA",
+  "mental-health-awareness": "MENTAL HEALTH",
+  healthcare: "HEALTHCARE",
+  politics: "POLITICS",
+  voting: "VOTING",
+  "music-entertainment": "ENTERTAINMENT",
+  immigration: "IMMIGRATION",
+  housing: "HOUSING",
+  jobs: "JOBS",
+  climate: "CLIMATE",
+  sports: "SPORTS",
 };
 
 export default function ReaderScreen() {
@@ -66,8 +61,12 @@ export default function ReaderScreen() {
   const savedFeedIds = useStore((s) => s.savedFeedIds);
   const toggleFeedSaved = useStore((s) => s.toggleFeedSaved);
   const markFeedRead = useStore((s) => s.markFeedRead);
+  const storeFeedCards = useStore((s) => s.feedCards);
 
-  const card = id ? feedCards.find((c) => c.id === id) : undefined;
+  const card = id
+    ? (storeFeedCards.find((c) => c.id === id) ??
+      feedCards.find((c) => c.id === id))
+    : undefined;
   const isSaved = id ? savedFeedIds.includes(id) : false;
 
   // Mark read on mount
@@ -98,7 +97,7 @@ export default function ReaderScreen() {
     );
   }
 
-  const paragraphs = card.body.split('\n\n').filter(Boolean);
+  const paragraphs = card.body.split("\n\n").filter(Boolean);
   const eyebrowColor = categoryColor[card.category];
 
   return (
@@ -124,7 +123,9 @@ export default function ReaderScreen() {
             )
           }
           onPress={handleBookmark}
-          accessibilityLabel={isSaved ? 'Saved. Tap to remove.' : 'Save article'}
+          accessibilityLabel={
+            isSaved ? "Saved. Tap to remove." : "Save article"
+          }
           accessibilityState={{ checked: isSaved }}
           variant="plain"
           size={44}
@@ -137,7 +138,9 @@ export default function ReaderScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Category eyebrow */}
-        <Animated.View entering={reduced ? enter.fade(0) : enter.fadeUp(stagger(0))}>
+        <Animated.View
+          entering={reduced ? enter.fade(0) : enter.fadeUp(stagger(0))}
+        >
           <Text
             className="text-2xs font-medium uppercase tracking-wider"
             style={{ color: eyebrowColor }}
@@ -149,7 +152,9 @@ export default function ReaderScreen() {
         </Animated.View>
 
         {/* Title */}
-        <Animated.View entering={reduced ? enter.fade(0) : enter.fadeUp(stagger(1))}>
+        <Animated.View
+          entering={reduced ? enter.fade(0) : enter.fadeUp(stagger(1))}
+        >
           <Text
             className="font-medium text-text mt-2 leading-9"
             style={styles.title}
@@ -176,7 +181,7 @@ export default function ReaderScreen() {
             ·
           </Text>
           <Text className="font-sans text-sm text-text-muted">
-            {card.yearsAgo} {card.yearsAgo === 1 ? 'year' : 'years'} ago
+            {card.yearsAgo} {card.yearsAgo === 1 ? "year" : "years"} ago
           </Text>
         </Animated.View>
 
@@ -200,7 +205,9 @@ export default function ReaderScreen() {
             return (
               <Animated.Text
                 key={i}
-                entering={reduced ? enter.fade(0) : enter.fadeUp(stagger(cappedIndex))}
+                entering={
+                  reduced ? enter.fade(0) : enter.fadeUp(stagger(cappedIndex))
+                }
                 className="font-sans text-base text-text leading-7 mt-4"
               >
                 {para}

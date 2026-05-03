@@ -114,21 +114,30 @@ export default function CatchUpScreen() {
   const [view, setView] = useState<"feed" | "saved">("feed");
   const listOpacity = useSharedValue(1);
 
-  const { profile, savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead } =
-    useStore(
-      useShallow((s) => ({
-        profile: s.profile,
-        savedFeedIds: s.savedFeedIds,
-        readFeedIds: s.readFeedIds,
-        toggleFeedSaved: s.toggleFeedSaved,
-        markFeedRead: s.markFeedRead,
-      })),
-    );
+  const {
+    profile,
+    savedFeedIds,
+    readFeedIds,
+    toggleFeedSaved,
+    markFeedRead,
+    setFeedCards,
+  } = useStore(
+    useShallow((s) => ({
+      profile: s.profile,
+      savedFeedIds: s.savedFeedIds,
+      readFeedIds: s.readFeedIds,
+      toggleFeedSaved: s.toggleFeedSaved,
+      markFeedRead: s.markFeedRead,
+      setFeedCards: s.setFeedCards,
+    })),
+  );
   const savedVideoIds = useSavedVideosStore((s) => s.savedVideoIds);
 
   useEffect(() => {
     generateFeedFromAPI(profile).then((result) => {
-      setCards(result.length > 0 ? result : feedCards);
+      const resolved = result.length > 0 ? result : feedCards;
+      setCards(resolved);
+      setFeedCards(resolved);
       setLoading(false);
     });
   }, []); // only on mount

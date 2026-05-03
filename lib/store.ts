@@ -1,11 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { MoodEntry } from '@/types/check-in';
-import type { Plan } from '@/types/plan';
-import { emptyProfile, type Profile } from '@/types/profile';
+import type { MoodEntry } from "@/types/check-in";
+import type { Plan } from "@/types/plan";
+import { emptyProfile, type Profile } from "@/types/profile";
 
 type StreakState = {
   current: number;
@@ -22,6 +22,7 @@ type State = {
   moodHistory: MoodEntry[];
   savedFeedIds: string[];
   readFeedIds: string[];
+  feedCards: FeedCard[];
   lastCheckinShownDate: string | null;
   moodCheckDismissedDate: string | null;
   unlockedMilestoneId: string | null;
@@ -31,13 +32,17 @@ type State = {
   resetOnboarding: () => void;
   toggleStepInProgress: (stepId: string) => void;
   completeStep: (stepId: string) => void;
-  setStepStatus: (stepId: string, status: 'pending' | 'in-progress' | 'complete') => void;
+  setStepStatus: (
+    stepId: string,
+    status: "pending" | "in-progress" | "complete",
+  ) => void;
   registerMood: (entry: MoodEntry) => void;
   setStreak: (current: number, lastCheckinDate?: string | null) => void;
   markCheckinShown: (date: string) => void;
   dismissMoodCheck: () => void;
   toggleFeedSaved: (id: string) => void;
   markFeedRead: (id: string) => void;
+  setFeedCards: (cards: FeedCard[]) => void;
   setMilestoneUnlocked: (id: string | null) => void;
 };
 
@@ -55,6 +60,7 @@ export const useStore = create<State>()(
       moodHistory: [],
       savedFeedIds: [],
       readFeedIds: [],
+      feedCards: [],
       lastCheckinShownDate: null,
       moodCheckDismissedDate: null,
       unlockedMilestoneId: null,
@@ -73,6 +79,7 @@ export const useStore = create<State>()(
           moodHistory: [],
           savedFeedIds: [],
           readFeedIds: [],
+          feedCards: [],
           lastCheckinShownDate: null,
           moodCheckDismissedDate: null,
           unlockedMilestoneId: null,
@@ -98,15 +105,16 @@ export const useStore = create<State>()(
           const completedSteps = { ...s.completedSteps };
           delete inProgressSteps[stepId];
           delete completedSteps[stepId];
-          if (status === 'in-progress') inProgressSteps[stepId] = true;
-          if (status === 'complete') completedSteps[stepId] = todayISO();
+          if (status === "in-progress") inProgressSteps[stepId] = true;
+          if (status === "complete") completedSteps[stepId] = todayISO();
           return { inProgressSteps, completedSteps };
         }),
       setStreak: (current, lastCheckinDate) =>
         set((s) => ({
           streak: {
             current,
-            lastCheckinDate: lastCheckinDate ?? s.streak.lastCheckinDate ?? todayISO(),
+            lastCheckinDate:
+              lastCheckinDate ?? s.streak.lastCheckinDate ?? todayISO(),
           },
         })),
       registerMood: (entry) =>
@@ -143,16 +151,17 @@ export const useStore = create<State>()(
         set((s) =>
           s.readFeedIds.includes(id)
             ? s
-            : { readFeedIds: [...s.readFeedIds, id] }
+            : { readFeedIds: [...s.readFeedIds, id] },
         ),
+      setFeedCards: (cards) => set({ feedCards: cards }),
       setMilestoneUnlocked: (id) => set({ unlockedMilestoneId: id }),
     }),
     {
-      name: 'second-chance-store',
+      name: "second-chance-store",
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
-    }
-  )
+    },
+  ),
 );
 
 export function useStoreHydrated() {
