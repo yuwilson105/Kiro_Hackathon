@@ -220,7 +220,9 @@ export function WeekStrip({ completedSteps, compact = false }: Props) {
             day={d}
             isSelected={d.dateStr === selectedDate}
             onLayout={captureCellLayout(i)}
-            onPress={() => handleSelect(d)}
+            // In compact mode there's no detail panel, so tapping a day does
+            // nothing visible — disable the press to avoid a dead interaction.
+            onPress={compact ? undefined : () => handleSelect(d)}
             reduced={reduced}
           />
         ))}
@@ -251,7 +253,7 @@ export function WeekStrip({ completedSteps, compact = false }: Props) {
         />
       </View>
 
-      {/* Detail panel — hidden in compact mode */}
+      {/* Detail panel - hidden in compact mode */}
       {compact ? null : (
       <Animated.View
         key={selectedDate}
@@ -270,7 +272,16 @@ export function WeekStrip({ completedSteps, compact = false }: Props) {
           </Text>
         </View>
 
-        <Text className="text-sm text-text-muted">{openingLine}</Text>
+        <Text
+          style={{
+            fontFamily: 'Fraunces_300Light_Italic',
+            fontSize: 16,
+            lineHeight: 22,
+            color: '#6E7E8E',
+          }}
+        >
+          {openingLine}
+        </Text>
 
         {detailLine ? (
           <Text className="text-sm text-text-muted">{detailLine}</Text>
@@ -291,7 +302,8 @@ type DayCellProps = {
   day: DayMeta;
   isSelected: boolean;
   onLayout: (e: LayoutChangeEvent) => void;
-  onPress: () => void;
+  /** Omit to disable the cell entirely (used by compact mode on Home). */
+  onPress?: () => void;
   reduced: boolean;
 };
 

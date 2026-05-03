@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import Animated, {
   FadeIn,
-  runOnJS,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -196,24 +195,25 @@ export function MoodQuickCheck() {
     if (animating) return;
     setAnimating(true);
 
-    const finalize = () => {
-      // Mark hidden FIRST so the local instance unmounts cleanly,
-      // then commit store updates (mood + dismissed flag).
+    if (reduced) {
       setHidden(true);
       if (afterAnim) afterAnim();
       dismissMoodCheck();
-    };
-
-    if (reduced) {
-      finalize();
       return;
     }
 
+    // UI-thread animation, no completion callback (the runOnJS bridge crash
+    // here was reloading the bundle and snapping the user back to the splash).
     opacity.value = withTiming(0, { duration: 260, easing: ease.snap });
     scale.value = withTiming(0.96, { duration: 260, easing: ease.out });
-    translateY.value = withTiming(-6, { duration: 260, easing: ease.out }, (finished) => {
-      if (finished) runOnJS(finalize)();
-    });
+    translateY.value = withTiming(-6, { duration: 260, easing: ease.out });
+
+    // Commit store + state changes from the JS thread on its own timer.
+    setTimeout(() => {
+      setHidden(true);
+      if (afterAnim) afterAnim();
+      dismissMoodCheck();
+    }, 280);
   };
 
   const logQuickMood = (mood: Mood) => {
@@ -272,7 +272,7 @@ export function MoodQuickCheck() {
       {/* Eyebrow + question (left padding to clear the X) */}
       <View
         accessible
-        accessibilityLabel="Today's pulse — how are you feeling?"
+        accessibilityLabel="Today's pulse. How are you feeling?"
         style={{ paddingLeft: 32 }}
       >
         <Text
@@ -312,7 +312,7 @@ export function MoodQuickCheck() {
         ))}
       </View>
 
-      {/* Expanded text input — only when "Talk it out" tapped */}
+      {/* Expanded text input - only when "Talk it out" tapped */}
       {expanded && (
         <Animated.View entering={FadeIn.duration(220)} style={{ marginTop: 12 }}>
           <View

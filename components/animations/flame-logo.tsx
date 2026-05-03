@@ -1,5 +1,5 @@
 import { Canvas, Group, Path, RadialGradient, Skia, vec } from '@shopify/react-native-skia';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Easing,
   useDerivedValue,
@@ -10,13 +10,13 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-const OUTER_COLORS = ['#FFFAEB', '#FFE08A', '#FFAA48', '#FF6B2C', '#D44A1F'];
+const DEFAULT_OUTER_COLORS = ['#FFFAEB', '#FFE08A', '#FFAA48', '#FF6B2C', '#D44A1F'] as const;
 const OUTER_POSITIONS = [0, 0.2, 0.5, 0.8, 1];
 
-const INNER_COLORS = ['#FFFEF0', '#FFE08A'];
+const DEFAULT_INNER_COLORS = ['#FFFEF0', '#FFE08A'] as const;
 const INNER_POSITIONS = [0, 1];
 
-const GLOW_HUE = '#FFA64A';
+const DEFAULT_GLOW_HUE = '#FFA64A';
 
 const flamePath = Skia.Path.MakeFromSVGString(
   'M52 4 C58 18, 76 30, 76 58 C76 80, 64 96, 50 96 C36 96, 24 80, 24 58 C24 30, 38 14, 52 4 Z'
@@ -36,18 +36,25 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-const HALO_COLORS = [
-  hexToRgba(GLOW_HUE, 0.5),
-  hexToRgba(GLOW_HUE, 0.22),
-  hexToRgba(GLOW_HUE, 0),
-];
-
 type Props = {
   size?: number;
   loop?: boolean;
+  outerColors?: readonly string[];
+  innerColors?: readonly string[];
+  haloHue?: string;
 };
 
-export function FlameLogo({ size = 100, loop = true }: Props) {
+export function FlameLogo({
+  size = 100,
+  loop = true,
+  outerColors = DEFAULT_OUTER_COLORS,
+  innerColors = DEFAULT_INNER_COLORS,
+  haloHue = DEFAULT_GLOW_HUE,
+}: Props) {
+  const haloColors = useMemo(
+    () => [hexToRgba(haloHue, 0.5), hexToRgba(haloHue, 0.22), hexToRgba(haloHue, 0)],
+    [haloHue],
+  );
   const breath = useSharedValue(1);
   const sway = useSharedValue(0);
   const haloPulse = useSharedValue(0.22);
@@ -112,7 +119,7 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
             <RadialGradient
               c={vec(50, 50)}
               r={50}
-              colors={HALO_COLORS}
+              colors={haloColors}
               positions={[0, 0.45, 1]}
             />
           </Path>
@@ -122,7 +129,7 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
             <RadialGradient
               c={vec(50, 50)}
               r={56}
-              colors={OUTER_COLORS}
+              colors={outerColors as string[]}
               positions={OUTER_POSITIONS}
             />
           </Path>
@@ -130,7 +137,7 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
             <RadialGradient
               c={vec(50, 58)}
               r={34}
-              colors={INNER_COLORS}
+              colors={innerColors as string[]}
               positions={INNER_POSITIONS}
             />
           </Path>

@@ -107,30 +107,21 @@ export function ResourceCard({ item }: Props) {
         ) : null}
       </View>
 
-      {/* Category pill */}
-      <View
+      {/* Category eyebrow — colored bold text, no pill */}
+      <Text
         style={{
           alignSelf: 'flex-start',
           marginTop: 6,
-          borderRadius: 999,
-          paddingHorizontal: 10,
-          paddingVertical: 2,
-          backgroundColor: CATEGORY_BG[item.category],
+          color: CATEGORY_TEXT[item.category],
+          fontSize: 10,
+          fontWeight: '600',
+          textTransform: 'uppercase',
+          letterSpacing: 0.8,
         }}
         importantForAccessibility="no"
       >
-        <Text
-          style={{
-            color: CATEGORY_TEXT[item.category],
-            fontSize: 10,
-            fontWeight: '500',
-            textTransform: 'uppercase',
-            letterSpacing: 0.6,
-          }}
-        >
-          {CATEGORY_LABEL[item.category]}
-        </Text>
-      </View>
+        {CATEGORY_LABEL[item.category]}
+      </Text>
 
       {/* Description */}
       <Text

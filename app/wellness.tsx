@@ -26,9 +26,9 @@ export default function WellnessScreen() {
   const moodHistory = useStore((s) => s.moodHistory);
 
   return (
-    <ScreenContainer edges={['top', 'bottom']} contentClassName="px-4 pb-10">
+    <ScreenContainer edges={['bottom']} contentClassName="px-4 pb-10">
       {/* Header row */}
-      <View className="flex-row items-center pt-4 pb-5">
+      <View className="flex-row items-center pt-6 pb-5">
         <IconButton
           icon={<X size={20} color={colors.text} strokeWidth={2} />}
           onPress={() => router.back()}
@@ -39,10 +39,10 @@ export default function WellnessScreen() {
         <Text className="font-medium text-xl text-text ml-3">Wellness</Text>
       </View>
 
-      {/* A — Crisis card: no animation, immediate, present */}
+      {/* A - Crisis card: no animation, immediate, present */}
       <CrisisCard />
 
-      {/* B — Mood calendar */}
+      {/* B - Mood calendar */}
       <Animated.View
         entering={reduced ? enter.fade(0) : enter.fade(120)}
         className="mt-8"
@@ -51,7 +51,7 @@ export default function WellnessScreen() {
         <MoodCalendar moodHistory={moodHistory} />
       </Animated.View>
 
-      {/* C — Guided prompt */}
+      {/* C - Guided prompt */}
       <Animated.View
         entering={reduced ? enter.fade(0) : enter.fadeUp(200)}
         className="mt-8"
@@ -60,7 +60,7 @@ export default function WellnessScreen() {
         <GuidedPrompt />
       </Animated.View>
 
-      {/* D — Support resources */}
+      {/* D - Support resources */}
       <View className="mt-8">
         <SectionHeader eyebrow="SUPPORT NEAR YOU" className="mb-4" />
         {MENTAL_HEALTH_RESOURCES.map((resource, i) => {
@@ -116,7 +116,12 @@ export default function WellnessScreen() {
         })}
 
         <Pressable
-          onPress={() => router.push('/(tabs)/help')}
+          onPress={() => {
+            // Dismiss the Wellness modal first so the Find Help tab isn't stacked on top.
+            // The dismiss animation plays, then the tab switch happens.
+            router.dismiss();
+            requestAnimationFrame(() => router.navigate('/(tabs)/help'));
+          }}
           accessibilityRole="link"
           accessibilityLabel="See all mental health resources in Find Help"
           hitSlop={8}

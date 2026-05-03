@@ -1,10 +1,8 @@
 import { Linking, Platform, Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { MapPin, Phone } from 'lucide-react-native';
-
 import { useStore } from '@/lib/store';
 import { spring } from '@/lib/motion';
-import { colors, radii } from '@/lib/theme';
+import { colors } from '@/lib/theme';
 import * as haptics from '@/lib/haptics';
 import { resources } from '@/lib/mock/resources';
 import type { PriorityKey } from '@/types/profile';
@@ -46,7 +44,7 @@ const CATEGORY_TEXT: Record<ResourceCategory, string> = {
   financial: colors.accent,
 };
 
-// Pill background — very light tint, not a full fill
+// Pill background - very light tint, not a full fill
 const CATEGORY_BG: Record<ResourceCategory, string> = {
   housing: colors.surfaceDeep,
   food: colors.accentSoft,
@@ -104,19 +102,20 @@ export function NearbyResource() {
 type CardProps = { resource: Resource };
 
 function NearbyResourceCard({ resource }: CardProps) {
+  // Opacity dip on press (per agent rec) — feels lighter than a scale snap
+  // for inline text affordances.
   const mapsScale = useSharedValue(1);
   const phoneScale = useSharedValue(1);
 
   const mapsStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: mapsScale.value }],
+    opacity: mapsScale.value,
   }));
 
   const phoneStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: phoneScale.value }],
+    opacity: phoneScale.value,
   }));
 
   const categoryText = CATEGORY_TEXT[resource.category];
-  const categoryBg = CATEGORY_BG[resource.category];
   const categoryLabel = CATEGORY_LABEL[resource.category];
 
   return (
@@ -131,30 +130,21 @@ function NearbyResourceCard({ resource }: CardProps) {
           className="text-2xs font-medium uppercase tracking-wider text-text-muted"
           importantForAccessibility="no"
         >
-          NEAR YOU
+          RESOURCE
         </Text>
 
-        <View
+        <Text
           style={{
-            backgroundColor: categoryBg,
-            borderRadius: radii.pill,
-            paddingHorizontal: 8,
-            paddingVertical: 2,
+            color: categoryText,
+            fontSize: 10,
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: 0.8,
           }}
           importantForAccessibility="no"
         >
-          <Text
-            style={{
-              color: categoryText,
-              fontSize: 10,
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: 0.6,
-            }}
-          >
-            {categoryLabel}
-          </Text>
-        </View>
+          {categoryLabel}
+        </Text>
       </View>
 
       {/* Org name */}
@@ -173,68 +163,52 @@ function NearbyResourceCard({ resource }: CardProps) {
         {resource.description}
       </Text>
 
-      {/* Action chips row */}
-      <View className="flex-row gap-2 mt-3">
-        {/* Address chip */}
+      {/* Contact — editorial stacked block, no chrome.
+         Category eyebrow above already tells the reader this is a place;
+         tappability is carried by a hairline underline on the phone and a
+         brief press dim. Address line is tappable for directions; phone for
+         dialing. */}
+      <View className="mt-3">
         <AnimatedPressable
-          style={[
-            mapsStyle,
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              paddingHorizontal: 8,
-              paddingVertical: 8,
-              borderRadius: radii.pill,
-              backgroundColor: colors.bg,
-              borderWidth: 1,
-              borderColor: colors.borderSubtle,
-              flex: 1,
-              minWidth: 0,
-            },
-          ]}
-          onPressIn={() => { mapsScale.value = withSpring(0.95, spring.press); }}
+          style={[mapsStyle, { paddingVertical: 4 }]}
+          onPressIn={() => { mapsScale.value = withSpring(0.6, spring.press); }}
           onPressOut={() => { mapsScale.value = withSpring(1, spring.press); }}
           onPress={() => openMaps(resource)}
-          hitSlop={8}
+          hitSlop={{ top: 8, bottom: 4, left: 0, right: 0 }}
           accessibilityRole="button"
           accessibilityLabel={`Get directions to ${resource.name}`}
         >
-          <MapPin size={14} color={colors.primaryDeep} strokeWidth={2} />
           <Text
-            style={{ color: colors.primaryDeep, fontSize: 14, fontWeight: '500', flex: 1 }}
+            style={{
+              color: colors.text,
+              fontSize: 15,
+              lineHeight: 22,
+              fontFamily: 'Onest_500Medium',
+            }}
             numberOfLines={1}
           >
             {resource.address}, {resource.city}
           </Text>
         </AnimatedPressable>
 
-        {/* Phone chip */}
         <AnimatedPressable
-          style={[
-            phoneStyle,
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              paddingHorizontal: 8,
-              paddingVertical: 8,
-              borderRadius: radii.pill,
-              backgroundColor: colors.bg,
-              borderWidth: 1,
-              borderColor: colors.borderSubtle,
-            },
-          ]}
-          onPressIn={() => { phoneScale.value = withSpring(0.95, spring.press); }}
+          style={[phoneStyle, { paddingVertical: 4, alignSelf: 'flex-start' }]}
+          onPressIn={() => { phoneScale.value = withSpring(0.6, spring.press); }}
           onPressOut={() => { phoneScale.value = withSpring(1, spring.press); }}
           onPress={() => openPhone(resource)}
-          hitSlop={8}
+          hitSlop={{ top: 4, bottom: 8, left: 0, right: 0 }}
           accessibilityRole="button"
           accessibilityLabel={`Call ${resource.name} at ${resource.phone}`}
         >
-          <Phone size={14} color={colors.primaryDeep} strokeWidth={2} />
           <Text
-            style={{ color: colors.primaryDeep, fontSize: 14, fontWeight: '500' }}
+            style={{
+              color: colors.text,
+              fontSize: 15,
+              lineHeight: 22,
+              fontFamily: 'Onest_500Medium',
+              textDecorationLine: 'underline',
+              textDecorationColor: colors.borderSurface,
+            }}
           >
             {resource.phone}
           </Text>

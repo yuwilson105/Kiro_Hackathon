@@ -1,4 +1,4 @@
-// Companion chat — local stub layer.
+// Companion chat - local stub layer.
 // Swap `sendCompanionMessage` for a real API call when ready; everything else
 // (state shape, history serialization) is already in the form a chat API expects.
 
@@ -20,7 +20,7 @@ const STUB_REPLIES: string[] = [
   'Tell me a bit more about that.',
   'What part of it feels heaviest right now?',
   "How long has that been sitting with you?",
-  'What would help most today — to be heard, or to think through a next step?',
+  'What would help most today: to be heard, or to think through a next step?',
   "I'm here. Take your time.",
   'Say more. I want to make sure I understand.',
   "Some of that takes a while to land. We don't have to rush it.",

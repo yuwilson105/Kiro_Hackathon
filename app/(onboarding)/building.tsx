@@ -138,7 +138,7 @@ export default function BuildingScreen() {
         Building your plan…
       </Animated.Text>
 
-      {/* Subtext — keyed on lineIndex so Reanimated re-mounts with fresh anim */}
+      {/* Subtext - keyed on lineIndex so Reanimated re-mounts with fresh anim */}
       {!reduced && (
         <Animated.Text
           key={lineIndex}

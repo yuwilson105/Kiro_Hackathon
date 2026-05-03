@@ -48,7 +48,7 @@ export function HeroGreeting({
 
   return (
     <View className="bg-surface border border-border-surface rounded-3xl flex-row items-center justify-between" style={{ padding: 22 }}>
-      {/* LEFT column — centered vertically within the card height */}
+      {/* LEFT column - centered vertically within the card height */}
       <View
         accessible
         accessibilityLabel={a11yLabel}
@@ -63,7 +63,7 @@ export function HeroGreeting({
           <Text className="text-sm font-sans text-text leading-5">{subline}</Text>
         </View>
 
-        {/* Date / day strip — sits right under, no big gap */}
+        {/* Date / day strip - sits right under, no big gap */}
         <View className="flex-row items-center" style={{ gap: 6 }}>
           <Text
             className="text-xs font-medium uppercase text-text-muted"
@@ -92,7 +92,7 @@ export function HeroGreeting({
         </View>
       </View>
 
-      {/* RIGHT side — defines the card height */}
+      {/* RIGHT side - defines the card height */}
       <StreakBadge streak={streakCurrent} />
     </View>
   );

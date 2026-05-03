@@ -13,13 +13,13 @@ import {
 // ─── Physics constants ───────────────────────────────────────────────────────
 const GRAVITY = 600; // px/s² downward
 const LIFETIME = 2200; // ms total per particle
-const FADE_START = 1600; // ms — begin opacity fade
-const FADE_DURATION = 600; // ms — fade from 1 → 0
+const FADE_START = 1600; // ms - begin opacity fade
+const FADE_DURATION = 600; // ms - fade from 1 → 0
 
 // Particle colors: peach and sage only (per Leader 02 §9 / Leader 06)
 const COLORS = ['#F0B27A', '#88B17A', '#F8D5B3', '#5F8A53'] as const;
 
-// ─── Particle shape — cached at module scope (Skia rule: never in render) ───
+// ─── Particle shape - cached at module scope (Skia rule: never in render) ───
 // Built dynamically per particle since each has unique w/h; we cache the
 // rect factory values inside particle data instead.
 
@@ -34,7 +34,7 @@ type ParticleData = {
   rotationDeg: number; // 360–720° total spin
 };
 
-// Pre-compute once at module scope — never inside the component or render
+// Pre-compute once at module scope - never inside the component or render
 const MODULE_PARTICLES: ParticleData[] = Array.from({ length: 80 }, (_, i) => ({
   color: COLORS[i % COLORS.length],
   w: 5 + Math.random() * 2,
@@ -95,7 +95,7 @@ function ParticleItem({ p, progress, opacity, lifetime }: ParticleItemProps) {
 export function ConfettiSkia({ particleCount = 80, duration = LIFETIME, width, height }: Props) {
   const reduced = useReducedMotion();
 
-  // Stable particle data — cached in state so it never recreates across renders
+  // Stable particle data - cached in state so it never recreates across renders
   const [particles] = useState<ParticleData[]>(() =>
     MODULE_PARTICLES.slice(0, Math.min(particleCount, 80))
   );

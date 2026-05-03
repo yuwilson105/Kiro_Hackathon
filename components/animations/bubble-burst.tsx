@@ -10,14 +10,14 @@ import {
 
 // ─── Physics constants ────────────────────────────────────────────────────────
 const MAX_PARTICLES = 16;
-const UPWARD_ACCEL = -200; // px/s² — negative = upward float (anti-gravity)
+const UPWARD_ACCEL = -200; // px/s² - negative = upward float (anti-gravity)
 const DRIFT_AMPLITUDE = 8; // ±8 px horizontal sine drift
 const DRIFT_PERIOD_MS = 600; // ms per sine cycle
 
 // ─── Module-scope particle data (never recreated in render) ──────────────────
 type ParticleSeed = {
   angleRad: number; // full 360° random launch angle
-  speed: number; // 80–180 px/s (gentle — bubbles are lighter than confetti)
+  speed: number; // 80–180 px/s (gentle - bubbles are lighter than confetti)
   radius: number; // 4–9 px
   driftOffset: number; // per-particle sine phase offset (0–2π)
 };
@@ -98,7 +98,7 @@ export function BubbleBurst({
 
   const count = Math.min(particleCount, MAX_PARTICLES);
 
-  // Fixed 16 shared values — hooks must never be called conditionally
+  // Fixed 16 shared values - hooks must never be called conditionally
   const p0 = useSharedValue(0);
   const p1 = useSharedValue(0);
   const p2 = useSharedValue(0);

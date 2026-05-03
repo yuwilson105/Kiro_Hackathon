@@ -244,7 +244,7 @@ export function StepInterests({ onContinue }: Props) {
           className="text-xs"
           style={{ color: colors.textSubtle }}
         >
-          Pick a few — there&apos;s no wrong answer.
+          Pick a few. There&apos;s no wrong answer.
         </Animated.Text>
         <LiveCounter count={count} reduceMotion={reduceMotion} />
       </View>

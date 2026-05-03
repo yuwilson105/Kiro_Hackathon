@@ -78,7 +78,7 @@ export default function DemoDashboardScreen() {
     );
   }
 
-  // Greeting / burst / done — full-screen auto-played layer
+  // Greeting / burst / done - full-screen auto-played layer
   return (
     <View className="flex-1 bg-bg">
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
