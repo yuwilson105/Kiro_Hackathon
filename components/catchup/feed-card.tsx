@@ -2,10 +2,13 @@ import { Pressable, View, Text } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  withSequence,
   withSpring,
+  withTiming,
   useReducedMotion,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
 import { Bookmark, BookmarkCheck, ArrowRight } from 'lucide-react-native';
 
 import { Card } from '@/components/ui/card';
@@ -17,30 +20,40 @@ import type { InterestKey } from '@/types/profile';
 
 const CATEGORY_LABEL: Record<InterestKey, string> = {
   finance: 'MONEY',
-  lgbtq: 'LGBTQ+',
+  'civil-rights': 'RIGHTS',
   politics: 'POLITICS',
+  voting: 'VOTING',
   'criminal-justice': 'LAW',
   tech: 'TECH',
+  ai: 'AI',
+  phones: 'PHONES',
   'social-media': 'SOCIAL',
   'mental-health-awareness': 'HEALTH',
+  healthcare: 'HEALTHCARE',
   'music-entertainment': 'CULTURE',
-  'womens-rights': "WOMEN'S",
   immigration: 'IMMIGRATION',
+  housing: 'HOUSING',
+  jobs: 'JOBS',
   climate: 'CLIMATE',
   sports: 'SPORTS',
 };
 
 const CATEGORY_COLOR: Record<InterestKey, string> = {
   finance: colors.accent,
-  lgbtq: colors.success,
+  'civil-rights': colors.success,
   politics: colors.danger,
-  'criminal-justice': colors.danger,
+  voting: colors.primaryDeep,
+  'criminal-justice': colors.primaryDeep,
   tech: colors.primaryDeep,
+  ai: colors.primary,
+  phones: colors.primary,
   'social-media': colors.primaryDeep,
   'mental-health-awareness': colors.primary,
+  healthcare: colors.primary,
   'music-entertainment': colors.textMuted,
-  'womens-rights': colors.primary,
   immigration: colors.textMuted,
+  housing: colors.successDeep,
+  jobs: colors.primaryDeep,
   climate: colors.success,
   sports: colors.textMuted,
 };
@@ -60,11 +73,16 @@ export function FeedCard({ card, isSaved, isRead, onToggleSaved, onMarkRead }: P
   const reduced = useReducedMotion();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
+  const bookmarkScale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => {
     if (reduced) return { opacity: opacity.value };
     return { transform: [{ scale: scale.value }] };
   });
+
+  const bookmarkAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: bookmarkScale.value }],
+  }));
 
   const handlePressIn = () => {
     haptics.tap();
@@ -106,7 +124,24 @@ export function FeedCard({ card, isSaved, isRead, onToggleSaved, onMarkRead }: P
       accessibilityRole="button"
       accessibilityLabel={`Read article: ${card.title}`}
     >
-      <Card variant="plain" padding="md" style={{ opacity: cardOpacity }}>
+      <Card
+        variant="plain"
+        padding="none"
+        className="overflow-hidden"
+        style={{ opacity: cardOpacity }}
+      >
+        {/* Header image */}
+        <View style={{ aspectRatio: 16 / 9, backgroundColor: colors.primarySoft }}>
+          <Image
+            source={{ uri: `https://picsum.photos/seed/${card.id}/640/360` }}
+            contentFit="cover"
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            transition={200}
+            accessibilityLabel={`Image for: ${card.title}`}
+          />
+        </View>
+
+        <View className="p-4">
         {/* Top row: category + read time */}
         <View className="flex-row items-center justify-between mb-2">
           <View className="flex-row items-center gap-1.5">
@@ -155,17 +190,21 @@ export function FeedCard({ card, isSaved, isRead, onToggleSaved, onMarkRead }: P
             accessibilityLabel={isSaved ? 'Unsave article' : 'Save article'}
             accessibilityState={{ selected: isSaved }}
           >
-            {isSaved ? (
-              <BookmarkCheck size={18} color={colors.primaryDeep} strokeWidth={2} />
-            ) : (
-              <Bookmark size={18} color={colors.textMuted} strokeWidth={1.75} />
-            )}
+            <Animated.View style={bookmarkAnimStyle}>
+              <Bookmark
+                size={18}
+                color={isSaved ? colors.primaryDeep : colors.textMuted}
+                fill={isSaved ? colors.primaryDeep : 'transparent'}
+                strokeWidth={isSaved ? 2 : 1.75}
+              />
+            </Animated.View>
           </Pressable>
 
           <View className="flex-row items-center gap-1">
             <Text className="text-sm font-medium text-primary-deep">Read</Text>
             <ArrowRight size={14} color={colors.primaryDeep} strokeWidth={2} />
           </View>
+        </View>
         </View>
       </Card>
     </AnimatedPressable>

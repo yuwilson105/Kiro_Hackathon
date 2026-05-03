@@ -171,7 +171,7 @@ export default function Splash() {
   }));
 
   if (done) {
-    return <Redirect href={hasOnboarded ? '/(tabs)' : '/(onboarding)/dates'} />;
+    return <Redirect href={hasOnboarded ? '/(tabs)' : '/(onboarding)/name'} />;
   }
 
   return (

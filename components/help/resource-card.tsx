@@ -2,6 +2,7 @@ import { Linking, Platform, Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { MapPin, Phone, ArrowRight } from 'lucide-react-native';
 
+import { ResourceCardHeader } from '@/components/help/resource-card-header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import * as haptics from '@/lib/haptics';
@@ -9,7 +10,6 @@ import { spring } from '@/lib/motion';
 import { colors } from '@/lib/theme';
 import type { Resource, ResourceCategory } from '@/types/resource';
 
-// Category label + soft-bg color mapping per Leader 06 § 9
 const CATEGORY_LABEL: Record<ResourceCategory, string> = {
   housing: 'Housing',
   food: 'Food',
@@ -19,30 +19,6 @@ const CATEGORY_LABEL: Record<ResourceCategory, string> = {
   healthcare: 'Healthcare',
   documents: 'Documents',
   financial: 'Financial',
-};
-
-// Text color token for each category label eyebrow
-const CATEGORY_TEXT: Record<ResourceCategory, string> = {
-  housing: colors.primaryDeep,
-  food: colors.accentDeep,
-  jobs: colors.successDeep,
-  legal: colors.danger,
-  'mental-health': colors.primary,
-  healthcare: colors.primaryDeep,
-  documents: colors.textMuted,
-  financial: colors.accent,
-};
-
-// Very-light tint behind the label pill
-const CATEGORY_BG: Record<ResourceCategory, string> = {
-  housing: colors.surfaceDeep,
-  food: colors.accentSoft,
-  jobs: '#DFF0D8',
-  legal: '#F7E5E5',
-  'mental-health': '#EAF2FB',
-  healthcare: colors.surfaceDeep,
-  documents: '#F2F4F6',
-  financial: colors.accentSoft,
 };
 
 function openMaps(resource: Resource) {
@@ -79,126 +55,89 @@ export function ResourceCard({ item }: Props) {
 
   const accessLabel = `${item.name}, ${CATEGORY_LABEL[item.category]}, ${item.description}`;
 
+  const metaLine = [item.hours, item.slidingScale ? 'Sliding scale' : null]
+    .filter(Boolean)
+    .join('  ·  ');
+
   return (
     <Card
       variant="plain"
-      padding="md"
-      className="rounded-2xl"
+      padding="none"
+      className="rounded-2xl overflow-hidden"
       accessible={true}
       accessibilityLabel={accessLabel}
     >
-      {/* Top row: name + felon-friendly badge */}
-      <View className="flex-row items-start justify-between gap-3">
+      <ResourceCardHeader resource={item} />
+
+      <View className="p-4">
+        {/* Title — eyebrow dropped now that the image carries category meaning */}
         <Text
-          className="text-base font-medium text-text flex-1 flex-shrink leading-6"
+          className="text-lg font-medium text-text leading-6"
           importantForAccessibility="no"
         >
           {item.name}
         </Text>
-        {item.felonFriendly ? (
-          <View
-            style={{ backgroundColor: '#DFF0D8', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}
-            importantForAccessibility="no"
-          >
-            <Text style={{ color: colors.successDeep, fontSize: 10, fontWeight: '500', letterSpacing: 0.3 }}>
-              Felon-friendly
-            </Text>
-          </View>
-        ) : null}
-      </View>
 
-      {/* Category pill */}
-      <View
-        style={{
-          alignSelf: 'flex-start',
-          marginTop: 6,
-          borderRadius: 999,
-          paddingHorizontal: 10,
-          paddingVertical: 2,
-          backgroundColor: CATEGORY_BG[item.category],
-        }}
-        importantForAccessibility="no"
-      >
+        {/* Description */}
         <Text
-          style={{
-            color: CATEGORY_TEXT[item.category],
-            fontSize: 10,
-            fontWeight: '500',
-            textTransform: 'uppercase',
-            letterSpacing: 0.6,
-          }}
+          className="text-sm text-text-muted leading-5 mt-2"
+          importantForAccessibility="no"
         >
-          {CATEGORY_LABEL[item.category]}
+          {item.description}
         </Text>
-      </View>
 
-      {/* Description */}
-      <Text
-        className="text-sm text-text-muted leading-5 mt-2"
-        importantForAccessibility="no"
-      >
-        {item.description}
-      </Text>
-
-      {/* Address row */}
-      <AnimatedPressable
-        style={mapsStyle}
-        onPressIn={() => { mapsScale.value = withSpring(0.97, spring.press); }}
-        onPressOut={() => { mapsScale.value = withSpring(1, spring.press); }}
-        onPress={() => openMaps(item)}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel={`Get directions to ${item.name} at ${item.address}`}
-        className="flex-row items-start gap-2 mt-3"
-      >
-        <MapPin size={14} color={colors.primaryDeep} strokeWidth={2} style={{ marginTop: 2 }} />
-        <Text className="text-sm flex-1 flex-shrink leading-5" style={{ color: colors.primaryDeep }}>
-          {item.address}, {item.city}, {item.state}
-        </Text>
-      </AnimatedPressable>
-
-      {/* Phone row */}
-      <AnimatedPressable
-        style={phoneStyle}
-        onPressIn={() => { phoneScale.value = withSpring(0.97, spring.press); }}
-        onPressOut={() => { phoneScale.value = withSpring(1, spring.press); }}
-        onPress={() => openPhone(item)}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel={`Call ${item.name} at ${item.phone}`}
-        className="flex-row items-center gap-2 mt-2"
-      >
-        <Phone size={14} color={colors.primaryDeep} strokeWidth={2} />
-        <Text className="text-sm" style={{ color: colors.primaryDeep }}>
-          {item.phone}
-        </Text>
-      </AnimatedPressable>
-
-      {/* Hours */}
-      {item.hours ? (
-        <Text className="text-xs text-text-muted mt-2" importantForAccessibility="no">
-          {item.hours}
-        </Text>
-      ) : null}
-
-      {/* Sliding scale note */}
-      {item.slidingScale ? (
-        <Text className="text-xs text-text-muted mt-1" importantForAccessibility="no">
-          Sliding scale fees
-        </Text>
-      ) : null}
-
-      {/* Get directions button */}
-      <View className="mt-3">
-        <Button
-          label="Get directions"
-          variant="outline"
-          size="sm"
+        {/* Address row — stays linked (primary action) */}
+        <AnimatedPressable
+          style={mapsStyle}
+          onPressIn={() => { mapsScale.value = withSpring(0.97, spring.press); }}
+          onPressOut={() => { mapsScale.value = withSpring(1, spring.press); }}
           onPress={() => openMaps(item)}
-          trailingIcon={<ArrowRight size={14} color={colors.text} strokeWidth={2} />}
+          hitSlop={8}
+          accessibilityRole="button"
           accessibilityLabel={`Get directions to ${item.name} at ${item.address}`}
-          style={{ alignSelf: 'flex-start' }}
-        />
+          className="flex-row items-start gap-2 mt-3"
+        >
+          <MapPin size={14} color={colors.primaryDeep} strokeWidth={2} style={{ marginTop: 2 }} />
+          <Text className="text-sm flex-1 flex-shrink leading-5" style={{ color: colors.primaryDeep }}>
+            {item.address}, {item.city}, {item.state}
+          </Text>
+        </AnimatedPressable>
+
+        {/* Phone row — de-linked: muted icon + body text, still tappable */}
+        <AnimatedPressable
+          style={phoneStyle}
+          onPressIn={() => { phoneScale.value = withSpring(0.97, spring.press); }}
+          onPressOut={() => { phoneScale.value = withSpring(1, spring.press); }}
+          onPress={() => openPhone(item)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`Call ${item.name} at ${item.phone}`}
+          className="flex-row items-center gap-2 mt-2"
+        >
+          <Phone size={14} color={colors.textMuted} strokeWidth={2} />
+          <Text className="text-sm text-text">
+            {item.phone}
+          </Text>
+        </AnimatedPressable>
+
+        {/* Meta line — hours + sliding-scale combined with middot */}
+        {metaLine ? (
+          <Text className="text-xs text-text-muted mt-3" importantForAccessibility="no">
+            {metaLine}
+          </Text>
+        ) : null}
+
+        {/* Get directions button — full-width terminal action */}
+        <View className="mt-4">
+          <Button
+            label="Get directions"
+            variant="outline"
+            size="sm"
+            onPress={() => openMaps(item)}
+            trailingIcon={<ArrowRight size={14} color={colors.text} strokeWidth={2} />}
+            accessibilityLabel={`Get directions to ${item.name} at ${item.address}`}
+          />
+        </View>
       </View>
     </Card>
   );

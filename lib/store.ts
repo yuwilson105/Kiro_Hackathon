@@ -31,7 +31,9 @@ type State = {
   resetOnboarding: () => void;
   toggleStepInProgress: (stepId: string) => void;
   completeStep: (stepId: string) => void;
+  setStepStatus: (stepId: string, status: 'pending' | 'in-progress' | 'complete') => void;
   registerMood: (entry: MoodEntry) => void;
+  setStreak: (current: number, lastCheckinDate?: string | null) => void;
   markCheckinShown: (date: string) => void;
   dismissMoodCheck: () => void;
   toggleFeedSaved: (id: string) => void;
@@ -90,6 +92,23 @@ export const useStore = create<State>()(
           delete inProgressSteps[stepId];
           return { completedSteps, inProgressSteps };
         }),
+      setStepStatus: (stepId, status) =>
+        set((s) => {
+          const inProgressSteps = { ...s.inProgressSteps };
+          const completedSteps = { ...s.completedSteps };
+          delete inProgressSteps[stepId];
+          delete completedSteps[stepId];
+          if (status === 'in-progress') inProgressSteps[stepId] = true;
+          if (status === 'complete') completedSteps[stepId] = todayISO();
+          return { inProgressSteps, completedSteps };
+        }),
+      setStreak: (current, lastCheckinDate) =>
+        set((s) => ({
+          streak: {
+            current,
+            lastCheckinDate: lastCheckinDate ?? s.streak.lastCheckinDate ?? todayISO(),
+          },
+        })),
       registerMood: (entry) =>
         set((s) => {
           const history = s.moodHistory.filter((m) => m.date !== entry.date);

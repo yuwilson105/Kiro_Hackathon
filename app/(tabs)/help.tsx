@@ -1,6 +1,6 @@
-import { FlashList, type ListRenderItem } from '@shopify/flash-list';
+import { FlashList, type FlashListRef, type ListRenderItem } from '@shopify/flash-list';
 import { Search, X } from 'lucide-react-native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Pressable, Text, TextInput, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
@@ -51,9 +51,29 @@ function SkeletonCard() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
+// mulberry32 — tiny seeded PRNG, returns [0, 1).
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Fisher-Yates seeded shuffle. Returns a new array; does not mutate input.
+function shuffleSeeded<T>(arr: readonly T[], seed: number): T[] {
+  const out = arr.slice();
+  const rand = mulberry32(seed);
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 export default function HelpScreen() {
   const profile = useStore((s) => s.profile);
   const [query, setQuery] = useState('');
@@ -61,6 +81,15 @@ export default function HelpScreen() {
   const [resourceList, setResourceList] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const reduced = useReducedMotion();
+  const listRef = useRef<FlashListRef<Resource>>(null);
+
+  // Shuffle once per mount. Math.random in useMemo([]) runs exactly once and
+  // the result is frozen across re-renders, so typing in the search box
+  // doesn't reshuffle the All feed.
+  const shuffledResources = useMemo<Resource[]>(
+    () => shuffleSeeded(resources, (Math.random() * 0xffffffff) >>> 0),
+    [],
+  );
 
   useEffect(() => {
     findResourcesFromAPI(profile).then((result) => {
@@ -71,7 +100,10 @@ export default function HelpScreen() {
 
   const filtered = useMemo<Resource[]>(() => {
     const q = query.trim().toLowerCase();
-    return resourceList.filter((r) => {
+    // All view uses the shuffled mix; category-specific views use the original
+    // ordered list so within-category browsing stays predictable.
+    const source = category === 'all' ? shuffledResources : resources;
+    return source.filter((r) => {
       const matchesCat = category === 'all' || r.category === category;
       if (!matchesCat) return false;
       if (!q) return true;
@@ -80,7 +112,12 @@ export default function HelpScreen() {
         r.description.toLowerCase().includes(q)
       );
     });
-  }, [query, category, resourceList]);
+  }, [query, category, shuffledResources]);
+
+  // Snap to top whenever the category changes — instant, no animated scroll.
+  useEffect(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [category]);
 
   const renderItem = useCallback<ListRenderItem<Resource>>(({ item }) => {
     return <ResourceCard item={item} />;
@@ -192,10 +229,12 @@ export default function HelpScreen() {
       {!loading && filtered.length === 0 ? (
         <View className="flex-1 items-center justify-center px-10 gap-4">
           <Text className="text-base font-medium text-text text-center">
-            We're having trouble finding resources right now.
+            {query.trim()
+              ? `No help matches "${query.trim()}".`
+              : 'Nothing matches this filter.'}
           </Text>
           <Text className="text-sm text-text-muted text-center leading-5">
-            Try calling 211. They can connect you to anything in your area.
+            Try a different word or category. 211 can route you to anything nearby.
           </Text>
           <Button
             label="Call 211"
@@ -204,23 +243,26 @@ export default function HelpScreen() {
             onPress={() => Linking.openURL('tel:211')}
           />
         </View>
-      ) : null}
-
-      {!loading && filtered.length > 0 ? (
-        <FlashList
-          {...({
-            data: filtered,
-            renderItem,
-            keyExtractor,
-            estimatedItemSize: 180,
-            contentContainerStyle: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 100 },
-            ItemSeparatorComponent,
-            CellRendererComponent,
-            keyboardShouldPersistTaps: 'handled',
-            keyboardDismissMode: 'on-drag',
-          } as any)}
-        />
-      ) : null}
+      ) : (
+        // FlashList v2 needs an explicit flex-1 container — without it the
+        // list collapses to zero height and the cards render off-screen,
+        // which is why selecting any category was leaving a blank page.
+        <View style={{ flex: 1 }}>
+          <FlashList
+            ref={listRef}
+            data={filtered}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            estimatedItemSize={180}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 100 }}
+            ItemSeparatorComponent={ItemSeparatorComponent}
+            CellRendererComponent={CellRendererComponent}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+      )}
     </View>
   );
 }

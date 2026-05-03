@@ -1,30 +1,25 @@
+import { useRouter } from 'expo-router';
+import { Check, Circle, Lock, MapPin, Phone } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Linking, Pressable, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import {
-  Check,
-  Circle,
-  Lock,
-  MapPin,
-  Phone,
-  Sparkles,
-} from 'lucide-react-native';
-import { useRouter } from 'expo-router';
 
-import { Button } from '@/components/ui/button';
 import { LearnAccordion } from '@/components/plan/learn-accordion';
+import { StepCardHeader } from '@/components/plan/step-card-header';
+import { StepStatusSlider } from '@/components/plan/step-status-slider';
 import * as haptics from '@/lib/haptics';
 import { spring } from '@/lib/motion';
-import { colors } from '@/lib/theme';
 import { useStore } from '@/lib/store';
+import { colors } from '@/lib/theme';
 import type { PlanStep, StepStatus } from '@/types/plan';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const AnimatedView = Animated.View;
 
 type Props = {
   step: PlanStep;
@@ -65,8 +60,7 @@ function StatusDot({ status }: { status: StepStatus }) {
 export function StepCard({ step, status, prereqTitle }: Props) {
   const router = useRouter();
   const reduced = useReducedMotion();
-  const completeStep = useStore((s) => s.completeStep);
-  const toggleStepInProgress = useStore((s) => s.toggleStepInProgress);
+  const setStepStatus = useStore((s) => s.setStepStatus);
   const setMilestoneUnlocked = useStore((s) => s.setMilestoneUnlocked);
 
   const scale = useSharedValue(1);
@@ -104,15 +98,9 @@ export function StepCard({ step, status, prereqTitle }: Props) {
     }
   }
 
-  function handleStart() {
-    haptics.tap();
-    toggleStepInProgress(step.id);
-  }
-
-  function handleMarkDone() {
-    haptics.success();
-    completeStep(step.id);
-    if (step.isMilestone) {
+  function handleStatusChange(next: 'pending' | 'in-progress' | 'complete') {
+    setStepStatus(step.id, next);
+    if (next === 'complete' && step.isMilestone) {
       setMilestoneUnlocked(step.id);
       router.push('/milestone');
     }
@@ -133,6 +121,137 @@ export function StepCard({ step, status, prereqTitle }: Props) {
 
   const combinedA11yLabel = `Step: ${step.title}, ${status}, ${step.description}`;
 
+  const cardContent = (
+    <View
+      className="rounded-2xl border border-border bg-bg overflow-hidden"
+      style={[
+        isComplete && {
+          borderLeftWidth: 3,
+          borderLeftColor: colors.success,
+          opacity: 0.9,
+        },
+      ]}
+    >
+      {/* Category header banner — replaces the small AI sparkle iconography */}
+      {!isLocked && (
+        <StepCardHeader
+          stepId={step.id}
+          category={step.category}
+          isMilestone={step.isMilestone}
+        />
+      )}
+
+      <View className="px-4 pt-3 pb-4 gap-3">
+        {/* Top row: status indicator + title */}
+        <View className="flex-row items-start gap-3" importantForAccessibility="no">
+          <View className="mt-0.5" accessibilityElementsHidden importantForAccessibility="no">
+            <StatusDot status={status} />
+          </View>
+          <Text className="flex-1 text-base font-medium text-text leading-6" importantForAccessibility="no">
+            {step.title}
+          </Text>
+        </View>
+
+        {/* Description */}
+        <Text
+          className="text-sm font-sans text-text-muted leading-5"
+          importantForAccessibility="no"
+        >
+          {step.description}
+        </Text>
+
+        {/* Why now — without the sparkle icon */}
+        {!!step.whyNow && (
+          <Text
+            className="text-xs font-sans text-text-muted leading-5"
+            importantForAccessibility="no"
+          >
+            {step.whyNow}
+          </Text>
+        )}
+
+        {/* Resource card */}
+        {!!step.resourceName && (
+          <View className="rounded-xl border border-border-subtle bg-surface p-3 gap-1.5 mt-1">
+            <Text className="text-sm font-medium text-text">{step.resourceName}</Text>
+            {!!step.resourceAddress && (
+              <Pressable
+                onPress={openMaps}
+                hitSlop={8}
+                accessibilityRole="link"
+                accessibilityLabel={`Directions to ${step.resourceName}`}
+                className="flex-row items-center gap-1.5"
+              >
+                <MapPin size={13} color={colors.primaryDeep} strokeWidth={2} />
+                <Text className="text-sm font-sans flex-1" style={{ color: colors.primaryDeep }}>
+                  {step.resourceAddress}
+                </Text>
+              </Pressable>
+            )}
+            {!!step.resourcePhone && (
+              <Pressable
+                onPress={openPhone}
+                hitSlop={8}
+                accessibilityRole="link"
+                accessibilityLabel={`Call ${step.resourceName} at ${step.resourcePhone}`}
+                className="flex-row items-center gap-1.5"
+              >
+                <Phone size={13} color={colors.primaryDeep} strokeWidth={2} />
+                <Text className="text-sm font-sans" style={{ color: colors.primaryDeep }}>
+                  {step.resourcePhone}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+
+        {/* Learn accordion */}
+        {!!step.learnCard && <LearnAccordion learnCard={step.learnCard} />}
+
+        {/* Locked tooltip */}
+        {!!lockedMsg && (
+          <View
+            className="rounded-xl bg-surface border border-border-subtle px-3 py-2 mt-1"
+            accessibilityLiveRegion="polite"
+            accessible
+            accessibilityLabel={lockedMsg}
+          >
+            <Text className="text-xs font-sans text-text-muted">{lockedMsg}</Text>
+          </View>
+        )}
+
+        {/* Status slider (free movement between Pending / In progress / Done).
+            Locked steps render a static label instead. */}
+        <View className="mt-1">
+          {status === 'locked' ? (
+            <View className="flex-row items-center gap-1.5 self-end px-3 py-2 rounded-pill">
+              <Lock size={13} color={colors.textSubtle} strokeWidth={2} />
+              <Text className="text-sm font-sans text-text-subtle">Locked</Text>
+            </View>
+          ) : (
+            <StepStatusSlider
+              value={status}
+              onChange={handleStatusChange}
+              stepTitle={step.title}
+            />
+          )}
+        </View>
+      </View>
+    </View>
+  );
+
+  if (Platform.OS === 'web') {
+    return (
+      <AnimatedView
+        style={animStyle}
+        accessible
+        accessibilityLabel={combinedA11yLabel}
+      >
+        {cardContent}
+      </AnimatedView>
+    );
+  }
+
   return (
     <AnimatedPressable
       style={animStyle}
@@ -145,133 +264,7 @@ export function StepCard({ step, status, prereqTitle }: Props) {
       accessibilityState={{ disabled: isLocked }}
       hitSlop={4}
     >
-      <View
-        className="rounded-2xl border border-border bg-bg"
-        style={[
-          isComplete && {
-            borderLeftWidth: 3,
-            borderLeftColor: colors.success,
-            opacity: 0.85,
-          },
-        ]}
-      >
-        <View className="p-4 gap-3">
-          {/* Top row: status indicator + title */}
-          <View className="flex-row items-start gap-3" importantForAccessibility="no">
-            <View className="mt-0.5" accessibilityElementsHidden importantForAccessibility="no">
-              <StatusDot status={status} />
-            </View>
-            <Text className="flex-1 text-base font-medium text-text leading-6" importantForAccessibility="no">
-              {step.title}
-            </Text>
-          </View>
-
-          {/* Description */}
-          <Text
-            className="text-sm font-sans text-text-muted leading-5"
-            importantForAccessibility="no"
-          >
-            {step.description}
-          </Text>
-
-          {/* Why now */}
-          {!!step.whyNow && (
-            <View className="flex-row items-start gap-1.5 mt-1" importantForAccessibility="no">
-              <View className="mt-0.5" accessibilityElementsHidden importantForAccessibility="no">
-                <Sparkles size={12} color={colors.textMuted} strokeWidth={1.5} />
-              </View>
-              <Text className="flex-1 text-xs font-sans text-text-muted leading-5">
-                {step.whyNow}
-              </Text>
-            </View>
-          )}
-
-          {/* Resource card */}
-          {!!step.resourceName && (
-            <View className="rounded-xl border border-border-subtle bg-surface p-3 gap-1.5 mt-1">
-              <Text className="text-sm font-medium text-text">{step.resourceName}</Text>
-              {!!step.resourceAddress && (
-                <Pressable
-                  onPress={openMaps}
-                  hitSlop={8}
-                  accessibilityRole="link"
-                  accessibilityLabel={`Directions to ${step.resourceName}`}
-                  className="flex-row items-center gap-1.5"
-                >
-                  <MapPin size={13} color={colors.primaryDeep} strokeWidth={2} />
-                  <Text className="text-sm font-sans flex-1" style={{ color: colors.primaryDeep }}>
-                    {step.resourceAddress}
-                  </Text>
-                </Pressable>
-              )}
-              {!!step.resourcePhone && (
-                <Pressable
-                  onPress={openPhone}
-                  hitSlop={8}
-                  accessibilityRole="link"
-                  accessibilityLabel={`Call ${step.resourceName} at ${step.resourcePhone}`}
-                  className="flex-row items-center gap-1.5"
-                >
-                  <Phone size={13} color={colors.primaryDeep} strokeWidth={2} />
-                  <Text className="text-sm font-sans" style={{ color: colors.primaryDeep }}>
-                    {step.resourcePhone}
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          )}
-
-          {/* Learn accordion */}
-          {!!step.learnCard && <LearnAccordion learnCard={step.learnCard} />}
-
-          {/* Locked tooltip */}
-          {!!lockedMsg && (
-            <View
-              className="rounded-xl bg-surface border border-border-subtle px-3 py-2 mt-1"
-              accessibilityLiveRegion="polite"
-              accessible
-              accessibilityLabel={lockedMsg}
-            >
-              <Text className="text-xs font-sans text-text-muted">{lockedMsg}</Text>
-            </View>
-          )}
-
-          {/* Bottom-right action */}
-          <View className="items-end mt-1">
-            {status === 'pending' && (
-              <Button
-                label="Start"
-                variant="outline"
-                size="sm"
-                onPress={handleStart}
-                accessibilityLabel={`Start ${step.title}`}
-              />
-            )}
-            {status === 'in-progress' && (
-              <Button
-                label="Mark done"
-                variant="primary"
-                size="sm"
-                onPress={handleMarkDone}
-                accessibilityLabel={`Mark ${step.title} as done`}
-              />
-            )}
-            {status === 'complete' && (
-              <View className="flex-row items-center gap-1.5 px-3 py-2 rounded-pill bg-surface">
-                <Check size={13} color={colors.successDeep} strokeWidth={2.5} />
-                <Text className="text-sm font-medium" style={{ color: colors.successDeep }}>
-                  Done
-                </Text>
-              </View>
-            )}
-            {status === 'locked' && (
-              <View className="flex-row items-center gap-1.5 px-3 py-2 rounded-pill">
-                <Text className="text-sm font-sans text-text-subtle">Locked</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
+      {cardContent}
     </AnimatedPressable>
   );
 }

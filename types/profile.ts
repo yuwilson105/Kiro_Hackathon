@@ -34,16 +34,21 @@ export type PriorityKey =
   | 'staying-out';
 
 export type InterestKey =
-  | 'lgbtq'
+  | 'civil-rights'
   | 'tech'
+  | 'ai'
+  | 'phones'
   | 'politics'
+  | 'voting'
   | 'finance'
   | 'social-media'
   | 'music-entertainment'
   | 'mental-health-awareness'
+  | 'healthcare'
   | 'criminal-justice'
-  | 'womens-rights'
   | 'immigration'
+  | 'housing'
+  | 'jobs'
   | 'climate'
   | 'sports';
 

@@ -11,20 +11,50 @@ import type { InterestKey } from '@/types/profile';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-// Tighter labels so the wrap-grid sits in clean rows on a phone
+// Mix of single-word pills (preferred, pill grid reads cleanest tight) and
+// the few descriptive labels that earn their length ("Justice reform",
+// "Mental health", "Civil rights").
 const PILLS: { label: string; key: InterestKey }[] = [
   { label: 'Tech', key: 'tech' },
-  { label: 'LGBTQ+ rights', key: 'lgbtq' },
-  { label: 'Sports', key: 'sports' },
-  { label: 'Politics', key: 'politics' },
-  { label: 'Mental health', key: 'mental-health-awareness' },
+  { label: 'AI', key: 'ai' },
+  { label: 'Phones', key: 'phones' },
+  { label: 'Jobs', key: 'jobs' },
+  { label: 'Housing', key: 'housing' },
+  { label: 'Healthcare', key: 'healthcare' },
   { label: 'Finance', key: 'finance' },
-  { label: 'Climate', key: 'climate' },
-  { label: 'Music & TV', key: 'music-entertainment' },
+  { label: 'Politics', key: 'politics' },
+  { label: 'Voting', key: 'voting' },
   { label: 'Justice reform', key: 'criminal-justice' },
-  { label: 'Social media', key: 'social-media' },
-  { label: "Women's rights", key: 'womens-rights' },
+  { label: 'Mental health', key: 'mental-health-awareness' },
+  { label: 'Civil rights', key: 'civil-rights' },
   { label: 'Immigration', key: 'immigration' },
+  { label: 'Climate', key: 'climate' },
+  { label: 'Social media', key: 'social-media' },
+  { label: 'Music & TV', key: 'music-entertainment' },
+  { label: 'Sports', key: 'sports' },
+];
+
+const PILL_BY_KEY: Record<InterestKey, { label: string; key: InterestKey }> =
+  Object.fromEntries(PILLS.map((p) => [p.key, p])) as Record<
+    InterestKey,
+    { label: string; key: InterestKey }
+  >;
+
+// Hand-tuned row buckets so widths balance and no pill orphans on its own
+// row. Each row renders with justifyContent: 'space-between' so spacing
+// reads as intentional asymmetry instead of ragged-right. Rows of 1 pill
+// fall back to flex-start so the lone pill doesn't stretch.
+const ROWS: InterestKey[][] = [
+  ['tech', 'ai', 'jobs', 'healthcare'],
+  ['phones', 'voting', 'climate', 'immigration'],
+  ['housing', 'finance', 'politics', 'sports'],
+  [
+    'civil-rights',
+    'mental-health-awareness',
+    'criminal-justice',
+    'music-entertainment',
+    'social-media',
+  ],
 ];
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
@@ -64,17 +94,40 @@ export default function InterestsScreen() {
       featuredCta
     >
       <View accessible={false}>
-        <View className="flex-row flex-wrap gap-2">
-          {PILLS.map(({ label, key }, i) => (
-            <Animated.View key={key} entering={pillEntering(i)}>
-              <PillButton
-                label={label}
-                selected={interests.includes(key)}
-                onPress={() => toggle(key)}
-                accessibilityLabel={`${label}${interests.includes(key) ? ', selected' : ''}`}
-              />
-            </Animated.View>
-          ))}
+        <View style={{ rowGap: 12 }}>
+          {ROWS.map((row, r) => {
+            const startIdx = ROWS.slice(0, r).reduce(
+              (sum, prev) => sum + prev.length,
+              0,
+            );
+            return (
+              <View
+                key={r}
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  columnGap: 10,
+                  rowGap: 12,
+                  justifyContent: row.length > 1 ? 'space-between' : 'flex-start',
+                }}
+              >
+                {row.map((key, i) => {
+                  const { label } = PILL_BY_KEY[key];
+                  return (
+                    <Animated.View key={key} entering={pillEntering(startIdx + i)}>
+                      <PillButton
+                        label={label}
+                        size="lg"
+                        selected={interests.includes(key)}
+                        onPress={() => toggle(key)}
+                        accessibilityLabel={`${label}${interests.includes(key) ? ', selected' : ''}`}
+                      />
+                    </Animated.View>
+                  );
+                })}
+              </View>
+            );
+          })}
         </View>
       </View>
     </OnboardingShell>

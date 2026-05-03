@@ -6,14 +6,17 @@ const ConvictionTypeSchema = z.enum([
   'non-violent',
   'drug-related',
   'violent',
+  'other',
   'rather-not-say',
 ]);
 
 const EducationLevelSchema = z.enum([
+  'less-than-high-school',
   'some-high-school',
   'high-school-diploma',
   'some-college',
   'college-degree',
+  'other',
 ]);
 
 const WorkTypeSchema = z.enum([
@@ -33,6 +36,7 @@ const HousingStatusSchema = z.enum([
   'family-friends',
   'own-place',
   'no-housing',
+  'other',
 ]);
 
 const IdStatusSchema = z.enum(['yes', 'no', 'expired']);
@@ -49,16 +53,21 @@ const PriorityKeySchema = z.enum([
 ]);
 
 const InterestKeySchema = z.enum([
-  'lgbtq',
+  'civil-rights',
   'tech',
+  'ai',
+  'phones',
   'politics',
+  'voting',
   'finance',
   'social-media',
   'music-entertainment',
   'mental-health-awareness',
+  'healthcare',
   'criminal-justice',
-  'womens-rights',
   'immigration',
+  'housing',
+  'jobs',
   'climate',
   'sports',
 ]);
@@ -76,9 +85,13 @@ export const ProfileSchema = z.object({
   gapEnd: z.string().nullable(),
   city: CitySchema.nullable(),
   conviction: ConvictionTypeSchema.nullable(),
+  convictionDetails: z.string().default(''),
   education: EducationLevelSchema.nullable(),
+  educationOther: z.string().default(''),
   workHistory: z.array(WorkTypeSchema),
+  workOther: z.string().default(''),
   housing: HousingStatusSchema.nullable(),
+  housingOther: z.string().default(''),
   idStatus: IdStatusSchema.nullable(),
   priorities: z.array(PriorityKeySchema),
   interests: z.array(InterestKeySchema),
@@ -102,7 +115,7 @@ export const CompanionRequestSchema = z.object({
  * Returns the parsed, typed result on success.
  * Throws an error with `status: 400` and a descriptive message on failure.
  */
-export function validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
+export function validate<T>(schema: z.ZodType<T, z.ZodTypeDef, unknown>, data: unknown): T {
   const result = schema.safeParse(data);
   if (result.success) {
     return result.data;

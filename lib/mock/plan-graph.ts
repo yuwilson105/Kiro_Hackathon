@@ -1,14 +1,76 @@
 import type { PlanStep } from '@/types/plan';
 
 /**
+ * Per-step description overrides. Lives at the top so descriptions stay easy
+ * to edit without scrolling the whole DAG. Anything missing here falls back
+ * to the inline description on the step itself.
+ */
+const NEW_DESCRIPTIONS: Record<string, string> = {
+  'visit-211-resource-center':
+    'Dial 211 from any phone or walk into Project Homeless Connect at 123 Main St to get a printed county-specific list of shelters, food pantries, and re-entry case managers. The line is free, confidential, and answers 24/7. Ask the intake worker for a same-day warm handoff to a case manager rather than just a referral sheet.',
+  'get-birth-certificate':
+    'Order a certified copy from the county clerk-recorder where you were born using form VS 111 (or your state equivalent). It costs around $29 in California, takes 2-4 weeks by mail, or same-day if you go in person with a photo ID. This is the foundation document: SSA, DMV, and most benefit offices will not process you without it.',
+  'get-social-security-card':
+    'Walk into the SSA field office with form SS-5, your birth certificate, and your CDCR release paperwork (CDC 1515 or equivalent). No appointment needed for replacement cards, but expect a 1-2 hour wait. The card arrives by mail in 10-14 business days; ask the clerk for a printed receipt with your SSN so you can keep moving on benefits and ID.',
+  'find-temporary-housing':
+    "Call Community Housing Partnership's intake line by 4pm to be placed on tonight's bed list, or go in person before noon for the best shot at a private room. Bring your release paperwork and any TB clearance from CDCR. Most beds are 30-90 day stays and require nightly check-in plus a sobriety agreement.",
+  'contact-halfway-house-counselor':
+    'Book your intake meeting within 72 hours of arrival: bring your conditions of parole, any prescription list, and your case plan from CDCR. The counsellor signs off on curfew, work passes, and program attendance, so you will see them weekly. Treat this meeting as the gate that opens every other resource the house funds.',
+  'reach-out-to-family':
+    'Make one phone call or write one letter this week, even if it is short. Lead with your release date, where you are staying, and a working number to reach you back; skip apologies and promises until you have earned a second conversation. The first contact is logistical, not emotional.',
+  'attend-aa-na-meeting':
+    'Call the SF AA Central Office at (415) 555-0104 for the daily meeting list, or pull it from aasf.org/meetings. Drop-in meetings run morning, noon, and night across the city, no sign-up or fee. Get a sponsor within your first month: that one relationship does more for relapse risk than any other single step.',
+  'get-state-id':
+    'Book a DMV appointment online (walk-ins routinely wait 4+ hours) and bring your birth certificate, Social Security card, and proof of California address (a halfway-house letter on letterhead works). The fee is $35, waived if you have a CDCR release form dated within the last 90 days. The temporary paper ID is valid the same day; the plastic card arrives in 2-4 weeks.',
+  'apply-medicaid':
+    'Apply at coveredca.com or BenefitsCal.com, or walk into the Human Services Agency at 170 Otis. Returning citizens at $0 income qualify for full-scope Medi-Cal with no premium and usually get a Benefits Identification Card within 10 days. Coverage is retroactive up to 3 months, so submit before you book any appointments.',
+  'enroll-snap-benefits':
+    'File at GetCalFresh.org (15-minute application) or at HSA on Otis. Average benefit for a single adult is around $290/month loaded onto an EBT card. Emergency CalFresh hits within 3 days if you are at zero income; the standard determination takes up to 30 days. Drug-felony exclusion was lifted in California in 2015, so a prior conviction does not bar you.',
+  'mental-health-intake-appointment':
+    "Call Citywide Case Management at (415) 555-0108 to schedule an intake within 7-14 days. Bring your Medi-Cal Benefits Identification Card and a list of any meds you were on inside. The intake is a 60-90 minute assessment that determines whether you're routed to therapy, psychiatry, or intensive case management.",
+  'open-bank-account':
+    'Walk into Mission SF Federal Credit Union with your state ID, Social Security card, and a piece of mail showing your address. Credit unions skip the ChexSystems screen that locks most people out of big banks, and the opening deposit is $5. You leave the same day with a debit card and routing/account numbers ready for direct deposit.',
+  'update-resume':
+    'Sit down with a Goodwill SF re-entry counsellor for a 90-minute working session. Prison work assignments (PIA, kitchen, fire camp) count as real experience: the counsellor will translate them into civilian job titles and quantified bullets. Leave with a one-page PDF, a plain-text version for online forms, and a 30-second answer to "tell me about your gap."',
+  'attend-job-readiness-workshop':
+    'Sign up for the next 2-day workshop at Goodwill SF Career Centre (free, breakfast and lunch included). Day one covers interview practice and your background-disclosure script; day two is direct intros to ban-the-box employers in their hiring pipeline. Bring your résumé, state ID, and a notebook.',
+  'get-osha-10-certification':
+    'Take the 10-hour course online at OSHAEducationCenter.com or ClickSafety (around $60, free through some workforce programs). You can finish across two evenings; the digital wallet card prints immediately and the physical DOL card arrives in 2 weeks. Required by California law for most construction and warehouse jobs.',
+  'apply-first-jobs':
+    'Apply to 5 ban-the-box employers this week: Delancey Street, Goodwill, Recology, Whole Foods, and the City of San Francisco all hire returning citizens openly. Use a real phone number, check email daily, and follow up by phone 48 hours after each application. Expect 2-4 weeks from application to first day on the job.',
+  'first-job':
+    'Read the offer letter twice before signing: confirm the hourly rate, weekly hours, start date, address, and any pre-employment background or drug test. Ask for the offer in writing if you only got it by phone. Tell your parole officer about the offer the same day to avoid any work-pass conflicts.',
+  'enroll-in-ged-program':
+    'Register at SF Adult Education on Eddy St for free GED prep classes that meet evenings and Saturdays. The full HiSET or GED test runs $35-$135 depending on California fee waivers, which most returning citizens qualify for. Plan on 8-16 weeks of classes before you sit the four exam sections.',
+  'reconnect-family':
+    "Set a date, a place, and a time limit (start with 60-90 minutes in a neutral spot like a park or diner). Tell them what you want from the visit before it starts: catching up, meeting a kid, or asking about staying for a weekend. Don't bring up money, custody, or old fights at the first sit-down.",
+  'build-budget':
+    "Book a 1-hour session with a Catholic Charities financial coach (free, no income requirement). Walk in with your last two pay stubs, your halfway-house fees, phone bill, and any restitution or child-support order. You will leave with a one-page budget showing exactly what's left after fixed costs and where the 10% savings transfer comes from.",
+  'apply-secured-credit-card':
+    'Apply at your credit union first: Mission SF and Self-Help both offer secured Visas with no annual fee and a $200 minimum deposit. Online, the Discover it Secured and Capital One Platinum Secured both report to all three bureaus and graduate to unsecured after 7-12 months of on-time payments. Use it for one small recurring charge (phone bill, gas) and pay it off in full every month.',
+  'find-stable-housing':
+    'Bring 2 recent pay stubs, your state ID, and a Community Housing Partnership reference letter to apply for SRO units, BMR rentals, or transitional programs like The Geary. Most landlords want income at 2.5x rent and a 1-month deposit; CHP can broker fee waivers and co-sign with re-entry-friendly landlords. Expect 2-6 weeks from application to keys.',
+  'open-savings-account':
+    'Open a savings account at the same credit union that holds your checking, then set an automatic transfer for the day after each payday: 10% is the goal, $20 is fine to start. Keeping savings at the same institution means transfers are instant and free. Do not order a debit card for this account.',
+  'legal-record-expungement-consult':
+    'Book a free 1-hour consultation with Bay Area Legal Aid: bring your full RAP sheet (request it from the DOJ with form BCIA 8016RR for $25, fee waiver available). Under PC 1203.4, most non-violent felonies and almost all misdemeanors can be dismissed once probation is complete. The attorney will tell you exactly which counts qualify and file the petition for free.',
+  'enroll-in-job-training-program':
+    'Pick one sector and apply through OEWD on South Van Ness: tech (Code Tenderloin, 16 weeks), culinary (Old Skool Cafe, 12 weeks), or construction (CityBuild Academy, 18 weeks). All three pay a stipend during training and place graduates directly with hiring partners. Apply at least 4 weeks before the cohort start date.',
+  'get-driver-license':
+    'Study the California Driver Handbook (free PDF at dmv.ca.gov), book the knowledge test online, and bring your state ID, proof of address, and $41 to the DMV. After passing the written test you get a permit; schedule the behind-the-wheel within 6 months. If you have unpaid traffic tickets or court fines, clear those first or your license will be flagged.',
+  'file-taxes':
+    "Walk into the VITA site at the Main Library with your W-2s, photo ID, Social Security card, and last year's return if you have it. Free tax prep done by IRS-certified volunteers, federal and state filed the same visit. Single filers earning under $18,591 can claim the federal EITC plus the California EITC, which often totals $500-$1,500 refunded.",
+};
+
+/**
  * Static DAG of ~25 life-rebuilding steps for SecondChance.
- * Prerequisites form a real directed acyclic graph — downstream steps will
+ * Prerequisites form a real directed acyclic graph - downstream steps will
  * only appear after their upstream prereqs are complete.
  *
  * Resource details are Bay Area / SF / Oakland organisations with
  * believable mock phone numbers in (415) 555-#### format.
  */
-export const PLAN_GRAPH: PlanStep[] = [
+const RAW_PLAN_GRAPH: PlanStep[] = [
   // ─── WEEK 1 ────────────────────────────────────────────────────────────────
 
   {
@@ -530,3 +592,8 @@ export const PLAN_GRAPH: PlanStep[] = [
     resourcePhone: '(415) 555-0116',
   },
 ];
+
+export const PLAN_GRAPH: PlanStep[] = RAW_PLAN_GRAPH.map((s) => ({
+  ...s,
+  description: NEW_DESCRIPTIONS[s.id] ?? s.description,
+}));

@@ -121,7 +121,7 @@ function MonthYearPickerModal({
           style={[styles.sheet, sheetAnimStyle, { paddingBottom: insets.bottom + 16 }]}
           onPress={(e) => e.stopPropagation()}
         >
-          {/* Drag handle — pan down to dismiss */}
+          {/* Drag handle - pan down to dismiss */}
           <GestureDetector gesture={dismissGesture}>
             <View style={styles.handleArea}>
               <View style={styles.handle} accessibilityElementsHidden importantForAccessibility="no" />
@@ -501,8 +501,8 @@ export default function DatesScreen() {
     <>
       <OnboardingShell
         step={1}
-        header="Let's start with when you were inside."
-        subtext="This helps us understand what changed while you were away."
+        header="When were you in prison?"
+        subtext="This helps us understand what changed while you were gone."
         onContinue={handleContinue}
         continueDisabled={!canContinue}
         hideBack={true}

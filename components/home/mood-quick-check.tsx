@@ -1,10 +1,9 @@
 import { format } from 'date-fns';
 import { Cloud, CloudSun, MessageCircle, SunMedium, X } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import Animated, {
   FadeIn,
-  runOnJS,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -12,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useCompanionAlertStore } from '@/lib/companion-alerts-store';
 import * as haptics from '@/lib/haptics';
 import { ease, spring } from '@/lib/motion';
 import { useStore } from '@/lib/store';
@@ -177,6 +177,7 @@ export function MoodQuickCheck() {
   const moodCheckDismissedDate = useStore((s) => s.moodCheckDismissedDate);
   const dismissMoodCheck = useStore((s) => s.dismissMoodCheck);
   const registerMood = useStore((s) => s.registerMood);
+  const setAlert = useCompanionAlertStore((s) => s.setAlert);
 
   const today = useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);
   const todayEntry = moodHistory.find((m) => m.date === today);
@@ -185,44 +186,64 @@ export function MoodQuickCheck() {
   const [noteText, setNoteText] = useState('');
   const [hidden, setHidden] = useState(false);
   const [animating, setAnimating] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 15000);
+    return () => clearTimeout(t);
+  }, []);
 
   const reduced = useReducedMotion();
   const opacity = useSharedValue(1);
   const scale = useSharedValue(1);
   const translateY = useSharedValue(0);
+  // Constraint for the collapse-on-dismiss animation. Starts large so it doesn't
+  // clip the natural content height, then animates to 0 to make siblings slide
+  // up smoothly per-frame as the flex column re-lays out.
+  const maxHeight = useSharedValue(600);
+  const marginCollapse = useSharedValue(1);
 
   // Run the exit animation, then commit store updates after it finishes.
   const dismissWithAnimation = (afterAnim?: () => void) => {
     if (animating) return;
     setAnimating(true);
 
-    const finalize = () => {
-      // Mark hidden FIRST so the local instance unmounts cleanly,
-      // then commit store updates (mood + dismissed flag).
+    if (reduced) {
       setHidden(true);
       if (afterAnim) afterAnim();
       dismissMoodCheck();
-    };
-
-    if (reduced) {
-      finalize();
       return;
     }
 
-    opacity.value = withTiming(0, { duration: 260, easing: ease.snap });
-    scale.value = withTiming(0.96, { duration: 260, easing: ease.out });
-    translateY.value = withTiming(-6, { duration: 260, easing: ease.out }, (finished) => {
-      if (finished) runOnJS(finalize)();
-    });
+    // UI-thread animation, no completion callback (the runOnJS bridge crash
+    // here was reloading the bundle and snapping the user back to the splash).
+    opacity.value = withTiming(0, { duration: 220, easing: ease.snap });
+    scale.value = withTiming(0.96, { duration: 220, easing: ease.out });
+    translateY.value = withTiming(-6, { duration: 220, easing: ease.out });
+    // Collapse the card's height + outer margin slightly later so the fade leads
+    // and the reflow follows — feels intentional, not jumpy.
+    maxHeight.value = withTiming(0, { duration: 360, easing: ease.out });
+    marginCollapse.value = withTiming(0, { duration: 360, easing: ease.out });
+
+    // Commit store + state changes from the JS thread on its own timer.
+    setTimeout(() => {
+      setHidden(true);
+      if (afterAnim) afterAnim();
+      dismissMoodCheck();
+    }, 380);
   };
 
   const logQuickMood = (mood: Mood) => {
     dismissWithAnimation(() => registerMood({ date: today, mood }));
+    if (mood === 'struggling') setAlert('struggling-mood');
+    setDismissed(true);
   };
 
   const handleTalkItOut = () => {
     haptics.select();
     setExpanded(true);
+    setDismissed(true);
   };
 
   const handleSend = () => {
@@ -230,6 +251,7 @@ export function MoodQuickCheck() {
     if (note.length < 2) return;
     haptics.select();
     dismissWithAnimation(() => registerMood({ date: today, mood: 'need-talk', note }));
+    setDismissed(true);
   };
 
   const handleClose = () => {
@@ -244,12 +266,17 @@ export function MoodQuickCheck() {
   const cardAnimStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ scale: scale.value }, { translateY: translateY.value }],
+    maxHeight: maxHeight.value,
+    // Collapse the bottom margin in lockstep with maxHeight so the
+    // gap-5 between siblings doesn't leave a residual stripe of empty space.
+    marginBottom: -20 * (1 - marginCollapse.value),
   }));
 
   const sendDisabled = noteText.trim().length < 2;
 
   // Hide if dismissed for today, mood already logged, or local hidden flag set.
   // Must come AFTER all hooks above to satisfy the Rules of Hooks.
+  if (!visible || dismissed) return null;
   if (hidden || moodCheckDismissedDate === today || todayEntry) return null;
 
   return (
@@ -264,6 +291,7 @@ export function MoodQuickCheck() {
           padding: 16,
           width: '100%',
           position: 'relative',
+          overflow: 'hidden',
         },
       ]}
     >
@@ -272,7 +300,7 @@ export function MoodQuickCheck() {
       {/* Eyebrow + question (left padding to clear the X) */}
       <View
         accessible
-        accessibilityLabel="Today's pulse — how are you feeling?"
+        accessibilityLabel="Today's pulse. How are you feeling?"
         style={{ paddingLeft: 32 }}
       >
         <Text
@@ -312,7 +340,7 @@ export function MoodQuickCheck() {
         ))}
       </View>
 
-      {/* Expanded text input — only when "Talk it out" tapped */}
+      {/* Expanded text input - only when "Talk it out" tapped */}
       {expanded && (
         <Animated.View entering={FadeIn.duration(220)} style={{ marginTop: 12 }}>
           <View

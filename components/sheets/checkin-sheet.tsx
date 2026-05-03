@@ -124,7 +124,7 @@ export function CheckinSheet() {
     useState<CompanionResponse | null>(null);
   const [sending, setSending] = useState(false);
 
-  // Stable per-render — new Date() only re-computes when sheetState changes (which
+  // Stable per-render - new Date() only re-computes when sheetState changes (which
   // implies the sheet was just opened or advanced, so the date is always current).
   const today = useMemo(() => new Date(), [sheetState]); // eslint-disable-line react-hooks/exhaustive-deps
   const todayISO = useMemo(() => today.toISOString().slice(0, 10), [today]);
@@ -232,6 +232,7 @@ export function CheckinSheet() {
       <BottomSheetScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         {sheetState === 'mood' && (
           <MoodState
@@ -292,7 +293,7 @@ function MoodState({
   onConfirm: () => void;
   reduced: boolean | null;
 }) {
-  // Stable per-mood handlers — avoids new function refs on every render.
+  // Stable per-mood handlers - avoids new function refs on every render.
   const handleGood = useCallback(() => onMoodSelect('good'), [onMoodSelect]);
   const handleOkay = useCallback(() => onMoodSelect('okay'), [onMoodSelect]);
   const handleStruggling = useCallback(() => onMoodSelect('struggling'), [onMoodSelect]);
@@ -321,7 +322,7 @@ function MoodState({
         </Text>
       </Animated.View>
 
-      {/* Mood grid — 2x2 */}
+      {/* Mood grid - 2x2 */}
       <View className="mt-6 px-6 gap-3">
         <View className="flex-row gap-3">
           {MOOD_OPTIONS.slice(0, 2).map((option, i) => (
@@ -347,7 +348,7 @@ function MoodState({
         </View>
       </View>
 
-      {/* CTA — appears once mood is selected */}
+      {/* CTA - appears once mood is selected */}
       {ctaLabel !== null && (
         <Animated.View
           entering={reduced ? enter.fade(0) : enter.fadeUp(0)}
