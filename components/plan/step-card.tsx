@@ -6,18 +6,12 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import {
-  Check,
-  Circle,
-  Lock,
-  MapPin,
-  Phone,
-  Sparkles,
-} from 'lucide-react-native';
+import { Check, Circle, Lock, MapPin, Phone } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
-import { Button } from '@/components/ui/button';
 import { LearnAccordion } from '@/components/plan/learn-accordion';
+import { StepCardHeader } from '@/components/plan/step-card-header';
+import { StepStatusSlider } from '@/components/plan/step-status-slider';
 import * as haptics from '@/lib/haptics';
 import { spring } from '@/lib/motion';
 import { colors } from '@/lib/theme';
@@ -65,8 +59,7 @@ function StatusDot({ status }: { status: StepStatus }) {
 export function StepCard({ step, status, prereqTitle }: Props) {
   const router = useRouter();
   const reduced = useReducedMotion();
-  const completeStep = useStore((s) => s.completeStep);
-  const toggleStepInProgress = useStore((s) => s.toggleStepInProgress);
+  const setStepStatus = useStore((s) => s.setStepStatus);
   const setMilestoneUnlocked = useStore((s) => s.setMilestoneUnlocked);
 
   const scale = useSharedValue(1);
@@ -104,15 +97,9 @@ export function StepCard({ step, status, prereqTitle }: Props) {
     }
   }
 
-  function handleStart() {
-    haptics.tap();
-    toggleStepInProgress(step.id);
-  }
-
-  function handleMarkDone() {
-    haptics.success();
-    completeStep(step.id);
-    if (step.isMilestone) {
+  function handleStatusChange(next: 'pending' | 'in-progress' | 'complete') {
+    setStepStatus(step.id, next);
+    if (next === 'complete' && step.isMilestone) {
       setMilestoneUnlocked(step.id);
       router.push('/milestone');
     }
@@ -146,16 +133,25 @@ export function StepCard({ step, status, prereqTitle }: Props) {
       hitSlop={4}
     >
       <View
-        className="rounded-2xl border border-border bg-bg"
+        className="rounded-2xl border border-border bg-bg overflow-hidden"
         style={[
           isComplete && {
             borderLeftWidth: 3,
             borderLeftColor: colors.success,
-            opacity: 0.85,
+            opacity: 0.9,
           },
         ]}
       >
-        <View className="p-4 gap-3">
+        {/* Category header banner — replaces the small AI sparkle iconography */}
+        {!isLocked && (
+          <StepCardHeader
+            stepId={step.id}
+            category={step.category}
+            isMilestone={step.isMilestone}
+          />
+        )}
+
+        <View className="px-4 pt-3 pb-4 gap-3">
           {/* Top row: status indicator + title */}
           <View className="flex-row items-start gap-3" importantForAccessibility="no">
             <View className="mt-0.5" accessibilityElementsHidden importantForAccessibility="no">
@@ -174,16 +170,14 @@ export function StepCard({ step, status, prereqTitle }: Props) {
             {step.description}
           </Text>
 
-          {/* Why now */}
+          {/* Why now — now without the sparkle icon */}
           {!!step.whyNow && (
-            <View className="flex-row items-start gap-1.5 mt-1" importantForAccessibility="no">
-              <View className="mt-0.5" accessibilityElementsHidden importantForAccessibility="no">
-                <Sparkles size={12} color={colors.textMuted} strokeWidth={1.5} />
-              </View>
-              <Text className="flex-1 text-xs font-sans text-text-muted leading-5">
-                {step.whyNow}
-              </Text>
-            </View>
+            <Text
+              className="text-xs font-sans text-text-muted leading-5"
+              importantForAccessibility="no"
+            >
+              {step.whyNow}
+            </Text>
           )}
 
           {/* Resource card */}
@@ -236,38 +230,20 @@ export function StepCard({ step, status, prereqTitle }: Props) {
             </View>
           )}
 
-          {/* Bottom-right action */}
-          <View className="items-end mt-1">
-            {status === 'pending' && (
-              <Button
-                label="Start"
-                variant="outline"
-                size="sm"
-                onPress={handleStart}
-                accessibilityLabel={`Start ${step.title}`}
-              />
-            )}
-            {status === 'in-progress' && (
-              <Button
-                label="Mark done"
-                variant="primary"
-                size="sm"
-                onPress={handleMarkDone}
-                accessibilityLabel={`Mark ${step.title} as done`}
-              />
-            )}
-            {status === 'complete' && (
-              <View className="flex-row items-center gap-1.5 px-3 py-2 rounded-pill bg-surface">
-                <Check size={13} color={colors.successDeep} strokeWidth={2.5} />
-                <Text className="text-sm font-medium" style={{ color: colors.successDeep }}>
-                  Done
-                </Text>
-              </View>
-            )}
-            {status === 'locked' && (
-              <View className="flex-row items-center gap-1.5 px-3 py-2 rounded-pill">
+          {/* Status slider (free movement between Pending / In progress / Done).
+              Locked steps render a static label instead. */}
+          <View className="mt-1">
+            {status === 'locked' ? (
+              <View className="flex-row items-center gap-1.5 self-end px-3 py-2 rounded-pill">
+                <Lock size={13} color={colors.textSubtle} strokeWidth={2} />
                 <Text className="text-sm font-sans text-text-subtle">Locked</Text>
               </View>
+            ) : (
+              <StepStatusSlider
+                value={status}
+                onChange={handleStatusChange}
+                stepTitle={step.title}
+              />
             )}
           </View>
         </View>

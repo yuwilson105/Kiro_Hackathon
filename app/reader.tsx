@@ -21,7 +21,7 @@ import type { InterestKey } from '@/types/profile';
 // Category → color token mapping per Leader 06 §9
 const categoryColor: Record<InterestKey, string> = {
   finance: colors.accent,
-  lgbtq: colors.success,
+  'civil-rights': colors.success,
   'criminal-justice': colors.primaryDeep,
   tech: colors.primaryDeep,
   ai: colors.primary,
@@ -32,7 +32,6 @@ const categoryColor: Record<InterestKey, string> = {
   politics: colors.textMuted,
   voting: colors.primaryDeep,
   'music-entertainment': colors.textMuted,
-  'womens-rights': colors.textMuted,
   immigration: colors.textMuted,
   housing: colors.successDeep,
   jobs: colors.primaryDeep,
@@ -42,7 +41,7 @@ const categoryColor: Record<InterestKey, string> = {
 
 const categoryLabel: Record<InterestKey, string> = {
   finance: 'FINANCE',
-  lgbtq: 'LGBTQ+',
+  'civil-rights': 'CIVIL RIGHTS',
   'criminal-justice': 'LAW',
   tech: 'TECH',
   ai: 'AI',
@@ -53,7 +52,6 @@ const categoryLabel: Record<InterestKey, string> = {
   politics: 'POLITICS',
   voting: 'VOTING',
   'music-entertainment': 'ENTERTAINMENT',
-  'womens-rights': "WOMEN'S RIGHTS",
   immigration: 'IMMIGRATION',
   housing: 'HOUSING',
   jobs: 'JOBS',

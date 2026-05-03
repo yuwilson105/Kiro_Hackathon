@@ -14,7 +14,7 @@ type Props = {
   label: string;
   selected?: boolean;
   onPress?: () => void;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   icon?: React.ReactNode;
   accessibilityLabel?: string;
@@ -60,8 +60,9 @@ export function PillButton({
     scale.value = withSpring(1, spring.snap);
   };
 
-  const sizeClass = size === 'sm' ? 'px-3 py-1.5' : 'px-4 py-2.5';
-  const textSizeClass = size === 'sm' ? 'text-sm' : 'text-sm';
+  const sizeClass =
+    size === 'sm' ? 'px-3 py-1.5' : size === 'lg' ? 'px-5 py-3' : 'px-4 py-2.5';
+  const textSizeClass = size === 'lg' ? 'text-base' : 'text-sm';
 
   return (
     <AnimatedPressable

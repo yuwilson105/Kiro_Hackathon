@@ -14,8 +14,7 @@ export const ALL_INTERESTS: InterestKey[] = [
   'music-entertainment',
   'mental-health-awareness',
   'criminal-justice',
-  'lgbtq',
-  'womens-rights',
+  'civil-rights',
   'immigration',
   'climate',
   'sports',
@@ -33,8 +32,7 @@ const INTEREST_LABEL: Record<InterestKey, string> = {
   'mental-health-awareness': 'Health',
   healthcare: 'Healthcare',
   'criminal-justice': 'Law',
-  lgbtq: 'LGBTQ+',
-  'womens-rights': "Women's",
+  'civil-rights': 'Rights',
   immigration: 'Immigration',
   housing: 'Housing',
   jobs: 'Jobs',
@@ -65,7 +63,8 @@ export function FilterPills({ interests, selected, onSelect }: Props) {
       ref={scrollRef}
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 12, gap: 8 }}
+      style={{ flexGrow: 0, height: 48 }}
+      contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 6, gap: 8 }}
       accessibilityRole="tablist"
     >
       {pills.map(({ key, label }, i) => {

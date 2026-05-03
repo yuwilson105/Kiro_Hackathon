@@ -501,8 +501,8 @@ export default function DatesScreen() {
     <>
       <OnboardingShell
         step={1}
-        header="Let's start with when you were inside."
-        subtext="This helps us understand what changed while you were away."
+        header="When were you in prison?"
+        subtext="This helps us understand what changed while you were gone."
         onContinue={handleContinue}
         continueDisabled={!canContinue}
       >

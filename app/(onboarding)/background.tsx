@@ -330,7 +330,10 @@ export default function BackgroundScreen() {
               What's your housing situation right now?
             </Text>
             <View className="flex-row flex-wrap gap-2">
-              {Q4.map((opt) => (
+              {/* Skip pill injected after "I have my own place" so it pairs
+                  with that medium-width pill instead of orphaning on its
+                  own row at the bottom. */}
+              {Q4.slice(0, 3).map((opt) => (
                 <PillButton
                   key={opt.value}
                   label={opt.label}
@@ -348,6 +351,18 @@ export default function BackgroundScreen() {
                 onPress={() => toggleSkip(setSkipHousing, () => setHousing(null))}
                 accessibilityLabel="I'd rather not say about housing"
               />
+              {Q4.slice(3).map((opt) => (
+                <PillButton
+                  key={opt.value}
+                  label={opt.label}
+                  selected={housing === opt.value && !skipHousing}
+                  onPress={() => {
+                    setHousing(opt.value);
+                    setSkipHousing(false);
+                  }}
+                  accessibilityLabel={opt.label}
+                />
+              ))}
             </View>
             {housing === 'other' ? (
               <OtherInput
@@ -371,7 +386,7 @@ export default function BackgroundScreen() {
             <Text className="font-medium text-base text-text mb-3">
               Do you have a valid ID right now?
             </Text>
-            <View className="flex-row flex-wrap gap-2">
+            <View className="flex-row flex-wrap items-center" style={{ gap: 6 }}>
               {Q5.map((opt) => (
                 <PillButton
                   key={opt.value}
@@ -385,13 +400,18 @@ export default function BackgroundScreen() {
                   accessibilityLabel={opt.label}
                 />
               ))}
-              <PillButton
-                label="Rather not say"
-                selected={skipId}
-                size="sm"
-                onPress={() => toggleSkip(setSkipId, () => setIdStatus(null))}
-                accessibilityLabel="I'd rather not say about ID"
-              />
+              {/* ml-auto pushes the skip pill to the right end of the row.
+                  Label shortened to "Skip" so all four pills fit comfortably
+                  on a single line at iPhone widths. */}
+              <View style={{ marginLeft: 'auto' }}>
+                <PillButton
+                  label="Skip"
+                  selected={skipId}
+                  size="sm"
+                  onPress={() => toggleSkip(setSkipId, () => setIdStatus(null))}
+                  accessibilityLabel="I'd rather not say about ID"
+                />
+              </View>
             </View>
           </View>
         </Card>
