@@ -1,34 +1,36 @@
-import { differenceInYears } from 'date-fns';
-import { Bookmark, BookmarkCheck } from 'lucide-react-native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { differenceInYears } from "date-fns";
+import { Bookmark, BookmarkCheck } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FlatList, Pressable, Text, View } from "react-native";
 import Animated, {
+    FadeOut,
+    LinearTransition,
     useAnimatedStyle,
     useReducedMotion,
     useSharedValue,
     withRepeat,
     withSequence,
     withTiming,
-} from 'react-native-reanimated';
-import { useShallow } from 'zustand/shallow';
+} from "react-native-reanimated";
+import { useShallow } from "zustand/shallow";
 
-import { FeedCard } from '@/components/catchup/feed-card';
-import { FilterPills } from '@/components/catchup/filter-pills';
-import { VideoCard } from '@/components/catchup/video-card';
-import { generateFeedFromAPI } from '@/lib/api';
-import { useSavedVideosStore } from '@/lib/saved-videos-store';
-import { feedCards } from '@/lib/mock/feed';
-import { videos, type Video } from '@/lib/mock/videos';
-import { duration, ease } from '@/lib/motion';
-import { useStore } from '@/lib/store';
-import { colors } from '@/lib/theme';
-import type { FeedCard as FeedCardType } from '@/types/feed';
-import type { InterestKey } from '@/types/profile';
+import { FeedCard } from "@/components/catchup/feed-card";
+import { FilterPills } from "@/components/catchup/filter-pills";
+import { VideoCard } from "@/components/catchup/video-card";
+import { generateFeedFromAPI } from "@/lib/api";
+import { feedCards } from "@/lib/mock/feed";
+import { videos, type Video } from "@/lib/mock/videos";
+import { duration, ease } from "@/lib/motion";
+import { useSavedVideosStore } from "@/lib/saved-videos-store";
+import { useStore } from "@/lib/store";
+import { colors } from "@/lib/theme";
+import type { FeedCard as FeedCardType } from "@/types/feed";
+import type { InterestKey } from "@/types/profile";
 
 // Unified list item — articles and videos render in the same FlatList.
 type FeedItem =
-  | { kind: 'article'; id: string; data: FeedCardType }
-  | { kind: 'video'; id: string; data: Video };
+  | { kind: "article"; id: string; data: FeedCardType }
+  | { kind: "video"; id: string; data: Video };
 
 // 1:1 zip — videos and articles alternate so the feed reads as a real mix
 // (lead with video so the page isn't a wall of text up top). If one stream
@@ -38,10 +40,14 @@ function interleave(articles: FeedCardType[], vids: Video[]): FeedItem[] {
   const max = Math.max(articles.length, vids.length);
   for (let i = 0; i < max; i++) {
     if (i < vids.length) {
-      out.push({ kind: 'video', id: `v-${vids[i].id}`, data: vids[i] });
+      out.push({ kind: "video", id: `v-${vids[i].id}`, data: vids[i] });
     }
     if (i < articles.length) {
-      out.push({ kind: 'article', id: `a-${articles[i].id}`, data: articles[i] });
+      out.push({
+        kind: "article",
+        id: `a-${articles[i].id}`,
+        data: articles[i],
+      });
     }
   }
   return out;
@@ -80,9 +86,18 @@ function SkeletonCard() {
 
   return (
     <View className="bg-surface rounded-xl p-4 gap-3">
-      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-4 w-3/4" />
-      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-full" />
-      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-5/6" />
+      <Animated.View
+        style={shimmerStyle}
+        className="bg-surfaceDeep rounded h-4 w-3/4"
+      />
+      <Animated.View
+        style={shimmerStyle}
+        className="bg-surfaceDeep rounded h-3 w-full"
+      />
+      <Animated.View
+        style={shimmerStyle}
+        className="bg-surfaceDeep rounded h-3 w-5/6"
+      />
     </View>
   );
 }
@@ -95,18 +110,19 @@ export default function CatchUpScreen() {
   const [activeFilter, setActiveFilter] = useState<InterestKey | null>(null);
   const [cards, setCards] = useState<FeedCardType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'feed' | 'saved'>('feed');
+  const [view, setView] = useState<"feed" | "saved">("feed");
   const listOpacity = useSharedValue(1);
 
-  const { profile, savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead } = useStore(
-    useShallow((s) => ({
-      profile: s.profile,
-      savedFeedIds: s.savedFeedIds,
-      readFeedIds: s.readFeedIds,
-      toggleFeedSaved: s.toggleFeedSaved,
-      markFeedRead: s.markFeedRead,
-    }))
-  );
+  const { profile, savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead } =
+    useStore(
+      useShallow((s) => ({
+        profile: s.profile,
+        savedFeedIds: s.savedFeedIds,
+        readFeedIds: s.readFeedIds,
+        toggleFeedSaved: s.toggleFeedSaved,
+        markFeedRead: s.markFeedRead,
+      })),
+    );
   const savedVideoIds = useSavedVideosStore((s) => s.savedVideoIds);
 
   useEffect(() => {
@@ -119,7 +135,10 @@ export default function CatchUpScreen() {
   // Compute gap label
   const gapLabel = useMemo(() => {
     if (!profile.gapStart || !profile.gapEnd) return null;
-    const years = differenceInYears(new Date(profile.gapEnd), new Date(profile.gapStart));
+    const years = differenceInYears(
+      new Date(profile.gapEnd),
+      new Date(profile.gapStart),
+    );
     return years > 0 ? years : null;
   }, [profile.gapStart, profile.gapEnd]);
 
@@ -149,18 +168,25 @@ export default function CatchUpScreen() {
 
     // 'saved' view: keep only items the user has bookmarked. Articles use
     // savedFeedIds (main store); videos use savedVideoIds (separate store).
-    if (view === 'saved') {
+    if (view === "saved") {
       const savedFeedSet = new Set(savedFeedIds);
       const savedVideoSet = new Set(savedVideoIds);
       return final.filter((item) =>
-        item.kind === 'article'
+        item.kind === "article"
           ? savedFeedSet.has(item.data.id)
           : savedVideoSet.has(item.data.id),
       );
     }
 
     return final;
-  }, [activeFilter, profile.interests, view, savedFeedIds, savedVideoIds, cards]);
+  }, [
+    activeFilter,
+    profile.interests,
+    view,
+    savedFeedIds,
+    savedVideoIds,
+    cards,
+  ]);
 
   // Fade list on filter change
   const handleFilterChange = useCallback(
@@ -169,13 +195,19 @@ export default function CatchUpScreen() {
         setActiveFilter(key);
         return;
       }
-      listOpacity.value = withTiming(0, { duration: duration.micro, easing: ease.snap });
+      listOpacity.value = withTiming(0, {
+        duration: duration.micro,
+        easing: ease.snap,
+      });
       setTimeout(() => {
         setActiveFilter(key);
-        listOpacity.value = withTiming(1, { duration: duration.short, easing: ease.out });
+        listOpacity.value = withTiming(1, {
+          duration: duration.short,
+          easing: ease.out,
+        });
       }, duration.micro);
     },
-    [reduced, listOpacity]
+    [reduced, listOpacity],
   );
 
   const listStyle = useAnimatedStyle(() => ({ opacity: listOpacity.value }));
@@ -183,7 +215,7 @@ export default function CatchUpScreen() {
   const renderItem = useCallback(
     ({ item }: { item: FeedItem }) => {
       const child =
-        item.kind === 'video' ? (
+        item.kind === "video" ? (
           <VideoCard video={item.data} />
         ) : (
           <FeedCard
@@ -207,45 +239,50 @@ export default function CatchUpScreen() {
         </Animated.View>
       );
     },
-    [savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead, reduced]
+    [savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead, reduced],
   );
 
   const keyExtractor = useCallback((item: FeedItem) => item.id, []);
 
-  const ItemSeparator = useCallback(
-    () => <View style={{ height: 12 }} />,
-    []
-  );
+  const ItemSeparator = useCallback(() => <View style={{ height: 12 }} />, []);
 
   const EmptyState = useCallback(
     () => (
       <View className="flex-1 items-center justify-center pt-20 gap-2 px-8">
-        {view === 'saved' ? (
+        {view === "saved" ? (
           <>
-            <Text className="text-base font-medium text-text-muted">Nothing saved yet.</Text>
+            <Text className="text-base font-medium text-text-muted">
+              Nothing saved yet.
+            </Text>
             <Text className="text-sm text-text-muted text-center">
               Tap the bookmark on any article to save it here.
             </Text>
           </>
         ) : (
           <>
-            <Text className="text-base font-medium text-text-muted">Nothing here yet.</Text>
-            <Text className="text-sm text-text-muted">Try a different topic.</Text>
+            <Text className="text-base font-medium text-text-muted">
+              Nothing here yet.
+            </Text>
+            <Text className="text-sm text-text-muted">
+              Try a different topic.
+            </Text>
           </>
         )}
       </View>
     ),
-    [view]
+    [view],
   );
 
   return (
     <View className="flex-1 bg-bg">
       {/* PAGE HEADER — Saved moved down so the title can breathe */}
       <View className="px-6 pt-14 pb-1">
-        <Text className="text-3xl font-medium text-text">While you were away</Text>
+        <Text className="text-3xl font-medium text-text">
+          While you were away
+        </Text>
         <Text className="text-sm text-text-muted mt-1">
           {gapLabel
-            ? `You were inside for ${gapLabel} ${gapLabel === 1 ? 'year' : 'years'}. Here's what changed.`
+            ? `You were inside for ${gapLabel} ${gapLabel === 1 ? "year" : "years"}. Here's what changed.`
             : "Here's what changed."}
         </Text>
       </View>
@@ -260,23 +297,26 @@ export default function CatchUpScreen() {
           />
         </View>
         <Pressable
-          onPress={() => setView((v) => (v === 'feed' ? 'saved' : 'feed'))}
+          onPress={() => setView((v) => (v === "feed" ? "saved" : "feed"))}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityState={{ selected: view === 'saved' }}
-          accessibilityLabel={view === 'saved' ? 'Show all articles' : 'Show saved articles'}
+          accessibilityState={{ selected: view === "saved" }}
+          accessibilityLabel={
+            view === "saved" ? "Show all articles" : "Show saved articles"
+          }
           style={{
             width: 36,
             height: 36,
             borderRadius: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
+            alignItems: "center",
+            justifyContent: "center",
             marginRight: 16,
             marginLeft: 4,
-            backgroundColor: view === 'saved' ? colors.primarySoft : 'transparent',
+            backgroundColor:
+              view === "saved" ? colors.primarySoft : "transparent",
           }}
         >
-          {view === 'saved' ? (
+          {view === "saved" ? (
             <BookmarkCheck
               size={18}
               color={colors.primaryDeep}
