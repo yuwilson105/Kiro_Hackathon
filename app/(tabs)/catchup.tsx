@@ -1,3 +1,4 @@
+import { FlashList } from "@shopify/flash-list";
 import { differenceInYears } from "date-fns";
 import { Bookmark, BookmarkCheck } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
