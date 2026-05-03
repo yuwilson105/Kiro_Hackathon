@@ -49,20 +49,24 @@ export function OnboardingShell({
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
-      <View className="px-6 pt-2 pb-4 flex-row items-center gap-3">
-        {hideBack ? (
-          <View style={{ width: 36 }} />
-        ) : (
-          <IconButton
-            icon={<ChevronLeft size={22} color={colors.text} strokeWidth={1.75} />}
-            onPress={() => router.back()}
-            accessibilityLabel="Go back"
-            size={36}
-          />
-        )}
+      <View className="pt-2 pb-4 flex-row items-center">
+        <View style={{ width: 48, paddingLeft: 12 }}>
+          {hideBack ? null : (
+            <IconButton
+              icon={<ChevronLeft size={22} color={colors.text} strokeWidth={1.75} />}
+              onPress={() => {
+                if (router.canGoBack()) router.back();
+                else router.replace('/(tabs)');
+              }}
+              accessibilityLabel="Go back"
+              size={36}
+            />
+          )}
+        </View>
         <View className="flex-1">
           <ProgressBar segments={TOTAL_STEPS} current={step} />
         </View>
+        <View style={{ width: 48 }} />
       </View>
 
       <Body {...bodyProps}>

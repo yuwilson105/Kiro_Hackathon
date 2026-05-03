@@ -50,9 +50,9 @@ export const spacing = {
 
 export const type = {
   fontFamily: {
-    regular: 'HankenGrotesk_400Regular',
-    medium: 'HankenGrotesk_500Medium',
-    semibold: 'HankenGrotesk_600SemiBold',
+    regular: 'Onest_400Regular',
+    medium: 'Onest_500Medium',
+    semibold: 'Onest_600SemiBold',
   },
   size: {
     xs: 12,

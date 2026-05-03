@@ -129,7 +129,7 @@ export default function BuildingScreen() {
         entering={enter.fadeUp(120)}
         style={{
           marginTop: 28,
-          fontFamily: 'HankenGrotesk_500Medium',
+          fontFamily: 'Onest_500Medium',
           fontSize: 24,
           color: colors.text,
           letterSpacing: -0.5,
@@ -146,7 +146,7 @@ export default function BuildingScreen() {
           exiting={FadeOut.duration(FADE_OUT_MS)}
           style={{
             marginTop: 12,
-            fontFamily: 'HankenGrotesk_400Regular',
+            fontFamily: 'Onest_400Regular',
             fontSize: 14,
             color: colors.textMuted,
             textAlign: 'center',

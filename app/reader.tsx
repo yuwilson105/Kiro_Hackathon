@@ -114,7 +114,7 @@ export default function ReaderScreen() {
             )
           }
           onPress={handleBookmark}
-          accessibilityLabel={isSaved ? 'Saved — tap to remove' : 'Save article'}
+          accessibilityLabel={isSaved ? 'Saved. Tap to remove.' : 'Save article'}
           accessibilityState={{ checked: isSaved }}
           variant="plain"
           size={44}

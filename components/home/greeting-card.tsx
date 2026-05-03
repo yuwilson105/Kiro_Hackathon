@@ -46,7 +46,7 @@ export function GreetingCard({
     >
       <View className="bg-surface border border-border-surface rounded-2xl px-5 py-5 flex-row items-start justify-between">
         <View className="flex-1 pr-4 gap-1">
-          <Text className="text-2xl font-medium text-text" numberOfLines={1}>
+          <Text className="text-2xl font-serif text-text" numberOfLines={1}>
             {greeting}, {firstName}.
           </Text>
           <Text className="text-sm font-sans text-text leading-5">{subline}</Text>

@@ -52,9 +52,9 @@ type MoodOption = {
 };
 
 const MOOD_OPTIONS: MoodOption[] = [
-  { key: 'good', label: 'Good — I\'m on track' },
-  { key: 'okay', label: 'Okay — taking it one step at a time' },
-  { key: 'struggling', label: 'Struggling — it\'s been hard' },
+  { key: 'good', label: 'Good. I\'m on track.' },
+  { key: 'okay', label: 'Okay. Taking it one step at a time.' },
+  { key: 'struggling', label: 'Struggling. It\'s been hard.' },
   { key: 'need-talk', label: 'I need to talk about something' },
 ];
 
@@ -312,22 +312,6 @@ function MoodState({
 
   return (
     <View className="flex-1 pb-8">
-      {/* Header */}
-      <View className="items-center pt-6 pb-2">
-        <View
-          accessible
-          accessibilityLabel={`Animated flame representing your ${streak}-day streak`}
-        >
-          <FlameLogo size={36} loop />
-        </View>
-        <Text className="text-base font-medium text-text mt-2">
-          Day {streak}
-        </Text>
-        <Text className="text-sm font-sans text-text-muted mt-0.5">
-          {dayOfWeek}, {monthDay}
-        </Text>
-      </View>
-
       {/* Question */}
       <Animated.View
         entering={reduced ? enter.fade(0) : enter.fadeUp(60)}
@@ -404,8 +388,7 @@ function FollowUpState({
     <View className="flex-1 pb-8">
       <Animated.View entering={enter.fade(0)} className="px-6 pt-6">
         <Text className="text-base font-medium text-text leading-6">
-          I hear you. What's going on? You don't have to share everything
-          — just whatever feels right.
+          I hear you. What's going on? You don't have to share everything. Just whatever feels right.
         </Text>
       </Animated.View>
 
@@ -418,7 +401,7 @@ function FollowUpState({
             style={{
               height: 128,
               padding: 12,
-              fontFamily: 'HankenGrotesk_400Regular',
+              fontFamily: 'Onest_400Regular',
               fontSize: 16,
               color: colors.text,
               textAlignVertical: 'top',

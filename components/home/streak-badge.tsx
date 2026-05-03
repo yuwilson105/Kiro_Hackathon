@@ -27,7 +27,7 @@ export function StreakBadge({ streak }: Props) {
           <View accessible={false} pointerEvents="none">
             <FlameLogo size={36} loop={true} />
           </View>
-          <Text className="text-display font-semibold text-text leading-none">
+          <Text className="text-display font-serif text-text leading-none">
             {streak}
           </Text>
           <Text className="text-2xs font-medium uppercase tracking-wider text-text-muted">

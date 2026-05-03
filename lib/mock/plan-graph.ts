@@ -22,7 +22,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     prerequisites: [],
     unlocks: ['find-temporary-housing', 'contact-halfway-house-counselor'],
     whyNow:
-      'Your first 48 hours are the most critical — this visit maps every resource you need.',
+      'Your first 48 hours are the most critical. This visit maps every resource you need.',
     resourceName: 'Project Homeless Connect',
     resourceAddress: '123 Main St, San Francisco, CA 94105',
     resourcePhone: '(415) 555-0100',
@@ -32,7 +32,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'get-birth-certificate',
     title: 'Get your birth certificate',
     description:
-      'Request a certified copy from the county clerk where you were born — required for your state ID.',
+      'Request a certified copy from the county clerk where you were born. Required for your state ID.',
     category: 'documents',
     urgency: 'urgent',
     estimatedHours: 2,
@@ -55,7 +55,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     prerequisites: ['get-birth-certificate'],
     unlocks: ['get-state-id', 'apply-medicaid', 'enroll-snap-benefits'],
     whyNow: 'Your SSN is required for your state ID application and for most benefits.',
-    resourceName: 'Social Security Administration — SF Field Office',
+    resourceName: 'Social Security Administration, SF Field Office',
     resourceAddress: '1221 Nevin Ave, Richmond, CA 94801',
     resourcePhone: '(415) 555-0102',
   },
@@ -95,7 +95,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'reach-out-to-family',
     title: 'Reach out to family',
     description:
-      'Make a first call or write a letter — opening that door now makes rebuilding relationships much easier.',
+      'Make a first call or write a letter. Opening that door now makes rebuilding relationships much easier.',
     category: 'family',
     urgency: 'this-week',
     estimatedHours: 1,
@@ -110,7 +110,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'attend-aa-na-meeting',
     title: 'Attend an AA / NA meeting',
     description:
-      'Find a local meeting through the AA or NA hotline — drop-in meetings are available every day.',
+      'Find a local meeting through the AA or NA hotline. Drop-in meetings are available every day.',
     category: 'health',
     urgency: 'this-week',
     estimatedHours: 2,
@@ -142,9 +142,9 @@ export const PLAN_GRAPH: PlanStep[] = [
       'apply-first-jobs',
     ],
     whyNow:
-      'Your state ID unlocks nearly every next step — banking, benefits, and employment all require it.',
+      'Your state ID unlocks nearly every next step: banking, benefits, and employment all require it.',
     isMilestone: true,
-    resourceName: 'California DMV — San Francisco',
+    resourceName: 'California DMV, San Francisco',
     resourceAddress: '1377 Fell St, San Francisco, CA 94117',
     resourcePhone: '(415) 555-0105',
   },
@@ -153,7 +153,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'apply-medicaid',
     title: 'Apply for Medi-Cal (Medicaid)',
     description:
-      'Submit your Medi-Cal application online or at the county office — most returning citizens qualify immediately.',
+      'Submit your Medi-Cal application online or at the county office. Most returning citizens qualify immediately.',
     category: 'health',
     urgency: 'this-week',
     estimatedHours: 2,
@@ -194,7 +194,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     unlocks: [],
     whyNow: "Getting assessed early ensures you're matched to the right support before a crisis hits.",
     appliesIfPriority: ['mental-health'],
-    resourceName: 'Citywide Case Management — DPH',
+    resourceName: 'Citywide Case Management, DPH',
     resourceAddress: '1380 Howard St, San Francisco, CA 94103',
     resourcePhone: '(415) 555-0108',
   },
@@ -220,7 +220,7 @@ export const PLAN_GRAPH: PlanStep[] = [
       sections: [
         {
           heading: 'Checking vs savings',
-          body: 'A checking account is for daily spending — you get a debit card and can pay bills. A savings account earns interest but limits withdrawals. Start with checking.',
+          body: 'A checking account is for daily spending. You get a debit card and can pay bills. A savings account earns interest but limits withdrawals. Start with checking.',
         },
         {
           heading: 'Felon-friendly banks',
@@ -238,7 +238,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'update-resume',
     title: 'Update your résumé',
     description:
-      'Work with a re-entry employment counsellor to build or refresh your résumé — you can use your prison work history.',
+      'Work with a re-entry employment counsellor to build or refresh your résumé. You can use your prison work history.',
     category: 'employment',
     urgency: 'this-week',
     estimatedHours: 3,
@@ -274,13 +274,13 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'get-osha-10-certification',
     title: 'Complete OSHA 10 certification',
     description:
-      "Take the free online OSHA 10 course — it's the baseline requirement for any construction site job in California.",
+      "Take the free online OSHA 10 course. It's the baseline requirement for any construction site job in California.",
     category: 'employment',
     urgency: 'this-month',
     estimatedHours: 10,
     prerequisites: ['update-resume'],
     unlocks: ['apply-first-jobs'],
-    whyNow: 'Employers post "OSHA 10 required" on most construction listings — this opens the door.',
+    whyNow: 'Employers post "OSHA 10 required" on most construction listings. This opens the door.',
     appliesIfPriority: ['finding-job'],
   },
 
@@ -295,7 +295,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     prerequisites: ['update-resume', 'get-state-id'],
     unlocks: ['first-job'],
     whyNow:
-      'The hiring process typically takes 2–4 weeks — starting applications now keeps that timeline on track.',
+      'The hiring process typically takes 2–4 weeks. Starting applications now keeps that timeline on track.',
     isMilestone: true,
     appliesIfPriority: ['finding-job'],
     resourceName: 'Delancey Street Foundation',
@@ -309,7 +309,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'first-job',
     title: 'Accept your first job offer',
     description:
-      'Review your offer letter carefully — confirm pay, hours, start date, and any background-check conditions.',
+      'Review your offer letter carefully: confirm pay, hours, start date, and any background-check conditions.',
     category: 'employment',
     urgency: 'this-month',
     estimatedHours: 1,
@@ -322,7 +322,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'enroll-in-ged-program',
     title: 'Enrol in a GED programme',
     description:
-      'Register at the local adult school for GED prep classes — most programmes are free and offer evening schedules.',
+      'Register at the local adult school for GED prep classes. Most programmes are free and offer evening schedules.',
     category: 'education',
     urgency: 'this-month',
     estimatedHours: 3,
@@ -330,7 +330,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     unlocks: ['enroll-in-job-training-program'],
     whyNow: 'A GED credential opens a wider job market and is required for most job-training programmes.',
     appliesIfPriority: ['learning-missed', 'finding-job'],
-    resourceName: 'SF Adult Education — Civic Center Campus',
+    resourceName: 'SF Adult Education, Civic Center Campus',
     resourceAddress: '750 Eddy St, San Francisco, CA 94109',
     resourcePhone: '(415) 555-0112',
   },
@@ -365,7 +365,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     whyNow:
       'A written budget is the only way to stay out of debt and reach your savings goals on purpose.',
     appliesIfPriority: ['building-finances'],
-    resourceName: 'Catholic Charities SF — Financial Coaching',
+    resourceName: 'Catholic Charities SF, Financial Coaching',
     resourceAddress: '1660 Bush St, San Francisco, CA 94109',
     resourcePhone: '(415) 555-0113',
     learnCard: {
@@ -391,7 +391,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'apply-secured-credit-card',
     title: 'Apply for a secured credit card',
     description:
-      'Deposit $200–$500 to open a secured Visa or Mastercard — your deposit becomes your credit limit.',
+      'Deposit $200–$500 to open a secured Visa or Mastercard. Your deposit becomes your credit limit.',
     category: 'finance',
     urgency: 'this-month',
     estimatedHours: 1,
@@ -408,7 +408,7 @@ export const PLAN_GRAPH: PlanStep[] = [
         },
         {
           heading: 'Why a secured card is the first step',
-          body: 'A secured card requires a cash deposit, so the bank takes almost no risk. They report your on-time payments to Experian, Equifax, and TransUnion — building your score month by month.',
+          body: 'A secured card requires a cash deposit, so the bank takes almost no risk. They report your on-time payments to Experian, Equifax, and TransUnion, building your score month by month.',
         },
         {
           heading: 'Where to apply',
@@ -431,7 +431,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     prerequisites: ['first-job'],
     unlocks: ['get-driver-license'],
     whyNow:
-      'Landlords require proof of income — your first job makes you eligible for units that were out of reach before.',
+      'Landlords require proof of income. Your first job makes you eligible for units that were out of reach before.',
     isMilestone: true,
     appliesIfPriority: ['finding-housing'],
     resourceName: 'Community Housing Partnership',
@@ -485,9 +485,9 @@ export const PLAN_GRAPH: PlanStep[] = [
     prerequisites: ['enroll-in-ged-program'],
     unlocks: [],
     whyNow:
-      'Sector training can double your starting wage — getting enrolled now means you complete it by month three.',
+      'Sector training can double your starting wage. Getting enrolled now means you complete it by month three.',
     appliesIfPriority: ['finding-job', 'learning-missed'],
-    resourceName: 'OEWD Workforce Development — SF',
+    resourceName: 'OEWD Workforce Development, SF',
     resourceAddress: '1 South Van Ness Ave 5th Fl, San Francisco, CA 94103',
     resourcePhone: '(415) 555-0115',
   },
@@ -506,7 +506,7 @@ export const PLAN_GRAPH: PlanStep[] = [
     unlocks: ['file-taxes'],
     whyNow:
       "A driver's licence expands your job options and makes day-to-day life significantly easier.",
-    resourceName: 'California DMV — San Francisco',
+    resourceName: 'California DMV, San Francisco',
     resourceAddress: '1377 Fell St, San Francisco, CA 94117',
     resourcePhone: '(415) 555-0105',
   },
@@ -517,15 +517,15 @@ export const PLAN_GRAPH: PlanStep[] = [
     id: 'file-taxes',
     title: 'File your taxes',
     description:
-      'Visit a free VITA tax site to file your federal and state return — you may qualify for the Earned Income Tax Credit.',
+      'Visit a free VITA tax site to file your federal and state return. You may qualify for the Earned Income Tax Credit.',
     category: 'finance',
     urgency: 'this-month',
     estimatedHours: 2,
     prerequisites: ['get-driver-license'],
     unlocks: [],
     whyNow:
-      'The EITC refund can be hundreds or thousands of dollars — money that jumpstarts your savings plan.',
-    resourceName: 'IRS VITA Site — SF Public Library',
+      'The EITC refund can be hundreds or thousands of dollars: money that jumpstarts your savings plan.',
+    resourceName: 'IRS VITA Site, SF Public Library',
     resourceAddress: '100 Larkin St, San Francisco, CA 94102',
     resourcePhone: '(415) 555-0116',
   },

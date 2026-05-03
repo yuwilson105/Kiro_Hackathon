@@ -676,7 +676,7 @@ export const resources: Resource[] = [
     city: 'Oakland',
     state: 'CA',
     phone: '(510) 555-0509',
-    hours: 'Varies — see website',
+    hours: 'Varies, see website',
     slidingScale: true,
     description: 'Trauma-sensitive mindfulness and group healing programs offered on a sliding scale or free.',
   },

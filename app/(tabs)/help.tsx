@@ -102,7 +102,7 @@ export default function HelpScreen() {
               flex: 1,
               fontSize: 14,
               color: colors.text,
-              fontFamily: 'HankenGrotesk_400Regular',
+              fontFamily: 'Onest_400Regular',
             }}
           />
           {query.length > 0 ? (
@@ -136,7 +136,7 @@ export default function HelpScreen() {
             We're having trouble finding resources right now.
           </Text>
           <Text className="text-sm text-text-muted text-center leading-5">
-            Try calling 211 — they can connect you to anything in your area.
+            Try calling 211. They can connect you to anything in your area.
           </Text>
           <Button
             label="Call 211"

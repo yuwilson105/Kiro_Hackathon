@@ -180,7 +180,7 @@ export function getCompanionResponse(
   } else if (hour >= 20 || hour < 3) {
     // Late night lean
     if (seed % 3 === 0) {
-      opener = `End of the day — ${opener.charAt(0).toLowerCase()}${opener.slice(1)}`;
+      opener = `End of the day, ${opener.charAt(0).toLowerCase()}${opener.slice(1)}`;
     } else if (seed % 3 === 1) {
       opener = `Hey, late one. ${opener}`;
     }
@@ -188,7 +188,7 @@ export function getCompanionResponse(
 
   // 7. Context conditioning — gap since last check-in
   if (daysSinceCheckin >= 3) {
-    opener = `Hey — it's been a few days. That's okay. ${opener}`;
+    opener = `Hey. It's been a few days. That's okay. ${opener}`;
   }
 
   // 8. Context conditioning — streak

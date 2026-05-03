@@ -15,7 +15,9 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
+  runOnJS,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { OnboardingShell } from '@/components/onboarding/onboarding-shell';
@@ -51,6 +53,11 @@ function formatLabel(month: number, year: number): string {
 
 // ── MonthYearPickerModal ──────────────────────────────────────────────────────
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+const DISMISS_DISTANCE = 80;
+const DISMISS_VELOCITY = 800;
+
 type PickerModalProps = {
   visible: boolean;
   month: number;
@@ -70,6 +77,31 @@ function MonthYearPickerModal({
   const [localMonth, setLocalMonth] = useState(month);
   const [localYear, setLocalYear] = useState(year);
 
+  const translateY = useSharedValue(0);
+
+  const dismissGesture = Gesture.Pan()
+    .activeOffsetY([-12, 12])
+    .onUpdate((e) => {
+      translateY.value = Math.max(0, e.translationY);
+    })
+    .onEnd((e) => {
+      if (e.translationY > DISMISS_DISTANCE || e.velocityY > DISMISS_VELOCITY) {
+        translateY.value = withTiming(
+          600,
+          { duration: 200 },
+          (finished) => {
+            if (finished) runOnJS(onClose)();
+          },
+        );
+      } else {
+        translateY.value = withSpring(0, { damping: 22, stiffness: 200, mass: 1 });
+      }
+    });
+
+  const sheetAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
   const handleConfirm = () => {
     haptics.tap();
     onChange(localMonth, localYear);
@@ -80,17 +112,21 @@ function MonthYearPickerModal({
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
       statusBarTranslucent
     >
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable
-          style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}
+        <AnimatedPressable
+          style={[styles.sheet, sheetAnimStyle, { paddingBottom: insets.bottom + 16 }]}
           onPress={(e) => e.stopPropagation()}
         >
-          {/* Handle */}
-          <View style={styles.handle} accessibilityElementsHidden importantForAccessibility="no" />
+          {/* Drag handle — pan down to dismiss */}
+          <GestureDetector gesture={dismissGesture}>
+            <View style={styles.handleArea}>
+              <View style={styles.handle} accessibilityElementsHidden importantForAccessibility="no" />
+            </View>
+          </GestureDetector>
 
           {/* Columns */}
           <View style={styles.columns}>
@@ -192,7 +228,7 @@ function MonthYearPickerModal({
           >
             <Text style={styles.confirmLabel}>Set date</Text>
           </Pressable>
-        </Pressable>
+        </AnimatedPressable>
       </Pressable>
     </Modal>
   );
@@ -298,8 +334,8 @@ type GapCardProps = {
   entering: ReturnType<typeof enter.fadeUp>;
   startMonth: number | null;
   startYear: number | null;
-  endMonth: number;
-  endYear: number;
+  endMonth: number | null;
+  endYear: number | null;
   startSet: boolean;
   endSet: boolean;
   isOrderWrong: boolean;
@@ -334,7 +370,7 @@ function GapCard({
   }));
 
   const gap = filled
-    ? computeGap(startMonth!, startYear!, endMonth, endYear)
+    ? computeGap(startMonth!, startYear!, endMonth!, endYear!)
     : null;
   const parts = gap ? gapParts(gap) : null;
 
@@ -344,73 +380,61 @@ function GapCard({
       className="rounded-2xl border border-border-subtle px-5 py-5 mt-1 overflow-hidden"
       style={{ backgroundColor: '#FBFAF7' }}
     >
-      <Animated.View style={emptyStyle} pointerEvents={filled ? 'none' : 'auto'}>
-        <View className="flex-row items-center gap-2 mb-1.5">
-          <View
-            style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.primary }}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          />
+      <Animated.View
+        style={filledStyle}
+        pointerEvents={filled ? 'auto' : 'none'}
+        accessibilityLiveRegion="polite"
+        accessibilityLabel={parts ? `Your gap: ${parts.value} ${parts.unit}` : undefined}
+      >
+        <Text
+          className="text-2xs font-medium uppercase tracking-wider mb-2"
+          style={{ color: colors.textMuted }}
+        >
+          Your gap
+        </Text>
+
+        <View className="flex-row items-baseline gap-2">
           <Text
-            className="text-2xs font-medium uppercase tracking-wider"
-            style={{ color: colors.textMuted }}
+            className="font-medium tracking-tight"
+            style={{
+              color: colors.text,
+              fontSize: 40,
+              lineHeight: 44,
+              letterSpacing: -1,
+              fontVariant: ['tabular-nums'],
+            }}
           >
-            Your gap
+            {parts?.value ?? '0'}
+          </Text>
+          <Text className="text-base font-medium" style={{ color: colors.text }}>
+            {parts?.unit ?? 'months'}
           </Text>
         </View>
+
+        <Text className="text-sm leading-5 mt-2" style={{ color: colors.textMuted }}>
+          That's what we'll catch you up on.
+        </Text>
+      </Animated.View>
+
+      <Animated.View
+        style={[
+          emptyStyle,
+          { position: 'absolute', left: 20, right: 20, top: 20, bottom: 20 },
+        ]}
+        pointerEvents={filled ? 'none' : 'auto'}
+      >
+        <Text
+          className="text-2xs font-medium uppercase tracking-wider mb-2"
+          style={{ color: colors.textMuted }}
+        >
+          Your gap
+        </Text>
         <Text className="text-base leading-6" style={{ color: colors.textMuted }}>
           {startSet
             ? "Pick when you came out to see how much time we'll catch you up on."
             : "The time between these two dates is what we'll catch you up on."}
         </Text>
       </Animated.View>
-
-      {filled && parts && (
-        <Animated.View
-          style={[
-            filledStyle,
-            { position: 'absolute', left: 20, right: 20, top: 20, bottom: 20 },
-          ]}
-          accessibilityLiveRegion="polite"
-          accessibilityLabel={`Your gap: ${parts.value} ${parts.unit}`}
-        >
-          <View className="flex-row items-center gap-2 mb-1.5">
-            <View
-              style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.primary }}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-            <Text
-              className="text-2xs font-medium uppercase tracking-wider"
-              style={{ color: colors.textMuted }}
-            >
-              Your gap
-            </Text>
-          </View>
-
-          <View className="flex-row items-baseline gap-2">
-            <Text
-              className="font-medium tracking-tight"
-              style={{
-                color: colors.text,
-                fontSize: 36,
-                lineHeight: 40,
-                letterSpacing: -0.8,
-                fontVariant: ['tabular-nums'],
-              }}
-            >
-              {parts.value}
-            </Text>
-            <Text className="text-base font-medium" style={{ color: colors.text }}>
-              {parts.unit}
-            </Text>
-          </View>
-
-          <Text className="text-sm leading-5 mt-1" style={{ color: colors.textMuted }}>
-            That's what we'll catch you up on.
-          </Text>
-        </Animated.View>
-      )}
     </Animated.View>
   );
 }
@@ -424,9 +448,9 @@ export default function DatesScreen() {
   const today = todayMonthYear();
   const [startMonth, setStartMonth] = useState<number | null>(null);
   const [startYear, setStartYear] = useState<number | null>(null);
-  const [endMonth, setEndMonth] = useState<number>(today.month);
-  const [endYear, setEndYear] = useState<number>(today.year);
-  const [endSet, setEndSet] = useState(false); // track if user explicitly chose end
+  const [endMonth, setEndMonth] = useState<number | null>(null);
+  const [endYear, setEndYear] = useState<number | null>(null);
+  const endSet = endMonth !== null && endYear !== null;
 
   const [openPicker, setOpenPicker] = useState<'start' | 'end' | null>(null);
 
@@ -434,18 +458,20 @@ export default function DatesScreen() {
 
   // Validation
   const gapStartISO = startSet ? toISO(startMonth!, startYear!) : null;
-  const gapEndISO = toISO(endMonth, endYear);
+  const gapEndISO = endSet ? toISO(endMonth!, endYear!) : null;
 
   const isOrderWrong =
     startSet &&
+    endSet &&
     gapStartISO !== null &&
+    gapEndISO !== null &&
     gapStartISO >= gapEndISO;
 
-  const canContinue = startSet && !isOrderWrong;
+  const canContinue = startSet && endSet && !isOrderWrong;
 
   const handleContinue = useCallback(() => {
     if (!canContinue) return;
-    setProfile({ gapStart: gapStartISO!, gapEnd: gapEndISO });
+    setProfile({ gapStart: gapStartISO!, gapEnd: gapEndISO! });
     router.push('/(onboarding)/location');
   }, [canContinue, gapStartISO, gapEndISO, setProfile]);
 
@@ -457,15 +483,15 @@ export default function DatesScreen() {
   const handleEndChange = (m: number, y: number) => {
     setEndMonth(m);
     setEndYear(y);
-    setEndSet(true);
   };
 
   // Accessibility labels
   const startLabel = startSet
     ? `Date you went in: ${formatLabel(startMonth!, startYear!)}, tap to change`
     : 'Date you went in: not set, tap to select';
-  const endLabel =
-    `Date you came out: ${formatLabel(endMonth, endYear)}, tap to change`;
+  const endLabel = endSet
+    ? `Date you came out: ${formatLabel(endMonth!, endYear!)}, tap to change`
+    : 'Date you came out: not set, tap to select';
 
   const entering0 = reduced ? enter.fade(0) : enter.fadeUp(stagger(0, 80));
   const entering1 = reduced ? enter.fade(0) : enter.fadeUp(stagger(1, 80));
@@ -534,8 +560,8 @@ export default function DatesScreen() {
       {openPicker === 'end' && (
         <MonthYearPickerModal
           visible
-          month={endMonth}
-          year={endYear}
+          month={endMonth ?? today.month}
+          year={endYear ?? today.year}
           onChange={handleEndChange}
           onClose={() => setOpenPicker(null)}
         />
@@ -564,13 +590,17 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 12,
   },
+  handleArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
   handle: {
     width: 36,
     height: 4,
     borderRadius: 2,
     backgroundColor: colors.borderSubtle,
-    alignSelf: 'center',
-    marginBottom: 20,
   },
   columns: {
     flexDirection: 'row',
@@ -583,7 +613,7 @@ const styles = StyleSheet.create({
     height: 280,
   },
   columnLabel: {
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     fontSize: 11,
     color: colors.textMuted,
     textTransform: 'uppercase',
@@ -610,13 +640,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceDeep,
   },
   rowText: {
-    fontFamily: 'HankenGrotesk_400Regular',
+    fontFamily: 'Onest_400Regular',
     fontSize: 15,
     color: colors.textMuted,
     flex: 1,
   },
   rowTextSelected: {
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     color: colors.primaryDeep,
   },
   confirmBtn: {
@@ -627,7 +657,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmLabel: {
-    fontFamily: 'HankenGrotesk_500Medium',
+    fontFamily: 'Onest_500Medium',
     fontSize: 16,
     color: colors.textInverse,
   },
