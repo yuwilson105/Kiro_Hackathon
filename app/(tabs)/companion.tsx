@@ -1,38 +1,37 @@
-import { router } from 'expo-router';
 import { Send } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import Animated, {
-  Easing,
-  FadeIn,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withSpring,
-  withTiming,
+    Easing,
+    FadeIn,
+    useAnimatedStyle,
+    useReducedMotion,
+    useSharedValue,
+    withDelay,
+    withRepeat,
+    withSequence,
+    withSpring,
+    withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FlameLogo } from '@/components/animations/flame-logo';
-import {
-  type ChatMessage,
-  type CompanionContext,
-  makeSeedMessage,
-  sendCompanionMessage,
-} from '@/lib/companion-chat';
 import { useCompanionAlertStore } from '@/lib/companion-alerts-store';
+import {
+    type ChatMessage,
+    type CompanionContext,
+    makeSeedMessage,
+    sendCompanionMessage,
+} from '@/lib/companion-chat';
 import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
 
@@ -47,6 +46,7 @@ export default function CompanionScreen() {
   const context: CompanionContext = {
     firstName: profile.firstName ?? '',
     streakCurrent: streak.current ?? 0,
+    profile,
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => [makeSeedMessage(context)]);
@@ -116,33 +116,6 @@ export default function CompanionScreen() {
             <FlameLogo size={28} loop={true} />
             <Text style={styles.title}>Your companion</Text>
           </View>
-          {__DEV__ && (
-            <Pressable
-              onPress={() => router.push('/dev')}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Open developer menu"
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 999,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 10,
-                  fontFamily: 'Onest_500Medium',
-                  color: colors.textMuted,
-                  letterSpacing: 0.6,
-                  textTransform: 'uppercase',
-                }}
-              >
-                ⚙ Dev
-              </Text>
-            </Pressable>
-          )}
         </View>
         <Text style={styles.subtitle}>Knows your story. Around when you need it.</Text>
       </View>

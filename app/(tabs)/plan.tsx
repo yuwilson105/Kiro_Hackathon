@@ -1,12 +1,11 @@
-import { router } from 'expo-router';
-import { useCallback, useEffect, useRef } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Text, View } from 'react-native';
 import Animated, {
-  useAnimatedScrollHandler,
-  useReducedMotion,
-  useSharedValue,
+    useAnimatedScrollHandler,
+    useReducedMotion,
+    useSharedValue,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FloatingNextButton } from '@/components/plan/floating-next-button';
 import { WeekSection } from '@/components/plan/week-section';
@@ -111,18 +110,6 @@ export default function PlanScreen() {
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
         className="flex-1 bg-bg items-center justify-center px-8"
       >
-        {__DEV__ && (
-          <Pressable
-            onPress={() => router.push('/dev' as never)}
-            className="mb-8 px-4 py-2 rounded-pill border border-border bg-bg"
-            accessibilityRole="button"
-            accessibilityLabel="Open developer menu"
-          >
-            <Text className="text-xs font-medium text-text-muted tracking-wider uppercase">
-              ⚙ Dev menu
-            </Text>
-          </Pressable>
-        )}
         <Text className="text-base font-medium text-text text-center">
           Your plan is being built.
         </Text>

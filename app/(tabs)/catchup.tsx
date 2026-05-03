@@ -1,23 +1,25 @@
-import { useState, useMemo, useCallback } from 'react';
-import { FlatList, Pressable, View, Text } from 'react-native';
-import Animated, {
-  useReducedMotion,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
 import { differenceInYears } from 'date-fns';
-import { useShallow } from 'zustand/shallow';
 import { Bookmark, BookmarkCheck } from 'lucide-react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FlatList, Pressable, Text, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useReducedMotion,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withTiming,
+} from 'react-native-reanimated';
+import { useShallow } from 'zustand/shallow';
 
-import { FilterPills } from '@/components/catchup/filter-pills';
 import { FeedCard } from '@/components/catchup/feed-card';
+import { FilterPills } from '@/components/catchup/filter-pills';
 import { VideoCard } from '@/components/catchup/video-card';
-import { PillButton } from '@/components/ui/pill-button';
-import { useStore } from '@/lib/store';
+import { generateFeedFromAPI } from '@/lib/api';
 import { feedCards } from '@/lib/mock/feed';
 import { videos, type Video } from '@/lib/mock/videos';
 import { duration, ease } from '@/lib/motion';
+import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
 import type { FeedCard as FeedCardType } from '@/types/feed';
 import type { InterestKey } from '@/types/profile';
@@ -55,11 +57,43 @@ export function useUnreadCount(): number {
 }
 
 // ---------------------------------------------------------------------------
+// Skeleton card — shown while feed is loading
+// ---------------------------------------------------------------------------
+function SkeletonCard() {
+  const reduced = useReducedMotion();
+  const shimmer = useSharedValue(1);
+
+  useEffect(() => {
+    if (reduced) return;
+    shimmer.value = withRepeat(
+      withSequence(
+        withTiming(0.4, { duration: 700, easing: ease.snap }),
+        withTiming(1, { duration: 700, easing: ease.snap }),
+      ),
+      -1,
+      false,
+    );
+  }, [reduced, shimmer]);
+
+  const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
+
+  return (
+    <View className="bg-surface rounded-xl p-4 gap-3">
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-4 w-3/4" />
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-full" />
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-5/6" />
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
 export default function CatchUpScreen() {
   const reduced = useReducedMotion();
   const [activeFilter, setActiveFilter] = useState<InterestKey | null>(null);
+  const [cards, setCards] = useState<FeedCardType[]>([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'feed' | 'saved'>('feed');
   const listOpacity = useSharedValue(1);
 
@@ -73,6 +107,13 @@ export default function CatchUpScreen() {
     }))
   );
 
+  useEffect(() => {
+    generateFeedFromAPI(profile).then((result) => {
+      setCards(result.length > 0 ? result : feedCards);
+      setLoading(false);
+    });
+  }, []); // only on mount
+
   // Compute gap label
   const gapLabel = useMemo(() => {
     if (!profile.gapStart || !profile.gapEnd) return null;
@@ -85,8 +126,8 @@ export default function CatchUpScreen() {
     const interestSet = new Set(profile.interests);
 
     const baseArticles = activeFilter
-      ? feedCards.filter((c) => c.category === activeFilter)
-      : feedCards;
+      ? cards.filter((c) => c.category === activeFilter)
+      : cards;
     const baseVideos = activeFilter
       ? videos.filter((v) => v.category === activeFilter)
       : videos;
@@ -114,7 +155,7 @@ export default function CatchUpScreen() {
     }
 
     return final;
-  }, [activeFilter, profile.interests, view, savedFeedIds]);
+  }, [activeFilter, profile.interests, view, savedFeedIds, cards]);
 
   // Fade list on filter change
   const handleFilterChange = useCallback(
@@ -123,10 +164,6 @@ export default function CatchUpScreen() {
         setActiveFilter(key);
         return;
       }
-      listOpacity.value = withTiming(0, { duration: duration.micro, easing: ease.snap }, () => {
-        'worklet';
-      });
-      // JS side: update filter then fade back in
       listOpacity.value = withTiming(0, { duration: duration.micro, easing: ease.snap });
       setTimeout(() => {
         setActiveFilter(key);
@@ -219,9 +256,6 @@ export default function CatchUpScreen() {
             justifyContent: 'center',
             marginRight: 16,
             marginLeft: 4,
-            // Soft primary chip when active so it reads as "this is on" without
-            // a label — outline-only when inactive so it doesn't compete with
-            // the filter pills next to it.
             backgroundColor: view === 'saved' ? colors.primarySoft : 'transparent',
           }}
         >
@@ -237,6 +271,15 @@ export default function CatchUpScreen() {
           )}
         </Pressable>
       </View>
+
+      {/* SKELETON LOADING */}
+      {loading && (
+        <View className="flex-1 px-6 pt-2 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </View>
+      )}
 
       {/* FEED LIST */}
       <View style={{ flex: 1 }}>
