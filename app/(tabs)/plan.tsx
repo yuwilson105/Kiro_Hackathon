@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedScrollHandler,
@@ -9,7 +9,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { FloatingNextButton } from '@/components/plan/floating-next-button';
-import { PlanRail } from '@/components/plan/plan-rail';
 import { WeekSection } from '@/components/plan/week-section';
 import { enter } from '@/lib/motion';
 import { computeStepStatus } from '@/lib/plan-generator';
@@ -66,12 +65,6 @@ export default function PlanScreen() {
   const scrollRef = useRef<Animated.ScrollView>(null);
   // refs to each week section for scroll targeting
   const weekOffsets = useRef<number[]>([]);
-
-  // Rail: measured Y offsets per week within the weeks container.
-  // Stored as state so the rail re-renders when layouts settle.
-  const [railOffsets, setRailOffsets] = useState<number[]>([]);
-  // Total height of the weeks container so the rail tail reaches the bottom.
-  const [weeksContentHeight, setWeeksContentHeight] = useState(0);
 
   // Live scroll position + the Y offset of the next pending step,
   // both shared values so the floating button can animate its arrow
@@ -146,21 +139,6 @@ export default function PlanScreen() {
     ? findCurrentWeekIndex(plan.weeks, completedSteps, inProgressSteps)
     : 0;
 
-  // Build rail nodes from measured offsets
-  const visibleWeeks = plan.weeks.filter((w) => w.steps.length > 0);
-  const railNodes = visibleWeeks.map((week, i) => {
-    const resolvedState: WeekState =
-      i < currentIdx ? 'past' : i === currentIdx ? 'current' : 'future';
-    return {
-      state: resolvedState,
-      offsetY: railOffsets[i] ?? 0,
-    };
-  });
-
-  // Left padding to give the rail + nodes room (node is 10px, add 8px gap)
-  const RAIL_LEFT_OFFSET = 18; // px from ScrollView left edge to rail centre
-  const WEEKS_PADDING_LEFT = RAIL_LEFT_OFFSET + 10 + 8; // 36px total
-
   return (
     <View className="flex-1 bg-bg">
       <Animated.ScrollView
@@ -184,44 +162,22 @@ export default function PlanScreen() {
           </Text>
         </Animated.View>
 
-        {/* Weeks container — relative so the rail can be absolutely positioned */}
-        <View
-          style={{ position: 'relative', paddingLeft: WEEKS_PADDING_LEFT }}
-          onLayout={(e) => setWeeksContentHeight(e.nativeEvent.layout.height)}
-        >
-          {/* Timeline rail — rendered behind week content */}
-          <PlanRail
-            nodes={railNodes}
-            contentHeight={weeksContentHeight}
-          />
-
-          {/* Week sections */}
+        {/* Week sections — full-width now that the timeline rail is gone */}
+        <View>
           {plan.weeks.map((week, i) => {
             if (week.steps.length === 0) return null;
             const resolvedState: WeekState =
               i < currentIdx ? 'past' : i === currentIdx ? 'current' : 'future';
-
-            // Track visual index (excluding empty weeks) for rail offset mapping
-            const visibleIdx = visibleWeeks.findIndex((w) => w.index === week.index);
 
             return (
               <View
                 key={week.index}
                 onLayout={(e) => {
                   const y = e.nativeEvent.layout.y;
-                  // Store in weekOffsets for FloatingNextButton scroll targeting.
-                  // weekOffsets is relative to the inner padded container, so add
-                  // ScrollView header offset when scrolling.
+                  // Track Y for FloatingNextButton scroll targeting. y is relative
+                  // to the inner container, so add the ScrollView header offset.
                   weekOffsets.current[i] = y + (insets.top + 16);
                   nextStepY.value = computeNextStepY();
-
-                  // Store midpoint Y of this week's header row for the rail node.
-                  // Use the top edge + a small offset to align with the week label row.
-                  setRailOffsets((prev) => {
-                    const next = [...prev];
-                    next[visibleIdx] = y + 12; // ~centre of the week header text
-                    return next;
-                  });
                 }}
               >
                 <WeekSection
