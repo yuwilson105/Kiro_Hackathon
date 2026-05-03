@@ -1,21 +1,20 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import Animated, {
-  useReducedMotion,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  FadeIn,
-  FadeOut,
+    FadeIn,
+    FadeOut,
+    useReducedMotion,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 
 import { FlameLogo } from '@/components/animations/flame-logo';
+import { generatePlanFromAPI } from '@/lib/api';
+import { duration, enter } from '@/lib/motion';
 import { generatePlan } from '@/lib/plan-generator';
 import { useStore } from '@/lib/store';
-import { enter, duration, ease } from '@/lib/motion';
 import { colors } from '@/lib/theme';
+import type { Plan } from '@/types/plan';
 
 const SUBTEXT_LINES = [
   'Looking at what changed while you were away…',
@@ -27,7 +26,6 @@ const SUBTEXT_LINES = [
 const FADE_IN_MS = 250;
 const HOLD_MS = 450;
 const FADE_OUT_MS = 250;
-const LINE_TOTAL_MS = FADE_IN_MS + HOLD_MS + FADE_OUT_MS; // 950ms per line
 
 export default function BuildingScreen() {
   const router = useRouter();
@@ -39,19 +37,12 @@ export default function BuildingScreen() {
   const finishOnboarding = useStore((s) => s.finishOnboarding);
 
   const [lineIndex, setLineIndex] = useState(0);
-  const [lineVisible, setLineVisible] = useState(true);
 
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const navigatedRef = useRef(false);
 
-  const navigate = () => {
-    if (navigatedRef.current) return;
-    navigatedRef.current = true;
-    const plan = generatePlan(profile);
-    setPlan(plan);
-    finishOnboarding();
-    router.replace('/(tabs)');
-  };
+  // Fire the API call immediately on mount — don't wait for animation.
+  const planPromiseRef = useRef<Promise<Plan>>(generatePlanFromAPI(profile));
 
   useEffect(() => {
     const push = (fn: () => void, ms: number) => {
@@ -60,45 +51,45 @@ export default function BuildingScreen() {
       return id;
     };
 
+    const navigate = async () => {
+      if (navigatedRef.current) return;
+      navigatedRef.current = true;
+
+      // Await the API call (may already be resolved if animation took longer).
+      let plan: Plan = await planPromiseRef.current;
+
+      // Fall back to local generator if API returned an empty plan.
+      if (plan.weeks.length === 0) {
+        plan = generatePlan(profile);
+      }
+
+      setPlan(plan);
+      finishOnboarding();
+      router.replace('/(tabs)');
+    };
+
     // Reduced motion: skip straight to navigate after 600ms.
     if (reduced) {
-      push(navigate, 600);
+      push(() => { void navigate(); }, 600);
       return () => timersRef.current.forEach(clearTimeout);
     }
 
     // Cycle through subtext lines with fade transitions.
-    // Line 0 is visible from mount. For lines 1-3, schedule fade-out → index
-    // advance → fade-in. After all lines, navigate.
-    let cursor = 0; // ms elapsed
+    // Each line: FADE_IN_MS visible → HOLD_MS hold → FADE_OUT_MS exit → next line.
+    // Line 0 is already visible from mount; schedule its fade-out first.
+    let cursor = 0;
 
     SUBTEXT_LINES.forEach((_, i) => {
-      if (i === 0) {
-        // Line 0 is already visible; schedule its fade-out.
-        cursor += FADE_IN_MS + HOLD_MS;
-        push(() => setLineVisible(false), cursor);
-        cursor += FADE_OUT_MS;
-        // Advance to next line and make it visible.
-        push(() => {
-          setLineIndex(1);
-          setLineVisible(true);
-        }, cursor);
-      } else if (i < SUBTEXT_LINES.length - 1) {
-        // Middle lines: schedule fade-out then advance.
-        cursor += FADE_IN_MS + HOLD_MS;
-        push(() => setLineVisible(false), cursor);
-        cursor += FADE_OUT_MS;
-        push(() => {
-          setLineIndex(i + 1);
-          setLineVisible(true);
-        }, cursor);
-      } else {
-        // Last line: hold a bit, then navigate when total duration elapses.
-        // The last line fades in; we navigate once duration.building completes.
+      if (i < SUBTEXT_LINES.length - 1) {
+        // Schedule advance to next line after this line's hold + fade-out.
+        cursor += FADE_IN_MS + HOLD_MS + FADE_OUT_MS;
+        push(() => setLineIndex(i + 1), cursor);
       }
+      // Last line: just hold until duration.building fires navigate.
     });
 
     // Navigate at total duration.building (2400ms).
-    push(navigate, duration.building);
+    push(() => { void navigate(); }, duration.building);
 
     return () => {
       timersRef.current.forEach(clearTimeout);

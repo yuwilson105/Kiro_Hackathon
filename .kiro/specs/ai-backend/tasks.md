@@ -139,8 +139,8 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - **Property 7: Resource count in range** — response contains between 5 and 30 items
     - **Validates: Requirements 4.5**
 
-- [ ] 13. Implement POST /companion/respond
-  - [~] 13.1 Create `backend/src/routes/companion.ts`
+- [x] 13. Implement POST /companion/respond
+  - [x] 13.1 Create `backend/src/routes/companion.ts`
     - Validate request body with `CompanionRequestSchema`; return 400 if `message` is empty
     - Run `detectCrisis(message)` before any LLM call
     - If crisis detected: return hardcoded `CompanionMessage` with `isCrisis: true`, `tone: 'crisis'`, and 988 Lifeline text — no LLM call
@@ -174,6 +174,43 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
 
 - [x] 16. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 17. Frontend API client
+  - Create `lib/api.ts` with a typed `apiClient` that reads `EXPO_PUBLIC_API_URL` from env
+  - Implement `generatePlanFromAPI(profile)` → calls `POST /plan/generate`, returns `Plan`
+  - Implement `generateFeedFromAPI(profile)` → calls `POST /feed/generate`, returns `FeedCard[]`
+  - Implement `findResourcesFromAPI(profile)` → calls `POST /resources/find`, returns `Resource[]`
+  - Implement `sendCompanionMessageToAPI(message, profile, history)` → calls `POST /companion/respond`, returns `CompanionMessage`
+  - All functions must handle network errors gracefully and return typed fallbacks
+  - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1_
+
+- [ ] 18. Wire plan generation to backend
+  - Update `app/(onboarding)/building.tsx` to call `generatePlanFromAPI` instead of local `generatePlan`
+  - Keep the 2400ms animation timing — fire the API call immediately on mount, await it, then navigate when both the animation AND the API call are done (whichever is later)
+  - Fall back to local `generatePlan` if the API call fails
+  - _Requirements: 1.1, 1.10_
+
+- [ ] 19. Wire catch-up feed to backend
+  - Update `app/(tabs)/catchup.tsx` to fetch feed cards from `generateFeedFromAPI` on mount
+  - Show a skeleton loading state while fetching (use `bg-surface` / `bg-surfaceDeep` shimmer, no spinner)
+  - Fall back to `lib/mock/feed.ts` data if the API call fails
+  - _Requirements: 3.1, 3.9_
+
+- [ ] 20. Wire resources to backend
+  - Update `app/(tabs)/help.tsx` to fetch resources from `findResourcesFromAPI` on mount
+  - Show a skeleton loading state while fetching
+  - Fall back to `lib/mock/resources.ts` data if the API call fails
+  - _Requirements: 4.1, 4.8_
+
+- [ ] 21. Wire companion chat to backend
+  - Update `lib/companion-chat.ts` to call `sendCompanionMessageToAPI` instead of returning stub replies
+  - Pass the full `profile` from the store alongside the message and history
+  - Fall back to a static reply if the API call fails
+  - _Requirements: 5.1, 5.6_
+
+- [ ] 22. Environment configuration
+  - Add `EXPO_PUBLIC_API_URL=http://localhost:3000` to `.env.example` at the repo root
+  - Document how to run both the backend and the Expo app together in `README.md`
 
 ## Notes
 

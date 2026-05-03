@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo } from 'react';
-import { View } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, Text } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useShallow } from 'zustand/shallow';
 
@@ -17,6 +17,7 @@ import { useCheckinSheet } from '@/components/sheets/checkin-sheet';
 import { enter } from '@/lib/motion';
 import { computeStepStatus } from '@/lib/plan-generator';
 import { useStore } from '@/lib/store';
+import { colors } from '@/lib/theme';
 import type { PlanStep, StepStatus } from '@/types/plan';
 
 const todayISO = () => format(new Date(), 'yyyy-MM-dd');
@@ -42,6 +43,7 @@ export default function HomeScreen() {
 
   const completeStep = useStore((s) => s.completeStep);
   const markCheckinShown = useStore((s) => s.markCheckinShown);
+  const resetOnboarding = useStore((s) => s.resetOnboarding);
   const checkinSheet = useCheckinSheet();
   const reduced = useReducedMotion();
 
@@ -77,6 +79,31 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer scroll contentClassName="px-4 pt-4 pb-12 gap-5">
+      {/* DEV-only reset button */}
+      {__DEV__ && (
+        <Pressable
+          onPress={() => {
+            resetOnboarding();
+            router.replace('/');
+          }}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Reset application"
+          style={{
+            alignSelf: 'flex-end',
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.bg,
+          }}
+        >
+          <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: 'Onest_500Medium' }}>
+            ↺ Reset
+          </Text>
+        </Pressable>
+      )}
       {/* 1. Hero greeting */}
       <Animated.View entering={reduced ? enter.fade(0) : enter.fadeUp(0)}>
         <HeroGreeting

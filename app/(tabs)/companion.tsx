@@ -1,32 +1,32 @@
 import { Send } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import Animated, {
-  Easing,
-  FadeIn,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
+    Easing,
+    FadeIn,
+    useAnimatedStyle,
+    useSharedValue,
+    withDelay,
+    withRepeat,
+    withSequence,
+    withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
-  type ChatMessage,
-  type CompanionContext,
-  makeSeedMessage,
-  sendCompanionMessage,
+    type ChatMessage,
+    type CompanionContext,
+    makeSeedMessage,
+    sendCompanionMessage,
 } from '@/lib/companion-chat';
 import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
@@ -39,6 +39,7 @@ export default function CompanionScreen() {
   const context: CompanionContext = {
     firstName: profile.firstName ?? '',
     streakCurrent: streak.current ?? 0,
+    profile,
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => [makeSeedMessage(context)]);

@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
+import companionRouter from './routes/companion';
 import feedRouter from './routes/feed';
 import healthRouter from './routes/health';
 import jobsRouter from './routes/jobs';
@@ -15,11 +16,14 @@ const app = express();
 // Middleware
 // ---------------------------------------------------------------------------
 
-// CORS — restrict origin in production via ALLOWED_ORIGIN env var
+// CORS — allow Expo dev server and any configured production origin
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGIN ?? '*',
-    methods: ['GET', 'POST'],
+    origin: process.env.ALLOWED_ORIGIN
+      ? process.env.ALLOWED_ORIGIN.split(',')
+      : true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
   }),
 );
 
@@ -38,6 +42,7 @@ app.use('/plan/generate', planRouter);
 app.use('/jobs/recommend', jobsRouter);
 app.use('/feed/generate', feedRouter);
 app.use('/resources/find', resourcesRouter);
+app.use('/companion/respond', companionRouter);
 
 // ---------------------------------------------------------------------------
 // Error handler (registered last)

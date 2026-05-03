@@ -9,6 +9,7 @@ export type LLMCallOptions = {
   userPrompt: string;
   timeoutMs: number;
   schema: string; // JSON schema description embedded in system prompt
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>; // prior turns
 };
 
 export class LLMError extends Error {
@@ -47,6 +48,7 @@ export async function callLLM<T>(options: LLMCallOptions): Promise<T> {
         max_tokens: 4096,
         messages: [
           { role: 'system', content: options.systemPrompt },
+          ...(options.history ?? []),
           { role: 'user', content: options.userPrompt },
         ],
       },

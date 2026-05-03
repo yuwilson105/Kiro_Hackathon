@@ -1,20 +1,23 @@
-import { useState, useMemo, useCallback } from 'react';
-import { View, Text } from 'react-native';
-import Animated, {
-  useReducedMotion,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
 import { FlashList } from '@shopify/flash-list';
 import { differenceInYears } from 'date-fns';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Text, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useReducedMotion,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withTiming,
+} from 'react-native-reanimated';
 import { useShallow } from 'zustand/shallow';
 
-import { FilterPills } from '@/components/catchup/filter-pills';
 import { FeedCard } from '@/components/catchup/feed-card';
-import { useStore } from '@/lib/store';
+import { FilterPills } from '@/components/catchup/filter-pills';
+import { generateFeedFromAPI } from '@/lib/api';
 import { feedCards } from '@/lib/mock/feed';
 import { duration, ease } from '@/lib/motion';
+import { useStore } from '@/lib/store';
 import type { FeedCard as FeedCardType } from '@/types/feed';
 import type { InterestKey } from '@/types/profile';
 
@@ -29,11 +32,43 @@ export function useUnreadCount(): number {
 }
 
 // ---------------------------------------------------------------------------
+// Skeleton card — shown while feed is loading
+// ---------------------------------------------------------------------------
+function SkeletonCard() {
+  const reduced = useReducedMotion();
+  const shimmer = useSharedValue(1);
+
+  useEffect(() => {
+    if (reduced) return;
+    shimmer.value = withRepeat(
+      withSequence(
+        withTiming(0.4, { duration: 700, easing: ease.snap }),
+        withTiming(1, { duration: 700, easing: ease.snap }),
+      ),
+      -1,
+      false,
+    );
+  }, [reduced, shimmer]);
+
+  const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
+
+  return (
+    <View className="bg-surface rounded-xl p-4 gap-3">
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-4 w-3/4" />
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-full" />
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-5/6" />
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
 export default function CatchUpScreen() {
   const reduced = useReducedMotion();
   const [activeFilter, setActiveFilter] = useState<InterestKey | null>(null);
+  const [cards, setCards] = useState<FeedCardType[]>([]);
+  const [loading, setLoading] = useState(true);
   const listOpacity = useSharedValue(1);
 
   const { profile, savedFeedIds, readFeedIds, toggleFeedSaved, markFeedRead } = useStore(
@@ -46,6 +81,13 @@ export default function CatchUpScreen() {
     }))
   );
 
+  useEffect(() => {
+    generateFeedFromAPI(profile).then((result) => {
+      setCards(result.length > 0 ? result : feedCards);
+      setLoading(false);
+    });
+  }, []); // only on mount
+
   // Compute gap label
   const gapLabel = useMemo(() => {
     if (!profile.gapStart || !profile.gapEnd) return null;
@@ -56,8 +98,8 @@ export default function CatchUpScreen() {
   // Filter + sort cards
   const displayCards = useMemo<FeedCardType[]>(() => {
     const base = activeFilter
-      ? feedCards.filter((c) => c.category === activeFilter)
-      : feedCards;
+      ? cards.filter((c) => c.category === activeFilter)
+      : cards;
 
     if (!activeFilter && profile.interests.length > 0) {
       const interestSet = new Set(profile.interests);
@@ -67,7 +109,7 @@ export default function CatchUpScreen() {
     }
 
     return base;
-  }, [activeFilter, profile.interests]);
+  }, [activeFilter, profile.interests, cards]);
 
   // Fade list on filter change
   const handleFilterChange = useCallback(
@@ -76,10 +118,6 @@ export default function CatchUpScreen() {
         setActiveFilter(key);
         return;
       }
-      listOpacity.value = withTiming(0, { duration: duration.micro, easing: ease.snap }, () => {
-        'worklet';
-      });
-      // JS side: update filter then fade back in
       listOpacity.value = withTiming(0, { duration: duration.micro, easing: ease.snap });
       setTimeout(() => {
         setActiveFilter(key);
@@ -140,22 +178,34 @@ export default function CatchUpScreen() {
         onSelect={handleFilterChange}
       />
 
+      {/* SKELETON LOADING */}
+      {loading && (
+        <View className="flex-1 px-6 pt-2 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </View>
+      )}
+
       {/* FEED LIST */}
-      <Animated.View style={[{ flex: 1 }, listStyle]}>
-        <FlashList
-          data={displayCards}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingTop: 8,
-            paddingBottom: 100,
-          }}
-          ItemSeparatorComponent={ItemSeparator}
-          ListEmptyComponent={EmptyState}
-          showsVerticalScrollIndicator={false}
-        />
-      </Animated.View>
+      {!loading && (
+        <Animated.View style={[{ flex: 1 }, listStyle]}>
+          <FlashList
+            data={displayCards}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            estimatedItemSize={120}
+            contentContainerStyle={{
+              paddingHorizontal: 24,
+              paddingTop: 8,
+              paddingBottom: 100,
+            }}
+            ItemSeparatorComponent={ItemSeparator}
+            ListEmptyComponent={EmptyState}
+            showsVerticalScrollIndicator={false}
+          />
+        </Animated.View>
+      )}
     </View>
   );
 }

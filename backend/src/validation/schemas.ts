@@ -71,7 +71,7 @@ const CitySchema = z.object({
 // --- Exported request body schemas ---
 
 export const ProfileSchema = z.object({
-  firstName: z.string().min(1),
+  firstName: z.string(),
   gapStart: z.string().nullable(),
   gapEnd: z.string().nullable(),
   city: CitySchema.nullable(),
@@ -82,11 +82,17 @@ export const ProfileSchema = z.object({
   idStatus: IdStatusSchema.nullable(),
   priorities: z.array(PriorityKeySchema),
   interests: z.array(InterestKeySchema),
-});
+}).passthrough();
 
 export const CompanionRequestSchema = z.object({
   message: z.string().min(1, 'message is required'),
   profile: ProfileSchema,
+  history: z.array(
+    z.object({
+      role: z.enum(['user', 'assistant']),
+      content: z.string(),
+    }),
+  ).optional(),
 });
 
 // --- Validation helper ---
