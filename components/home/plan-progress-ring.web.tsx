@@ -1,5 +1,5 @@
 /**
- * PlanProgressRing — web fallback
+ * PlanProgressRing - web fallback
  * Uses react-native-svg <Circle> with stroke-dasharray to render the arc.
  * Animates via Reanimated on a derived shared value.
  */
@@ -95,7 +95,7 @@ export function PlanProgressRing({
           fill="none"
           strokeLinecap="round"
         />
-        {/* Foreground arc — rotated so 0° is at 12 o'clock */}
+        {/* Foreground arc - rotated so 0° is at 12 o'clock */}
         <AnimatedCircle
           cx={cx}
           cy={cy}

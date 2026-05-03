@@ -1,5 +1,5 @@
 /**
- * PlanProgressRing — native (iOS / Android)
+ * PlanProgressRing - native (iOS / Android)
  * Renders a circular progress arc via Skia Canvas, with an RN Text label overlay.
  */
 
@@ -17,7 +17,7 @@ import { duration, ease, spring } from '@/lib/motion';
 import { colors, type } from '@/lib/theme';
 
 // ---------------------------------------------------------------------------
-// Module-scope Skia paint objects — created once, reused across renders
+// Module-scope Skia paint objects - created once, reused across renders
 // ---------------------------------------------------------------------------
 
 const trackPaint = Skia.Paint();
@@ -72,7 +72,7 @@ export function PlanProgressRing({
     }
   }, [progress, reduced, animatedProgress]);
 
-  // Update paint stroke widths (safe at render time — Skia reads on draw)
+  // Update paint stroke widths (safe at render time - Skia reads on draw)
   trackPaint.setStrokeWidth(strokeWidth);
   arcPaint.setStrokeWidth(strokeWidth);
 
@@ -81,14 +81,14 @@ export function PlanProgressRing({
   const radius = (size - strokeWidth) / 2;
   const sw = strokeWidth;
 
-  // Track path — full circle; rebuilt only when size/strokeWidth change
+  // Track path - full circle; rebuilt only when size/strokeWidth change
   const trackPath = useDerivedValue(() => {
     const p = Skia.Path.Make();
     p.addCircle(halfSize, halfSize, radius);
     return p;
   });
 
-  // Arc path — recomputed in worklet when animatedProgress changes
+  // Arc path - recomputed in worklet when animatedProgress changes
   const arcPath = useDerivedValue(() => {
     const sweep = animatedProgress.value * 360;
     const p = Skia.Path.Make();

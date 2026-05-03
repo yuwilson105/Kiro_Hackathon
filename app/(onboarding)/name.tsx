@@ -104,7 +104,7 @@ export default function NameScreen() {
             onPress={handleSkip}
             hitSlop={12}
             accessibilityRole="button"
-            accessibilityLabel="Skip — I'd rather not say"
+            accessibilityLabel="Skip. I'd rather not say"
             style={styles.skipBtn}
           >
             <Text style={styles.skipText}>I'd rather not say</Text>

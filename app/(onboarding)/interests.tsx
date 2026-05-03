@@ -11,20 +11,28 @@ import type { InterestKey } from '@/types/profile';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-// Tighter labels so the wrap-grid sits in clean rows on a phone
+// Mix of single-word pills (preferred — pill grid reads cleanest tight) and
+// the few descriptive labels that earn their length ("Justice reform",
+// "Mental health", "LGBTQ+ rights"). Order roughly: most-likely-tapped first.
 const PILLS: { label: string; key: InterestKey }[] = [
   { label: 'Tech', key: 'tech' },
-  { label: 'LGBTQ+ rights', key: 'lgbtq' },
-  { label: 'Sports', key: 'sports' },
-  { label: 'Politics', key: 'politics' },
-  { label: 'Mental health', key: 'mental-health-awareness' },
+  { label: 'AI', key: 'ai' },
+  { label: 'Phones', key: 'phones' },
+  { label: 'Jobs', key: 'jobs' },
+  { label: 'Housing', key: 'housing' },
+  { label: 'Healthcare', key: 'healthcare' },
   { label: 'Finance', key: 'finance' },
-  { label: 'Climate', key: 'climate' },
-  { label: 'Music & TV', key: 'music-entertainment' },
+  { label: 'Politics', key: 'politics' },
+  { label: 'Voting', key: 'voting' },
   { label: 'Justice reform', key: 'criminal-justice' },
-  { label: 'Social media', key: 'social-media' },
+  { label: 'Mental health', key: 'mental-health-awareness' },
+  { label: 'LGBTQ+ rights', key: 'lgbtq' },
   { label: "Women's rights", key: 'womens-rights' },
   { label: 'Immigration', key: 'immigration' },
+  { label: 'Climate', key: 'climate' },
+  { label: 'Social media', key: 'social-media' },
+  { label: 'Music & TV', key: 'music-entertainment' },
+  { label: 'Sports', key: 'sports' },
 ];
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
@@ -64,11 +72,12 @@ export default function InterestsScreen() {
       featuredCta
     >
       <View accessible={false}>
-        <View className="flex-row flex-wrap gap-2">
+        <View className="flex-row flex-wrap" style={{ gap: 10, rowGap: 12 }}>
           {PILLS.map(({ label, key }, i) => (
             <Animated.View key={key} entering={pillEntering(i)}>
               <PillButton
                 label={label}
+                size="lg"
                 selected={interests.includes(key)}
                 onPress={() => toggle(key)}
                 accessibilityLabel={`${label}${interests.includes(key) ? ', selected' : ''}`}

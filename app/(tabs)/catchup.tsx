@@ -22,7 +22,7 @@ import type { FeedCard as FeedCardType } from '@/types/feed';
 import type { InterestKey } from '@/types/profile';
 
 // ---------------------------------------------------------------------------
-// Unread count helper — TODO: wire to tabBarBadge in (tabs)/_layout.tsx
+// Unread count helper - TODO: wire to tabBarBadge in (tabs)/_layout.tsx
 // Usage: const unread = useUnreadCount();
 // In _layout: <Tabs.Screen name="catchup" options={{ tabBarBadge: unread || undefined }} />
 // ---------------------------------------------------------------------------

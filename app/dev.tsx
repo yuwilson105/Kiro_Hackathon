@@ -88,10 +88,10 @@ export default function DevScreen() {
         <Card variant="surface" padding="md">
           <Text className="font-medium text-base text-text mb-1">Current state</Text>
           <Text className="font-sans text-sm text-text-muted">
-            firstName: {profile.firstName || '—'}
+            firstName: {profile.firstName || '-'}
           </Text>
           <Text className="font-sans text-sm text-text-muted">
-            city: {profile.city ? `${profile.city.city}, ${profile.city.state}` : '—'}
+            city: {profile.city ? `${profile.city.city}, ${profile.city.state}` : '-'}
           </Text>
           <Text className="font-sans text-sm text-text-muted">
             priorities: {profile.priorities.length}
@@ -148,6 +148,12 @@ export default function DevScreen() {
             variant="outline"
             fullWidth
             onPress={() => router.push('/demo-welcome')}
+          />
+          <Button
+            label="Preview: Flame palette (0–30 streak)"
+            variant="outline"
+            fullWidth
+            onPress={() => router.push('/dev-flame-palette')}
           />
         </View>
 

@@ -112,7 +112,7 @@ function PriorityCard({ item, selected, atMax, totalSelected, onToggle, entering
         disabled={isDisabled}
       >
         <Animated.View style={[styles.card, cardStyle]}>
-          {/* Checkmark badge — top right */}
+          {/* Checkmark badge - top right */}
           <Animated.View
             style={[styles.checkBadge, checkStyle]}
             accessibilityElementsHidden
@@ -121,7 +121,7 @@ function PriorityCard({ item, selected, atMax, totalSelected, onToggle, entering
             <Check size={11} color={colors.successDeep} strokeWidth={2.5} />
           </Animated.View>
 
-          {/* Icon — top left */}
+          {/* Icon - top left */}
           <View accessibilityElementsHidden importantForAccessibility="no">
             <item.Icon
               size={24}
@@ -130,7 +130,7 @@ function PriorityCard({ item, selected, atMax, totalSelected, onToggle, entering
             />
           </View>
 
-          {/* Label — bottom left */}
+          {/* Label - bottom left */}
           <Text style={styles.label} numberOfLines={2}>
             {item.label}
           </Text>
@@ -167,7 +167,7 @@ export default function PrioritiesScreen() {
     <OnboardingShell
       step={4}
       header="What matters most to you right now?"
-      subtext="Pick up to three to start. Anything you skip stays on the list — we'll come back to it."
+      subtext="Pick up to three to start. Anything you skip stays on the list. We'll come back to it."
       onContinue={handleContinue}
       continueLabel="Continue"
       continueDisabled={!canContinue}

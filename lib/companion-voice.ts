@@ -124,7 +124,7 @@ export function getCompanionResponse(
   const { hour, streakDays, daysSinceCheckin } = context;
   const seed = hashString(input + String(hour));
 
-  // 1. Crisis check — before any matching
+  // 1. Crisis check - before any matching
   if (detectCrisis(input)) {
     const crisisSeed = companionSeeds.find((s) => s.id === 'crisis')!;
     return {
@@ -171,9 +171,9 @@ export function getCompanionResponse(
   let body = pick(matchedSeed.bodies, seed + 1);
   let closer = pick(matchedSeed.closers, seed + 2);
 
-  // 6. Context conditioning — time of day
+  // 6. Context conditioning - time of day
   if (hour >= 5 && hour < 12) {
-    // Morning lean — occasionally prefix opener
+    // Morning lean - occasionally prefix opener
     if (seed % 3 === 0) {
       opener = `Good morning. ${opener}`;
     }
@@ -186,12 +186,12 @@ export function getCompanionResponse(
     }
   }
 
-  // 7. Context conditioning — gap since last check-in
+  // 7. Context conditioning - gap since last check-in
   if (daysSinceCheckin >= 3) {
     opener = `Hey. It's been a few days. That's okay. ${opener}`;
   }
 
-  // 8. Context conditioning — streak
+  // 8. Context conditioning - streak
   if (streakDays >= 7 && seed % 2 === 0) {
     closer = `${closer} You've shown up ${streakDays} days now. That counts.`;
   }

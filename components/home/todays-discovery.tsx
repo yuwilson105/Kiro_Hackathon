@@ -20,13 +20,19 @@ const CATEGORY_LABEL: Record<InterestKey, string> = {
   finance: 'FINANCE',
   lgbtq: 'LGBTQ+',
   politics: 'POLITICS',
+  voting: 'VOTING',
   'criminal-justice': 'LAW',
   tech: 'TECH',
+  ai: 'AI',
+  phones: 'PHONES',
   'social-media': 'SOCIAL',
   'mental-health-awareness': 'WELLNESS',
+  healthcare: 'HEALTHCARE',
   'music-entertainment': 'CULTURE',
   'womens-rights': "WOMEN'S",
   immigration: 'IMMIGRATION',
+  housing: 'HOUSING',
+  jobs: 'JOBS',
   climate: 'CLIMATE',
   sports: 'SPORTS',
 };
@@ -35,13 +41,19 @@ const CATEGORY_COLOR: Record<InterestKey, string> = {
   finance: colors.accent,
   lgbtq: colors.success,
   politics: colors.danger,
-  'criminal-justice': colors.danger,
+  voting: colors.primaryDeep,
+  'criminal-justice': colors.primaryDeep,
   tech: colors.primaryDeep,
+  ai: colors.primary,
+  phones: colors.primary,
   'social-media': colors.primaryDeep,
   'mental-health-awareness': colors.primary,
+  healthcare: colors.primary,
   'music-entertainment': colors.textMuted,
   'womens-rights': colors.primary,
   immigration: colors.textMuted,
+  housing: colors.successDeep,
+  jobs: colors.primaryDeep,
   climate: colors.success,
   sports: colors.textMuted,
 };
@@ -113,22 +125,20 @@ export function TodaysDiscovery(): React.ReactElement | null {
       accessibilityLabel={`Today's discovery: ${card.title}. ${card.readMinutes} minute read.`}
     >
       <View className="bg-bg border border-border rounded-2xl p-4 w-full">
-        {/* Eyebrow row */}
+        {/* Eyebrow row — type badge on left, category badge on right */}
         <View className="flex-row items-center justify-between">
-          <Text className="text-2xs font-medium uppercase tracking-wider text-text-muted">
-            TODAY'S DISCOVERY
-          </Text>
-          <View
-            className="rounded-full px-2 py-0.5"
-            style={{ backgroundColor: `${categoryColor}18` }}
+          <Text
+            className="text-2xs font-medium uppercase tracking-wider text-text-muted"
+            importantForAccessibility="no"
           >
-            <Text
-              className="text-2xs font-medium uppercase tracking-wider"
-              style={{ color: categoryColor }}
-            >
-              {categoryLabel}
-            </Text>
-          </View>
+            ARTICLE
+          </Text>
+          <Text
+            className="text-2xs font-medium uppercase tracking-wider"
+            style={{ color: categoryColor }}
+          >
+            {categoryLabel}
+          </Text>
         </View>
 
         {/* Title */}

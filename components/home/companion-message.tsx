@@ -21,7 +21,7 @@ const MESSAGES: string[] = [
   "One thing done is more than nothing. Start there.",
   "Hard things get easier the second time around.",
   "Your past doesn't get a vote on what you do next.",
-  "Hey — you showed up. That's the first move.",
+  "Hey, you showed up. That's the first move.",
   "Nobody figures this out all at once. That's normal.",
   "The next thing is small. Do the next thing.",
   "You're not behind. You're just at the hard part.",
@@ -75,7 +75,7 @@ export function CompanionMessage() {
       accessibilityLabel={`Companion message: ${message}`}
       className="flex-row items-center py-3 px-1"
     >
-      {/* Avatar — pastel-blue tonal dot, no peach so it sits with the rest of the dashboard */}
+      {/* Avatar - pastel-blue tonal dot, no peach so it sits with the rest of the dashboard */}
       <View
         className="w-8 h-8 rounded-full items-center justify-center mr-3 shrink-0"
         style={{ backgroundColor: colors.primarySoft }}
@@ -85,7 +85,15 @@ export function CompanionMessage() {
 
       {/* Message */}
       <View className="flex-1">
-        <Text className="text-base font-sans text-text leading-6">
+        <Text
+          style={{
+            fontFamily: 'Fraunces_300Light_Italic',
+            fontSize: 19,
+            lineHeight: 26,
+            letterSpacing: -0.2,
+            color: '#1F2D3D',
+          }}
+        >
           {message}
         </Text>
         <Text className="text-2xs font-medium uppercase tracking-wider text-text-muted mt-2">

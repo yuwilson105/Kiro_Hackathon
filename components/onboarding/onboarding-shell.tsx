@@ -122,7 +122,7 @@ export function OnboardingShell({
   );
 }
 
-// ── Featured CTA — used on the final onboarding step ────────────────────────
+// ── Featured CTA - used on the final onboarding step ────────────────────────
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -153,7 +153,7 @@ function FeaturedCta({
     haptics.tap();
     if (!reduced) {
       scale.value = withSpring(0.97, spring.press);
-      arrowX.value = withSpring(4, spring.press);
+      arrowX.value = withSpring(10, spring.press);
       glow.value = withSpring(1, spring.gentle);
     }
   }, [reduced, disabled, scale, arrowX, glow]);
@@ -208,7 +208,6 @@ function FeaturedCta({
           },
         ]}
       >
-        <Sparkles size={18} color="#FFFFFF" strokeWidth={2} />
         <Text
           style={{
             fontSize: 16,

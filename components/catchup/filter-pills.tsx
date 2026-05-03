@@ -23,15 +23,21 @@ export const ALL_INTERESTS: InterestKey[] = [
 
 const INTEREST_LABEL: Record<InterestKey, string> = {
   tech: 'Tech',
+  ai: 'AI',
+  phones: 'Phones',
   finance: 'Money',
   politics: 'Politics',
+  voting: 'Voting',
   'social-media': 'Social',
   'music-entertainment': 'Culture',
   'mental-health-awareness': 'Health',
+  healthcare: 'Healthcare',
   'criminal-justice': 'Law',
   lgbtq: 'LGBTQ+',
   'womens-rights': "Women's",
   immigration: 'Immigration',
+  housing: 'Housing',
+  jobs: 'Jobs',
   climate: 'Climate',
   sports: 'Sports',
 };
