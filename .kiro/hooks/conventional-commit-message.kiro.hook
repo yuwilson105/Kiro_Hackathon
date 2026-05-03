@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "enabled": true,
+  "name": "Conventional Commit Message",
+  "description": "automatically generates a commit message following conventional commit standards based off the current git diff",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the current git diff and write a commit message following conventional commit standards. The format should be: type(scope): description. Common types include: feat, fix, docs, style, refactor, test, chore. Keep the description concise and in present tense. If there are breaking changes, include BREAKING CHANGE in the footer."
+  }
+}
