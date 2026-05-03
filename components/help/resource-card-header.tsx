@@ -11,7 +11,6 @@ type Props = {
 
 export function ResourceCardHeader({ resource }: Props) {
   const visual = RESOURCE_CATEGORY_VISUAL[resource.category];
-  const PrimaryIcon = visual.primary;
   const imageUrl = imageUrlFor(resource);
 
   return (
@@ -48,25 +47,6 @@ export function ResourceCardHeader({ resource }: Props) {
           backgroundColor: 'rgba(31,45,61,0.18)',
         }}
       />
-
-      {/* Category icon chip — bottom-left. Kept because Picsum photos are
-          random; the chip is the only at-a-glance category cue. */}
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          bottom: 12,
-          left: 12,
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          backgroundColor: 'rgba(255,255,255,0.92)',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <PrimaryIcon size={16} strokeWidth={1.75} color={visual.primaryColor} />
-      </View>
 
       {/* Felon-friendly chip — top-right, white pill, no green block */}
       {resource.felonFriendly ? (

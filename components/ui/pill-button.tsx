@@ -40,10 +40,12 @@ export function PillButton({
     progress.value = withTiming(0, { duration: duration.short, easing: ease.snap });
   }
 
+  // Animate from white (255,255,255) to primaryDeep (74,125,176) — fully filled
+  // confident selected state, not the prior soft tint.
   const containerStyle = useAnimatedStyle(() => {
-    const bgR = 255 + (166 - 255) * progress.value;
-    const bgG = 255 + (200 - 255) * progress.value;
-    const bgB = 255 + (230 - 255) * progress.value;
+    const bgR = 255 + (74 - 255) * progress.value;
+    const bgG = 255 + (125 - 255) * progress.value;
+    const bgB = 255 + (176 - 255) * progress.value;
     return {
       transform: [{ scale: scale.value }],
       backgroundColor: `rgb(${Math.round(bgR)}, ${Math.round(bgG)}, ${Math.round(bgB)})`,
@@ -76,15 +78,20 @@ export function PillButton({
       style={[
         containerStyle,
         {
-          borderWidth: selected ? 1.5 : 1,
-          borderColor: selected ? colors.primary : colors.border,
+          borderWidth: 1,
+          borderColor: selected ? colors.primaryDeep : colors.border,
           borderRadius: 999,
         },
       ]}
       className={`flex-row items-center gap-2 ${sizeClass} ${disabled ? 'opacity-50' : ''}`}
     >
       {icon ? <View>{icon}</View> : null}
-      <Text className={`font-medium ${textSizeClass} text-text`}>{label}</Text>
+      <Text
+        className={`${textSizeClass} ${selected ? 'font-semibold' : 'font-medium'}`}
+        style={{ color: selected ? colors.textInverse : colors.text }}
+      >
+        {label}
+      </Text>
     </AnimatedPressable>
   );
 }

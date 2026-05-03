@@ -5,6 +5,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { IconButton } from '@/components/ui/icon-button';
+import {
+  loadGenericDemoProfile,
+  loadMarcusDemoProfile,
+} from '@/lib/demo-profiles';
 import { useStore } from '@/lib/store';
 import { generatePlan } from '@/lib/plan-generator';
 import { colors } from '@/lib/theme';
@@ -61,42 +65,6 @@ export default function DevScreen() {
     router.push('/(onboarding)/name');
   };
 
-  const skipOnboardingWithFakeProfile = () => {
-    setProfile({
-      firstName: 'Marcus',
-      gapStart: '2018-03-01',
-      gapEnd: '2026-04-01',
-      city: { city: 'San Francisco', state: 'CA' },
-      conviction: 'non-violent',
-      education: 'high-school-diploma',
-      workHistory: ['warehouse', 'construction'],
-      housing: 'halfway-house',
-      idStatus: 'no',
-      priorities: ['getting-id', 'finding-job', 'finding-housing'],
-      interests: ['tech', 'finance', 'criminal-justice', 'mental-health-awareness'],
-    });
-    const plan = generatePlan({
-      firstName: 'Marcus',
-      gapStart: '2018-03-01',
-      gapEnd: '2026-04-01',
-      city: { city: 'San Francisco', state: 'CA' },
-      conviction: 'non-violent',
-      convictionDetails: '',
-      education: 'high-school-diploma',
-      educationOther: '',
-      workHistory: ['warehouse', 'construction'],
-      workOther: '',
-      housing: 'halfway-house',
-      housingOther: '',
-      idStatus: 'no',
-      priorities: ['getting-id', 'finding-job', 'finding-housing'],
-      interests: ['tech', 'finance', 'criminal-justice', 'mental-health-awareness'],
-    });
-    setPlan(plan);
-    finishOnboarding();
-    router.replace('/(tabs)');
-  };
-
   const triggerMilestone = () => {
     setMilestoneUnlocked('get-state-id');
     completeStep('get-state-id');
@@ -141,10 +109,16 @@ export default function DevScreen() {
           </Text>
           <Button label="Restart onboarding" variant="primary" fullWidth onPress={goOnboarding} />
           <Button
-            label="Skip onboarding (fake Marcus profile)"
+            label="Skip with Marcus (lived-in, 6 weeks)"
             variant="outline"
             fullWidth
-            onPress={skipOnboardingWithFakeProfile}
+            onPress={loadMarcusDemoProfile}
+          />
+          <Button
+            label="Skip with Alex (fresh, no progress)"
+            variant="outline"
+            fullWidth
+            onPress={loadGenericDemoProfile}
           />
         </View>
 

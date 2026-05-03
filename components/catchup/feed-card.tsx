@@ -68,6 +68,14 @@ type Props = {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+// Average adult reading speed is ~220 wpm. Computed from body so each
+// article shows its actual length instead of the uniform 3-min stub
+// values stored in the mock data.
+function readMinutesFromBody(body: string): number {
+  const words = body.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
+}
+
 export function FeedCard({ card, isSaved, isRead, onToggleSaved, onMarkRead }: Props) {
   const router = useRouter();
   const reduced = useReducedMotion();
@@ -161,7 +169,7 @@ export function FeedCard({ card, isSaved, isRead, onToggleSaved, onMarkRead }: P
             </Text>
           </View>
           <Text className="text-2xs font-medium text-text-muted" style={{ letterSpacing: 0.6 }}>
-            {card.readMinutes} MIN READ
+            {readMinutesFromBody(card.body)} MIN READ
           </Text>
         </View>
 

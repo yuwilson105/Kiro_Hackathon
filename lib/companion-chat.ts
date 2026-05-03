@@ -1,6 +1,5 @@
-// Companion chat - local stub layer.
-// Swap `sendCompanionMessage` for a real API call when ready; everything else
-// (state shape, history serialization) is already in the form a chat API expects.
+import { sendCompanionMessageToAPI } from '@/lib/api';
+import type { Profile } from '@/types/profile';
 
 export type ChatRole = 'user' | 'companion';
 
@@ -14,29 +13,35 @@ export type ChatMessage = {
 export type CompanionContext = {
   firstName: string;
   streakCurrent: number;
+  profile: Profile;
 };
 
-const STUB_REPLIES: string[] = [
-  'Tell me a bit more about that.',
-  'What part of it feels heaviest right now?',
-  "How long has that been sitting with you?",
-  'What would help most today: to be heard, or to think through a next step?',
-  "I'm here. Take your time.",
-  'Say more. I want to make sure I understand.',
-  "Some of that takes a while to land. We don't have to rush it.",
-];
-
-let replyIndex = 0;
-
 export async function sendCompanionMessage(
-  _userText: string,
-  _context: CompanionContext,
-  _history: ChatMessage[],
+  userText: string,
+  context: CompanionContext,
+  history: ChatMessage[],
 ): Promise<string> {
-  await new Promise((r) => setTimeout(r, 700 + Math.random() * 700));
-  const reply = STUB_REPLIES[replyIndex % STUB_REPLIES.length];
-  replyIndex += 1;
-  return reply;
+  try {
+    // Convert chat history to the role/content format the API expects.
+    // Exclude the seed greeting (id: 'seed-greeting') — it's a UI artifact, not a real turn.
+    // Map 'companion' → 'assistant' to match the OpenAI message role convention.
+    const apiHistory = history
+      .filter((m) => m.id !== 'seed-greeting')
+      .map((m) => ({
+        role: m.role === 'companion' ? ('assistant' as const) : ('user' as const),
+        content: m.content,
+      }));
+
+    const companionMessage = await sendCompanionMessageToAPI(
+      userText,
+      context.profile,
+      apiHistory,
+    );
+    return companionMessage.text;
+  } catch (err) {
+    console.error('[companion] API call failed:', err);
+    return "I hear you. I'm here.";
+  }
 }
 
 export function makeSeedMessage(context: CompanionContext): ChatMessage {

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Alignment — Spec Consistency Check",
+  "description": "Checks that requirements, design, and tasks are all aligned. Finds missing coverage, out-of-scope tasks, and design gaps. Presents findings one by one with severity levels and waits for your input before moving on.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the requirements, design, and implementation tasks for alignment. Perform the following checks:\n\n1. **Requirements Coverage**: Verify that every requirement has corresponding tasks in the implementation plan\n2. **Scope Compliance**: Ensure no tasks exist that fall outside the defined requirements\n3. **Design Alignment**: Check that the design properly addresses all requirements and that tasks implement the design\n\nFor each issue found, provide:\n- The specific requirement/design/task that is misaligned\n- The nature of the misalignment (missing coverage, out of scope, design gap)\n- Concrete remediation steps (update requirements, add tasks, remove tasks, clarify design)\n\nPresent findings ONE-BY-ONE, with recommendations in order from best recommendation to least, in a clear, actionable format with severity levels (Critical, Important, Minor). Give options and a recommendation. WAIT for me to give guidance before moving to the next finding.\n\nReview these files:\n- Requirements documents: **/requirements.md\n- Design documents: **/design.md\n- Implementation/task documents: **/tasks.md\n\nWhen I have confirmed that the final alignment is complete, rewrite all of the tasks in red/green/refactor format."
+  }
+}

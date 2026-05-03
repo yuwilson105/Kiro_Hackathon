@@ -34,29 +34,6 @@ const PILLS: { label: string; key: InterestKey }[] = [
   { label: 'Sports', key: 'sports' },
 ];
 
-const PILL_BY_KEY: Record<InterestKey, { label: string; key: InterestKey }> =
-  Object.fromEntries(PILLS.map((p) => [p.key, p])) as Record<
-    InterestKey,
-    { label: string; key: InterestKey }
-  >;
-
-// Hand-tuned row buckets so widths balance and no pill orphans on its own
-// row. Each row renders with justifyContent: 'space-between' so spacing
-// reads as intentional asymmetry instead of ragged-right. Rows of 1 pill
-// fall back to flex-start so the lone pill doesn't stretch.
-const ROWS: InterestKey[][] = [
-  ['tech', 'ai', 'jobs', 'healthcare'],
-  ['phones', 'voting', 'climate', 'immigration'],
-  ['housing', 'finance', 'politics', 'sports'],
-  [
-    'civil-rights',
-    'mental-health-awareness',
-    'criminal-justice',
-    'music-entertainment',
-    'social-media',
-  ],
-];
-
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function InterestsScreen() {
@@ -94,40 +71,26 @@ export default function InterestsScreen() {
       featuredCta
     >
       <View accessible={false}>
-        <View style={{ rowGap: 12 }}>
-          {ROWS.map((row, r) => {
-            const startIdx = ROWS.slice(0, r).reduce(
-              (sum, prev) => sum + prev.length,
-              0,
-            );
-            return (
-              <View
-                key={r}
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  columnGap: 10,
-                  rowGap: 12,
-                  justifyContent: row.length > 1 ? 'space-between' : 'flex-start',
-                }}
-              >
-                {row.map((key, i) => {
-                  const { label } = PILL_BY_KEY[key];
-                  return (
-                    <Animated.View key={key} entering={pillEntering(startIdx + i)}>
-                      <PillButton
-                        label={label}
-                        size="lg"
-                        selected={interests.includes(key)}
-                        onPress={() => toggle(key)}
-                        accessibilityLabel={`${label}${interests.includes(key) ? ', selected' : ''}`}
-                      />
-                    </Animated.View>
-                  );
-                })}
-              </View>
-            );
-          })}
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            columnGap: 8,
+            rowGap: 10,
+            justifyContent: 'flex-start',
+          }}
+        >
+          {PILLS.map(({ label, key }, i) => (
+            <Animated.View key={key} entering={pillEntering(i)}>
+              <PillButton
+                label={label}
+                size="md"
+                selected={interests.includes(key)}
+                onPress={() => toggle(key)}
+                accessibilityLabel={`${label}${interests.includes(key) ? ', selected' : ''}`}
+              />
+            </Animated.View>
+          ))}
         </View>
       </View>
     </OnboardingShell>

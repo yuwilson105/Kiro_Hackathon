@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
-import { ArrowRight, Play } from 'lucide-react-native';
+import { ArrowRight, Bookmark, Play } from 'lucide-react-native';
 import { useCallback } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, {
@@ -13,6 +13,7 @@ import Animated, {
 import * as haptics from '@/lib/haptics';
 import { spring } from '@/lib/motion';
 import { buildYouTubeSearchUrl, formatVideoDuration, type Video } from '@/lib/mock/videos';
+import { useSavedVideosStore } from '@/lib/saved-videos-store';
 import { colors } from '@/lib/theme';
 import type { InterestKey } from '@/types/profile';
 
@@ -69,6 +70,9 @@ export function VideoCard({ video }: Props): React.ReactElement {
   const reduced = useReducedMotion();
   const scale = useSharedValue(1);
 
+  const isSaved = useSavedVideosStore((s) => s.savedVideoIds.includes(video.id));
+  const toggleVideoSaved = useSavedVideosStore((s) => s.toggleVideoSaved);
+
   const animStyle = useAnimatedStyle(() =>
     reduced ? {} : { transform: [{ scale: scale.value }] },
   );
@@ -81,6 +85,11 @@ export function VideoCard({ video }: Props): React.ReactElement {
   const handlePressOut = useCallback(() => {
     if (!reduced) scale.value = withSpring(1, spring.press);
   }, [reduced, scale]);
+
+  const handleBookmark = useCallback(() => {
+    haptics.select();
+    toggleVideoSaved(video.id);
+  }, [toggleVideoSaved, video.id]);
 
   const eyebrowColor = CATEGORY_COLOR[video.category] ?? colors.primaryDeep;
   const eyebrowLabel = CATEGORY_LABEL[video.category] ?? video.category.toUpperCase();
@@ -196,7 +205,7 @@ export function VideoCard({ video }: Props): React.ReactElement {
               textTransform: 'uppercase',
             }}
           >
-            {video.yearsAgo === 0 ? 'NEW' : `${video.yearsAgo}Y AGO`}
+            {Math.max(1, Math.round(video.durationSec / 60))} MIN
           </Text>
         </View>
         <Text
@@ -210,21 +219,37 @@ export function VideoCard({ video }: Props): React.ReactElement {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             marginTop: 10,
-            gap: 4,
           }}
         >
-          <Text
-            style={{
-              fontSize: 13,
-              fontFamily: 'Onest_500Medium',
-              color: colors.primaryDeep,
-            }}
+          <Pressable
+            onPress={handleBookmark}
+            hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={isSaved ? 'Unsave video' : 'Save video'}
+            accessibilityState={{ selected: isSaved }}
           >
-            Watch
-          </Text>
-          <ArrowRight size={14} color={colors.primaryDeep} strokeWidth={2.25} />
+            <Bookmark
+              size={18}
+              color={isSaved ? colors.primaryDeep : colors.textMuted}
+              fill={isSaved ? colors.primaryDeep : 'transparent'}
+              strokeWidth={isSaved ? 2 : 1.75}
+            />
+          </Pressable>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Text
+              style={{
+                fontSize: 13,
+                fontFamily: 'Onest_500Medium',
+                color: colors.primaryDeep,
+              }}
+            >
+              Watch
+            </Text>
+            <ArrowRight size={14} color={colors.primaryDeep} strokeWidth={2.25} />
+          </View>
         </View>
       </View>
     </AnimatedPressable>

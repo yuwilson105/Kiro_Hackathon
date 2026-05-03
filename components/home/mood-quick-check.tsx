@@ -236,7 +236,7 @@ export function MoodQuickCheck() {
 
   const logQuickMood = (mood: Mood) => {
     dismissWithAnimation(() => registerMood({ date: today, mood }));
-    if (mood === 'struggling') setAlert('struggling-mood');
+    if (mood === 'struggling' || mood === 'need-talk') setAlert('negative-mood', mood);
     setDismissed(true);
   };
 
@@ -251,6 +251,7 @@ export function MoodQuickCheck() {
     if (note.length < 2) return;
     haptics.select();
     dismissWithAnimation(() => registerMood({ date: today, mood: 'need-talk', note }));
+    setAlert('negative-mood', 'need-talk');
     setDismissed(true);
   };
 

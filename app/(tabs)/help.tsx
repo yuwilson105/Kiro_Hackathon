@@ -1,17 +1,55 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Pressable, Text, TextInput, View } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { FlashList, type FlashListRef, type ListRenderItem } from '@shopify/flash-list';
 import { Search, X } from 'lucide-react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Linking, Pressable, Text, TextInput, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useReducedMotion,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withTiming,
+} from 'react-native-reanimated';
 
 import { CategoryFilter, type CategoryOption } from '@/components/help/category-filter';
 import { ResourceCard } from '@/components/help/resource-card';
 import { Button } from '@/components/ui/button';
+import { findResourcesFromAPI } from '@/lib/api';
 import { resources } from '@/lib/mock/resources';
-import { enter } from '@/lib/motion';
+import { ease, enter } from '@/lib/motion';
 import { useStore } from '@/lib/store';
 import { colors } from '@/lib/theme';
 import type { Resource } from '@/types/resource';
+
+// ---------------------------------------------------------------------------
+// Skeleton card — shown while resources are loading
+// ---------------------------------------------------------------------------
+function SkeletonCard() {
+  const reduced = useReducedMotion();
+  const shimmer = useSharedValue(1);
+
+  useEffect(() => {
+    if (reduced) return;
+    shimmer.value = withRepeat(
+      withSequence(
+        withTiming(0.4, { duration: 700, easing: ease.snap }),
+        withTiming(1, { duration: 700, easing: ease.snap }),
+      ),
+      -1,
+      false,
+    );
+  }, [reduced, shimmer]);
+
+  const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
+
+  return (
+    <View className="bg-surface rounded-xl p-4 gap-3">
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-4 w-3/4" />
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-full" />
+      <Animated.View style={shimmerStyle} className="bg-surfaceDeep rounded h-3 w-5/6" />
+    </View>
+  );
+}
 
 // mulberry32 — tiny seeded PRNG, returns [0, 1).
 function mulberry32(seed: number) {
@@ -37,9 +75,11 @@ function shuffleSeeded<T>(arr: readonly T[], seed: number): T[] {
 }
 
 export default function HelpScreen() {
-  const city = useStore((s) => s.profile.city);
+  const profile = useStore((s) => s.profile);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<CategoryOption>('all');
+  const [resourceList, setResourceList] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(true);
   const reduced = useReducedMotion();
   const listRef = useRef<FlashListRef<Resource>>(null);
 
@@ -50,6 +90,13 @@ export default function HelpScreen() {
     () => shuffleSeeded(resources, (Math.random() * 0xffffffff) >>> 0),
     [],
   );
+
+  useEffect(() => {
+    findResourcesFromAPI(profile).then((result) => {
+      setResourceList(result.length > 0 ? result : resources);
+      setLoading(false);
+    });
+  }, []); // only on mount
 
   const filtered = useMemo<Resource[]>(() => {
     const q = query.trim().toLowerCase();
@@ -95,7 +142,7 @@ export default function HelpScreen() {
     [],
   );
 
-  const titleText = city?.city ? `Help near ${city.city}` : 'Help near you';
+  const titleText = profile.city?.city ? `Help near ${profile.city.city}` : 'Help near you';
 
   return (
     <View className="flex-1 bg-bg">
@@ -169,8 +216,17 @@ export default function HelpScreen() {
         <CategoryFilter selected={category} onSelect={setCategory} />
       </Animated.View>
 
-      {/* D. RESOURCE LIST */}
-      {filtered.length === 0 ? (
+      {/* D. SKELETON LOADING */}
+      {loading && (
+        <View className="flex-1 px-6 pt-2 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </View>
+      )}
+
+      {/* E. RESOURCE LIST */}
+      {!loading && filtered.length === 0 ? (
         <View className="flex-1 items-center justify-center px-10 gap-4">
           <Text className="text-base font-medium text-text text-center">
             {query.trim()
@@ -197,6 +253,7 @@ export default function HelpScreen() {
             data={filtered}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
+            estimatedItemSize={180}
             contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 100 }}
             ItemSeparatorComponent={ItemSeparatorComponent}
             CellRendererComponent={CellRendererComponent}

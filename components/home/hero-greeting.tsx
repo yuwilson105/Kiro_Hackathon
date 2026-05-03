@@ -11,8 +11,17 @@ type Props = {
   hasMilestoneToday: boolean;
 };
 
-function getGreeting(): string {
+// Adaptive greeting: long names get a shorter prefix so the line never
+// truncates ("Good evening, Christopher" → "Evening, Christopher").
+// Short names (≤ 5 chars) get the full time-of-day greeting.
+function getGreeting(firstName: string): string {
   const hour = getHours(new Date());
+  const isLongName = firstName.trim().length > 5;
+  if (isLongName) {
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
+  }
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
@@ -37,7 +46,7 @@ export function HeroGreeting({
   hasMilestoneToday,
 }: Props): ReactElement {
   const now = new Date();
-  const greeting = getGreeting();
+  const greeting = getGreeting(firstName ?? '');
   const subline = getSubline(streakCurrent, todayTaskCount, hasMilestoneToday);
 
   const weekday = format(now, 'EEEE');

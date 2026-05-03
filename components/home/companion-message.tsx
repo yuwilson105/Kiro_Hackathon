@@ -41,10 +41,13 @@ function dayOfYear(date: Date): number {
 
 function resolveMessage(messages: string[], day: number, firstName: string): string {
   const raw = messages[day % messages.length];
-  if (!raw.includes('{name}') || !firstName.trim()) {
+  // Use only the first whitespace-separated token. Profile may contain a
+  // full name from earlier sessions; messages always read better with one.
+  const firstOnly = firstName.trim().split(/\s+/)[0] ?? '';
+  if (!raw.includes('{name}') || !firstOnly) {
     return raw.replace('{name}, ', '').replace('{name} ', '');
   }
-  return raw.replace('{name}', firstName.trim());
+  return raw.replace('{name}', firstOnly);
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
