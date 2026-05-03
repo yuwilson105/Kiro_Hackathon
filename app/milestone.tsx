@@ -31,11 +31,11 @@ function getMilestoneNote(step: PlanStep | null): string {
   if (id === 'get-state-id')
     return "That was one of the hardest first steps. Everything that comes next gets a little easier because of this.";
   if (id === 'open-bank-account')
-    return "That account is yours now. Direct deposit, automatic savings, building credit — none of it was possible without this step.";
+    return "That account is yours now. Direct deposit, automatic savings, building credit. None of it was possible without this step.";
   if (id.includes('find-stable-housing') || id === 'find-housing')
     return "Stable ground. Everything else gets easier from here.";
   if (id.includes('apply-first-jobs') || id === 'first-job')
-    return "An income changes the math on everything else. Take the first paycheck for yourself — you earned it.";
+    return "An income changes the math on everything else. Take the first paycheck for yourself. You earned it.";
   if (id === 'reconnect-family' || id === 'reach-out-to-family')
     return "That took courage. Whatever happens next, you opened the door.";
   return "That took guts. Most people don't even get this far.";

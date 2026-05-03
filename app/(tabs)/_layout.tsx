@@ -1,7 +1,7 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
-import { Home, Calendar, BookOpen, MapPin } from 'lucide-react-native';
+import { Home, Calendar, BookOpen, MapPin, Sparkles } from 'lucide-react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { colors } from '@/lib/theme';
@@ -10,6 +10,23 @@ type TabIconProps = {
   color: string;
   focused: boolean;
 };
+
+function CompanionTabIcon({ focused, color }: TabIconProps) {
+  return (
+    <View
+      style={{
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        backgroundColor: focused ? colors.primarySoft : 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Sparkles size={16} color={color} strokeWidth={focused ? 2 : 1.75} />
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (
@@ -77,6 +94,14 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }: TabIconProps) => (
             <MapPin size={22} color={color} strokeWidth={focused ? 2 : 1.75} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="companion"
+        options={{
+          title: 'Companion',
+          tabBarAccessibilityLabel: 'Your companion',
+          tabBarIcon: CompanionTabIcon,
         }}
       />
     </Tabs>
