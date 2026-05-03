@@ -47,7 +47,8 @@ app-example
 
 # Environment variables - never commit secrets
 .env
+.env.local
 
-# Google OAuth tokens (generated after first auth)
-*.json
-!.env.example
+# Google OAuth credentials and tokens
+gcp-oauth.keys.json
+credentials.json

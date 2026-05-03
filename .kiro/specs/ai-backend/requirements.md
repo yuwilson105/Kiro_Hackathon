@@ -17,14 +17,14 @@ The backend is a standalone HTTP service (REST API) callable from the React Nati
 - **Resource**: A local support organization matching `types/resource.ts` — `id`, `name`, `category`, `address`, `city`, `state`, `phone`, `hours`, `felonFriendly`, `slidingScale`, `description`.
 - **JobListing**: An AI-generated or AI-sourced job opportunity object containing `id`, `title`, `employer`, `location`, `description`, `matchScore`, `applyUrl` (optional), `felonFriendly` (boolean), `workTypes` (WorkType[]).
 - **CompanionMessage**: A conversational response from the AI companion containing `text` (string), `tone` (CompanionTone), and `isCrisis` (boolean).
-- **LLM_Provider**: The third-party large language model service used by the API_Server (e.g., OpenAI, Anthropic).
+- **LLM_Provider**: The third-party large language model service used by the API_Server (Groq, using the OpenAI-compatible API).
 - **Gap_Duration**: The number of years between `gapStart` and `gapEnd` in the user's Profile, representing how long the user was incarcerated.
 - **PriorityKey**: One of the eight reentry priority values defined in `types/profile.ts`.
 - **InterestKey**: One of the twelve interest category values defined in `types/profile.ts`.
 - **WorkType**: One of the nine work experience categories defined in `types/profile.ts`.
 - **StepCategory**: One of the eight plan step categories defined in `types/plan.ts` — `documents`, `housing`, `employment`, `finance`, `health`, `family`, `legal`, `education`.
 - **ResourceCategory**: One of the eight resource categories defined in `types/resource.ts`.
-- **ConvictionType**: One of the four conviction type values defined in `types/profile.ts`.
+- **ConvictionType**: One of the five conviction type values defined in `types/profile.ts` — `non-violent`, `drug-related`, `violent`, `other`, `rather-not-say`.
 
 ---
 

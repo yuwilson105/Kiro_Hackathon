@@ -1,1 +1,5 @@
-{"specId": "6995e72c-b522-4954-86d1-1babd89f5df5", "workflowType": "design-first", "specType": "feature"}
+{
+  "specType": "feature",
+  "workflowType": "requirements-first",
+  "featureName": "ai-backend"
+}
