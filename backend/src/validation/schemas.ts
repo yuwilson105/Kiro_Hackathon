@@ -6,14 +6,17 @@ const ConvictionTypeSchema = z.enum([
   'non-violent',
   'drug-related',
   'violent',
+  'other',
   'rather-not-say',
 ]);
 
 const EducationLevelSchema = z.enum([
+  'less-than-high-school',
   'some-high-school',
   'high-school-diploma',
   'some-college',
   'college-degree',
+  'other',
 ]);
 
 const WorkTypeSchema = z.enum([
@@ -33,6 +36,7 @@ const HousingStatusSchema = z.enum([
   'family-friends',
   'own-place',
   'no-housing',
+  'other',
 ]);
 
 const IdStatusSchema = z.enum(['yes', 'no', 'expired']);
@@ -51,14 +55,20 @@ const PriorityKeySchema = z.enum([
 const InterestKeySchema = z.enum([
   'lgbtq',
   'tech',
+  'ai',
+  'phones',
   'politics',
+  'voting',
   'finance',
   'social-media',
   'music-entertainment',
   'mental-health-awareness',
+  'healthcare',
   'criminal-justice',
   'womens-rights',
   'immigration',
+  'housing',
+  'jobs',
   'climate',
   'sports',
 ]);
@@ -76,9 +86,13 @@ export const ProfileSchema = z.object({
   gapEnd: z.string().nullable(),
   city: CitySchema.nullable(),
   conviction: ConvictionTypeSchema.nullable(),
+  convictionDetails: z.string().optional(),
   education: EducationLevelSchema.nullable(),
+  educationOther: z.string().optional(),
   workHistory: z.array(WorkTypeSchema),
+  workOther: z.string().optional(),
   housing: HousingStatusSchema.nullable(),
+  housingOther: z.string().optional(),
   idStatus: IdStatusSchema.nullable(),
   priorities: z.array(PriorityKeySchema),
   interests: z.array(InterestKeySchema),

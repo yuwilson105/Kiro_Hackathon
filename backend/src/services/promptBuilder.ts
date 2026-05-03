@@ -36,7 +36,7 @@ export function buildPromptContext(profile: Profile): SafePromptContext {
     priorities: profile.priorities,
     interests: profile.interests,
     hasConviction: profile.conviction !== null,
-    convictionCategory: profile.conviction === 'rather-not-say'
+    convictionCategory: (profile.conviction === 'rather-not-say' || profile.conviction === 'other')
       ? 'unspecified'
       : (profile.conviction ?? 'unspecified'),
   };
