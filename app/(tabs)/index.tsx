@@ -49,7 +49,7 @@ export default function HomeScreen() {
           style: 'destructive',
           onPress: () => {
             resetOnboarding();
-            router.replace('/');
+            router.replace('/(onboarding)/name');
           },
         },
       ],

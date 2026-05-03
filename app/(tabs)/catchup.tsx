@@ -1,7 +1,7 @@
 import { differenceInYears } from "date-fns";
 import { Bookmark, BookmarkCheck } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import Animated, {
     FadeOut,
     LinearTransition,
@@ -341,10 +341,11 @@ export default function CatchUpScreen() {
       {/* FEED LIST */}
       <View style={{ flex: 1 }}>
         <Animated.View style={[{ flex: 1 }, listStyle]}>
-          <FlatList
+          <FlashList
             data={displayItems}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
+            estimatedItemSize={280}
             contentContainerStyle={{
               paddingHorizontal: 24,
               paddingTop: 8,
