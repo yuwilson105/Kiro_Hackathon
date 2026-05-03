@@ -3,12 +3,18 @@ import { Check, MapPin, Navigation, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
+  cancelAnimation,
+  Easing,
+  FadeIn,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withRepeat,
+  withSequence,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 import { OnboardingShell } from '@/components/onboarding/onboarding-shell';
@@ -112,10 +118,54 @@ export default function LocationScreen() {
   const [selected, setSelected] = useState<City | null>(null);
   const [focused, setFocused] = useState(false);
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  const [detecting, setDetecting] = useState(false);
 
   const inputRef = useRef<TextInput>(null);
+  const detectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const results = selected ? [] : search(query);
+  const results = selected || detecting ? [] : search(query);
+
+  // ── Pinging-ring animation around the pin while detecting ───────────────────
+  const ringScale = useSharedValue(0.6);
+  const ringOpacity = useSharedValue(0);
+  useEffect(() => {
+    if (detecting && !reduced) {
+      ringScale.value = withRepeat(
+        withSequence(
+          withTiming(0.6, { duration: 0 }),
+          withTiming(2.2, { duration: 1000, easing: Easing.out(Easing.quad) }),
+        ),
+        -1,
+        false,
+      );
+      ringOpacity.value = withRepeat(
+        withSequence(
+          withTiming(0.55, { duration: 0 }),
+          withTiming(0, { duration: 1000, easing: Easing.out(Easing.quad) }),
+        ),
+        -1,
+        false,
+      );
+    } else {
+      cancelAnimation(ringScale);
+      cancelAnimation(ringOpacity);
+      ringScale.value = 0.6;
+      ringOpacity.value = 0;
+    }
+  }, [detecting, reduced, ringScale, ringOpacity]);
+
+  const ringStyle = useAnimatedStyle(() => ({
+    opacity: ringOpacity.value,
+    transform: [{ scale: ringScale.value }],
+  }));
+
+  // Cleanup the detect timer on unmount.
+  useEffect(
+    () => () => {
+      if (detectTimerRef.current) clearTimeout(detectTimerRef.current);
+    },
+    [],
+  );
 
   // ── Toggle animation: cross-fade icon color, tween label color, scale-in check ──
   const toggleT = useSharedValue(0);
@@ -146,8 +196,17 @@ export default function LocationScreen() {
     ],
   }));
 
+  function cancelDetect() {
+    if (detectTimerRef.current) {
+      clearTimeout(detectTimerRef.current);
+      detectTimerRef.current = null;
+    }
+    setDetecting(false);
+  }
+
   function handleSelect(city: City) {
     haptics.select();
+    cancelDetect();
     setSelected(city);
     setQuery('');
     setUseCurrentLocation(false);
@@ -155,6 +214,7 @@ export default function LocationScreen() {
 
   function handleClear() {
     haptics.tap();
+    cancelDetect();
     setSelected(null);
     setQuery('');
     setUseCurrentLocation(false);
@@ -163,16 +223,25 @@ export default function LocationScreen() {
 
   function handleUseCurrentLocation() {
     haptics.select();
-    setUseCurrentLocation((prev) => {
-      if (!prev) {
-        setSelected(MOCK_LOCATION);
-        setQuery('');
-        return true;
-      } else {
-        setSelected(null);
-        return false;
-      }
-    });
+    if (useCurrentLocation || detecting) {
+      // Toggle off: cancel any in-flight detect, clear selection.
+      cancelDetect();
+      setUseCurrentLocation(false);
+      setSelected(null);
+      return;
+    }
+    // Toggle on: enter detecting state, then reveal after a short beat.
+    setUseCurrentLocation(true);
+    setSelected(null);
+    setQuery('');
+    setDetecting(true);
+    if (detectTimerRef.current) clearTimeout(detectTimerRef.current);
+    detectTimerRef.current = setTimeout(() => {
+      detectTimerRef.current = null;
+      setDetecting(false);
+      setSelected(MOCK_LOCATION);
+      haptics.success();
+    }, reduced ? 0 : 900);
   }
 
   function handleContinue() {
@@ -199,29 +268,65 @@ export default function LocationScreen() {
           style={[
             styles.inputCard,
             focused && !selected ? styles.inputCardFocused : null,
+            detecting ? styles.inputCardDetecting : null,
           ]}
         >
-          <MapPin
-            size={18}
-            color={colors.textMuted}
-            strokeWidth={1.75}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          />
+          <View style={styles.pinWrap}>
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.pinRing, ringStyle]}
+            />
+            <MapPin
+              size={18}
+              color={detecting ? colors.primary : colors.textMuted}
+              strokeWidth={1.75}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+          </View>
 
-          {selected ? (
+          {detecting ? (
+            <Animated.Text
+              key="detecting"
+              entering={FadeIn.duration(180).easing(Easing.out(Easing.quad))}
+              style={styles.detectingText}
+              numberOfLines={1}
+            >
+              Finding your location…
+            </Animated.Text>
+          ) : selected ? (
             <>
-              <Text style={styles.selectedText} numberOfLines={1}>
-                {cityLabel(selected)}
-              </Text>
-              <Pressable
-                onPress={handleClear}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                accessibilityRole="button"
-                accessibilityLabel="Clear selected city"
+              <Animated.View
+                key={cityLabel(selected)}
+                style={{ flex: 1 }}
+                entering={
+                  reduced
+                    ? FadeIn.duration(0)
+                    : FadeIn.duration(280)
+                        .easing(Easing.out(Easing.cubic))
+                        .withInitialValues({ transform: [{ translateY: 6 }] })
+                }
               >
-                <X size={16} color={colors.textMuted} strokeWidth={1.75} />
-              </Pressable>
+                <Text style={styles.selectedText} numberOfLines={1}>
+                  {cityLabel(selected)}
+                </Text>
+              </Animated.View>
+              <Animated.View
+                entering={
+                  reduced
+                    ? FadeIn.duration(0)
+                    : FadeIn.delay(120).duration(220).easing(Easing.out(Easing.quad))
+                }
+              >
+                <Pressable
+                  onPress={handleClear}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear selected city"
+                >
+                  <X size={16} color={colors.textMuted} strokeWidth={1.75} />
+                </Pressable>
+              </Animated.View>
             </>
           ) : (
             <TextInput
@@ -359,6 +464,29 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderWidth: 2,
   },
+  inputCardDetecting: {
+    borderColor: colors.primarySoft,
+  },
+  pinWrap: {
+    width: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinRing: {
+    position: 'absolute',
+    width: 18,
+    height: 18,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+  },
+  detectingText: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Onest_400Regular',
+    color: colors.textMuted,
+  },
   input: {
     flex: 1,
     fontSize: 16,
@@ -369,8 +497,10 @@ const styles = StyleSheet.create({
   selectedText: {
     flex: 1,
     fontSize: 16,
+    lineHeight: 22,
     fontFamily: 'Onest_500Medium',
     color: colors.text,
+    includeFontPadding: false,
   },
   resultsList: {
     marginTop: 4,
