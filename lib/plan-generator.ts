@@ -157,10 +157,11 @@ function packIntoWeeks(steps: PlanStep[]): PlanWeek[] {
 
 /**
  * Generate a full Plan from a Profile.
- * Returns an empty Plan if the profile is empty / null.
+ * Returns an empty Plan only if the profile itself is missing.
+ * (firstName is purely cosmetic — used for greetings, not plan logic.)
  */
 export function generatePlan(profile: Profile): Plan {
-  if (!profile || !profile.firstName) {
+  if (!profile) {
     return { weeks: [], totalSteps: 0, generatedAt: new Date().toISOString() };
   }
 
@@ -193,7 +194,7 @@ export function regeneratePlanFromStep(
   fromStepId: string,
   completedSteps: Record<string, string> = {},
 ): Plan {
-  if (!profile || !profile.firstName) {
+  if (!profile) {
     return { weeks: [], totalSteps: 0, generatedAt: new Date().toISOString() };
   }
 

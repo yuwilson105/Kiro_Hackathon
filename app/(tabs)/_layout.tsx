@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
-import { Home, Calendar, BookOpen, MapPin } from 'lucide-react-native';
+import { Home, Calendar, BookOpen, MapPin, Sparkles } from 'lucide-react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { colors } from '@/lib/theme';
@@ -11,27 +11,19 @@ type TabIconProps = {
   focused: boolean;
 };
 
-function CompanionTabIcon({ focused }: TabIconProps) {
+function CompanionTabIcon({ focused, color }: TabIconProps) {
   return (
     <View
       style={{
         width: 22,
         height: 22,
         borderRadius: 11,
-        backgroundColor: colors.primarySoft,
+        backgroundColor: focused ? colors.primarySoft : 'transparent',
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: focused ? 1 : 0.7,
       }}
     >
-      <View
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 4,
-          backgroundColor: colors.accent,
-        }}
-      />
+      <Sparkles size={16} color={color} strokeWidth={focused ? 2 : 1.75} />
     </View>
   );
 }

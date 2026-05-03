@@ -167,9 +167,9 @@ export default function PrioritiesScreen() {
     <OnboardingShell
       step={4}
       header="What matters most to you right now?"
-      subtext="Pick up to three. We'll focus your first weeks on these."
+      subtext="Pick up to three to start. Anything you skip stays on the list — we'll come back to it."
       onContinue={handleContinue}
-      continueLabel="Build my plan"
+      continueLabel="Continue"
       continueDisabled={!canContinue}
     >
       <View style={styles.grid}>

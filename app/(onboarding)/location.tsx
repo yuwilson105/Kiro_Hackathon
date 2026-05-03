@@ -1,8 +1,15 @@
 import { router } from 'expo-router';
 import { Check, MapPin, Navigation, X } from 'lucide-react-native';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated, {
+  interpolate,
+  interpolateColor,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { OnboardingShell } from '@/components/onboarding/onboarding-shell';
 import * as haptics from '@/lib/haptics';
@@ -109,6 +116,35 @@ export default function LocationScreen() {
   const inputRef = useRef<TextInput>(null);
 
   const results = selected ? [] : search(query);
+
+  // ── Toggle animation: cross-fade icon color, tween label color, scale-in check ──
+  const toggleT = useSharedValue(0);
+  useEffect(() => {
+    const target = useCurrentLocation ? 1 : 0;
+    toggleT.value = reduced
+      ? target
+      : withSpring(target, { damping: 18, stiffness: 220, mass: 0.6 });
+  }, [useCurrentLocation, reduced, toggleT]);
+
+  const navIconMutedStyle = useAnimatedStyle(() => ({
+    opacity: 1 - toggleT.value,
+  }));
+  const navIconActiveStyle = useAnimatedStyle(() => ({
+    opacity: toggleT.value,
+  }));
+  const toggleLabelStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      toggleT.value,
+      [0, 1],
+      [colors.textMuted, colors.successDeep],
+    ),
+  }));
+  const toggleCheckStyle = useAnimatedStyle(() => ({
+    opacity: toggleT.value,
+    transform: [
+      { scale: interpolate(toggleT.value, [0, 1], [0.4, 1], 'clamp') },
+    ],
+  }));
 
   function handleSelect(city: City) {
     haptics.select();
@@ -253,23 +289,37 @@ export default function LocationScreen() {
           accessibilityState={{ checked: useCurrentLocation }}
         >
           <View style={styles.toggleLeft}>
-            <Navigation
-              size={16}
-              color={useCurrentLocation ? colors.successDeep : colors.textMuted}
-              strokeWidth={1.75}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-            <Text
+            <View style={styles.toggleIconWrap}>
+              <Animated.View style={[styles.toggleIconLayer, navIconMutedStyle]}>
+                <Navigation
+                  size={16}
+                  color={colors.textMuted}
+                  strokeWidth={1.75}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+              </Animated.View>
+              <Animated.View style={[styles.toggleIconLayer, navIconActiveStyle]}>
+                <Navigation
+                  size={16}
+                  color={colors.successDeep}
+                  strokeWidth={1.75}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+              </Animated.View>
+            </View>
+            <Animated.Text
               style={[
                 styles.toggleLabel,
                 useCurrentLocation && styles.toggleLabelActive,
+                toggleLabelStyle,
               ]}
             >
               Use my current location instead
-            </Text>
+            </Animated.Text>
           </View>
-          {useCurrentLocation && (
+          <Animated.View style={toggleCheckStyle}>
             <Check
               size={16}
               color={colors.successDeep}
@@ -277,7 +327,7 @@ export default function LocationScreen() {
               accessibilityElementsHidden
               importantForAccessibility="no"
             />
-          )}
+          </Animated.View>
         </Pressable>
       </Animated.View>
 
@@ -379,6 +429,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     flex: 1,
+  },
+  toggleIconWrap: {
+    width: 16,
+    height: 16,
+  },
+  toggleIconLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   toggleLabel: {
     fontSize: 14,

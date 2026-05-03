@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react-native';
 import { useEffect, useRef } from 'react';
 import { View, Text } from 'react-native';
 import Animated, {
@@ -7,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useStore } from '@/lib/store';
+import { colors } from '@/lib/theme';
 
 // ── Messages ─────────────────────────────────────────────────────────────────
 // 14 one-liners rotated by dayOfYear % 14.
@@ -73,9 +75,12 @@ export function CompanionMessage() {
       accessibilityLabel={`Companion message: ${message}`}
       className="flex-row items-center py-3 px-1"
     >
-      {/* Avatar */}
-      <View className="w-8 h-8 rounded-full bg-primary-soft items-center justify-center mr-3 shrink-0">
-        <View className="w-3 h-3 rounded-full bg-accent" />
+      {/* Avatar — pastel-blue tonal dot, no peach so it sits with the rest of the dashboard */}
+      <View
+        className="w-8 h-8 rounded-full items-center justify-center mr-3 shrink-0"
+        style={{ backgroundColor: colors.primarySoft }}
+      >
+        <Sparkles size={14} strokeWidth={2} color={colors.primaryDeep} />
       </View>
 
       {/* Message */}

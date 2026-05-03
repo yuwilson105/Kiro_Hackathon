@@ -19,10 +19,19 @@ import type {
 
 // ── Question definitions ──────────────────────────────────────────────────────
 
+type Q1Option = { label: string; value: ConvictionType };
 type Q2Option = { label: string; value: EducationLevel };
 type Q3Option = { label: string; value: WorkType };
 type Q4Option = { label: string; value: HousingStatus };
 type Q5Option = { label: string; value: IdStatus };
+
+const Q1: Q1Option[] = [
+  { label: 'Non-violent', value: 'non-violent' },
+  { label: 'Drug-related', value: 'drug-related' },
+  { label: 'Violent', value: 'violent' },
+  { label: 'Other', value: 'other' },
+  { label: "I'd rather not say", value: 'rather-not-say' },
+];
 
 const Q2: Q2Option[] = [
   { label: 'Less than high school', value: 'less-than-high-school' },
@@ -36,8 +45,8 @@ const Q2: Q2Option[] = [
 const Q3: Q3Option[] = [
   { label: 'Manual labor', value: 'manual-labor' },
   { label: 'Warehouse', value: 'warehouse' },
-  { label: 'Food service', value: 'food-service' },
   { label: 'Retail', value: 'retail' },
+  { label: 'Food service', value: 'food-service' },
   { label: 'Construction', value: 'construction' },
   { label: 'Office work', value: 'office' },
   { label: 'Driving', value: 'driving' },
@@ -65,8 +74,8 @@ export default function BackgroundScreen() {
   const setProfile = useStore((s) => s.setProfile);
   const reduced = useReducedMotion();
 
-  const [convictionText, setConvictionText] = useState('');
-  const [skipConviction, setSkipConviction] = useState(false);
+  const [conviction, setConviction] = useState<ConvictionType | null>(null);
+  const [convictionOther, setConvictionOther] = useState('');
 
   const [education, setEducation] = useState<EducationLevel | null>(null);
   const [educationOther, setEducationOther] = useState('');
@@ -79,32 +88,39 @@ export default function BackgroundScreen() {
 
   const [idStatus, setIdStatus] = useState<IdStatus | null>(null);
 
+  const [skipEducation, setSkipEducation] = useState(false);
+  const [skipWork, setSkipWork] = useState(false);
+  const [skipHousing, setSkipHousing] = useState(false);
+  const [skipId, setSkipId] = useState(false);
+
+  const toggleSkip = (
+    setter: (updater: (prev: boolean) => boolean) => void,
+    clear: () => void,
+  ) => {
+    setter((prev) => {
+      const next = !prev;
+      if (next) clear();
+      return next;
+    });
+  };
+
   const toggleWork = (value: WorkType) => {
     setWorkHistory((prev) =>
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
     );
   };
 
-  const handleConvictionTextChange = (text: string) => {
-    setConvictionText(text);
-    if (text.length > 0 && skipConviction) setSkipConviction(false);
-  };
-
-  const handleSkipConviction = () => {
-    setSkipConviction((prev) => {
-      const next = !prev;
-      if (next) setConvictionText('');
-      return next;
-    });
-  };
+  // Validation: every question except conviction is mandatory.
+  const educationValid = education !== null && (education !== 'other' || educationOther.trim().length > 0);
+  const workValid = workHistory.length > 0 && (!workHistory.includes('other') || workOther.trim().length > 0);
+  const housingValid = housing !== null && (housing !== 'other' || housingOther.trim().length > 0);
+  const idValid = idStatus !== null;
+  const canContinue = educationValid && workValid && housingValid && idValid;
 
   const handleContinue = () => {
-    let conviction: ConvictionType | null = null;
-    if (skipConviction) conviction = 'rather-not-say';
-
     setProfile({
       conviction,
-      convictionDetails: skipConviction ? '' : convictionText.trim(),
+      convictionDetails: conviction === 'other' ? convictionOther.trim() : '',
       education,
       educationOther: education === 'other' ? educationOther.trim() : '',
       workHistory,
@@ -122,55 +138,44 @@ export default function BackgroundScreen() {
   return (
     <OnboardingShell
       step={3}
-      header={'Tell us a little\nabout yourself.'}
+      header="Tell us a little about yourself."
+      headerClassName="font-medium text-2xl text-text leading-8"
       subtext="This shapes your plan. Be as honest as you can. There's no wrong answer here."
       onContinue={handleContinue}
-      continueDisabled={false}
+      continueDisabled={!canContinue}
     >
-      {/* Optional indicator */}
-      <Animated.View
-        entering={reduced ? enter.fade(0) : enter.fadeUp(0)}
-        style={styles.optionalRow}
-        accessible
-        accessibilityLabel="All questions are optional. Skip anything that isn't yours to share."
-      >
-        <View style={styles.optionalDot} />
-        <Text style={styles.optionalText}>
-          ALL OPTIONAL — SKIP WHAT YOU'D RATHER NOT SHARE
-        </Text>
-      </Animated.View>
-
-      {/* Q1 — Conviction (free-form) */}
+      {/* Q1 — Conviction (the only optional question) */}
       <Animated.View entering={cardEntering(0)}>
         <Card variant="plain" padding="md">
           <View
             accessible
-            accessibilityLabel="In your own words, what happened?"
+            accessibilityLabel="What were you convicted of?"
           >
             <Text className="font-medium text-base text-text mb-3">
-              In your own words, what happened?
+              What were you convicted of?
             </Text>
-            <TextInput
-              value={convictionText}
-              onChangeText={handleConvictionTextChange}
-              placeholder="Whatever feels right to share. A sentence or two is plenty."
-              placeholderTextColor={colors.textSubtle}
-              multiline
-              editable={!skipConviction}
-              style={[
-                styles.textArea,
-                skipConviction && styles.textAreaDisabled,
-              ]}
-              accessibilityLabel="Describe what happened"
-            />
-            <View style={styles.skipRow}>
-              <PillButton
-                label="I'd rather not say"
-                selected={skipConviction}
-                onPress={handleSkipConviction}
-                accessibilityLabel="I'd rather not say"
-              />
+            <View className="flex-row flex-wrap gap-2">
+              {Q1.map((opt) => (
+                <PillButton
+                  key={opt.value}
+                  label={opt.label}
+                  selected={conviction === opt.value}
+                  onPress={() => setConviction(opt.value)}
+                  accessibilityLabel={opt.label}
+                />
+              ))}
             </View>
+            {conviction === 'other' ? (
+              <OtherInput
+                value={convictionOther}
+                onChangeText={setConvictionOther}
+                placeholder="In your own words"
+                accessibilityLabel="Other conviction detail"
+              />
+            ) : null}
+            <Text style={styles.helperNote}>
+              Used only to tailor your plan to you.
+            </Text>
           </View>
         </Card>
       </Animated.View>
@@ -190,11 +195,20 @@ export default function BackgroundScreen() {
                 <PillButton
                   key={opt.value}
                   label={opt.label}
-                  selected={education === opt.value}
-                  onPress={() => setEducation(opt.value)}
+                  selected={education === opt.value && !skipEducation}
+                  onPress={() => {
+                    setEducation(opt.value);
+                    setSkipEducation(false);
+                  }}
                   accessibilityLabel={opt.label}
                 />
               ))}
+              <PillButton
+                label="I'd rather not say"
+                selected={skipEducation}
+                onPress={() => toggleSkip(setSkipEducation, () => setEducation(null))}
+                accessibilityLabel="I'd rather not say about education"
+              />
             </View>
             {education === 'other' ? (
               <OtherInput
@@ -223,11 +237,20 @@ export default function BackgroundScreen() {
                 <PillButton
                   key={opt.value}
                   label={opt.label}
-                  selected={workHistory.includes(opt.value)}
-                  onPress={() => toggleWork(opt.value)}
+                  selected={workHistory.includes(opt.value) && !skipWork}
+                  onPress={() => {
+                    toggleWork(opt.value);
+                    setSkipWork(false);
+                  }}
                   accessibilityLabel={opt.label}
                 />
               ))}
+              <PillButton
+                label="I'd rather not say"
+                selected={skipWork}
+                onPress={() => toggleSkip(setSkipWork, () => setWorkHistory([]))}
+                accessibilityLabel="I'd rather not say about work history"
+              />
             </View>
             {workHistory.includes('other') ? (
               <OtherInput
@@ -256,11 +279,20 @@ export default function BackgroundScreen() {
                 <PillButton
                   key={opt.value}
                   label={opt.label}
-                  selected={housing === opt.value}
-                  onPress={() => setHousing(opt.value)}
+                  selected={housing === opt.value && !skipHousing}
+                  onPress={() => {
+                    setHousing(opt.value);
+                    setSkipHousing(false);
+                  }}
                   accessibilityLabel={opt.label}
                 />
               ))}
+              <PillButton
+                label="I'd rather not say"
+                selected={skipHousing}
+                onPress={() => toggleSkip(setSkipHousing, () => setHousing(null))}
+                accessibilityLabel="I'd rather not say about housing"
+              />
             </View>
             {housing === 'other' ? (
               <OtherInput
@@ -284,16 +316,25 @@ export default function BackgroundScreen() {
             <Text className="font-medium text-base text-text mb-3">
               Do you have a valid ID right now?
             </Text>
-            <View className="flex-row gap-2 justify-center">
+            <View className="flex-row flex-wrap gap-2">
               {Q5.map((opt) => (
                 <PillButton
                   key={opt.value}
                   label={opt.label}
-                  selected={idStatus === opt.value}
-                  onPress={() => setIdStatus(opt.value)}
+                  selected={idStatus === opt.value && !skipId}
+                  onPress={() => {
+                    setIdStatus(opt.value);
+                    setSkipId(false);
+                  }}
                   accessibilityLabel={opt.label}
                 />
               ))}
+              <PillButton
+                label="I'd rather not say"
+                selected={skipId}
+                onPress={() => toggleSkip(setSkipId, () => setIdStatus(null))}
+                accessibilityLabel="I'd rather not say about ID"
+              />
             </View>
           </View>
         </Card>
@@ -331,47 +372,12 @@ function OtherInput({
 }
 
 const styles = StyleSheet.create({
-  optionalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 4,
-    marginBottom: 4,
-  },
-  optionalDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.accent,
-  },
-  optionalText: {
-    fontFamily: 'Onest_500Medium',
-    fontSize: 10,
-    letterSpacing: 1.2,
-    color: colors.textMuted,
-  },
-  textArea: {
-    minHeight: 92,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.bg,
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 12,
+  helperNote: {
     fontFamily: 'Onest_400Regular',
-    fontSize: 16,
-    lineHeight: 22,
-    color: colors.text,
-    textAlignVertical: 'top',
-  },
-  textAreaDisabled: {
-    backgroundColor: colors.surface,
+    fontSize: 13,
+    lineHeight: 18,
     color: colors.textMuted,
-  },
-  skipRow: {
     marginTop: 12,
-    flexDirection: 'row',
   },
   otherWrap: {
     marginTop: 12,
