@@ -100,8 +100,8 @@ export default function BackgroundScreen() {
   return (
     <OnboardingShell
       step={3}
-      header="Tell us a little about yourself."
-      subtext="This shapes your plan. Be as honest as you can — there's no wrong answer here."
+      header={'Tell us a little\nabout yourself.'}
+      subtext="This shapes your plan. Be as honest as you can. There's no wrong answer here."
       onContinue={handleContinue}
       continueDisabled={!canContinue}
     >
