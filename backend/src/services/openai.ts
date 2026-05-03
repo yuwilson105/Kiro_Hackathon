@@ -26,11 +26,12 @@ export class LLMError extends Error {
 }
 
 // ---------------------------------------------------------------------------
-// OpenAI client — initialized once at module level
+// Groq client (OpenAI-compatible) — initialized once at module level
 // ---------------------------------------------------------------------------
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.GROQ_API_KEY ?? (() => { throw new Error('GROQ_API_KEY environment variable is missing or empty'); })(),
+  baseURL: 'https://api.groq.com/openai/v1',
 });
 
 // ---------------------------------------------------------------------------
@@ -41,7 +42,7 @@ export async function callLLM<T>(options: LLMCallOptions): Promise<T> {
   try {
     const response = await client.chat.completions.create(
       {
-        model: 'gpt-4o',
+        model: 'llama-3.3-70b-versatile',
         response_format: { type: 'json_object' },
         max_tokens: 4096,
         messages: [
