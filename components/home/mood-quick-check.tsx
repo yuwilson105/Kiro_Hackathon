@@ -191,9 +191,6 @@ export function MoodQuickCheck() {
   const scale = useSharedValue(1);
   const translateY = useSharedValue(0);
 
-  // Hide if dismissed for today, mood already logged, or local hidden flag set
-  if (hidden || moodCheckDismissedDate === today || todayEntry) return null;
-
   // Run the exit animation, then commit store updates after it finishes.
   const dismissWithAnimation = (afterAnim?: () => void) => {
     if (animating) return;
@@ -250,6 +247,10 @@ export function MoodQuickCheck() {
   }));
 
   const sendDisabled = noteText.trim().length < 2;
+
+  // Hide if dismissed for today, mood already logged, or local hidden flag set.
+  // Must come AFTER all hooks above to satisfy the Rules of Hooks.
+  if (hidden || moodCheckDismissedDate === today || todayEntry) return null;
 
   return (
     <Animated.View

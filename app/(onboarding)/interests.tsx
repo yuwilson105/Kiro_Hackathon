@@ -11,19 +11,20 @@ import type { InterestKey } from '@/types/profile';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
+// Tighter labels so the wrap-grid sits in clean rows on a phone
 const PILLS: { label: string; key: InterestKey }[] = [
-  { label: 'LGBTQ+ rights and culture', key: 'lgbtq' },
-  { label: 'Technology and apps', key: 'tech' },
-  { label: 'Politics and law', key: 'politics' },
-  { label: 'Finance and money', key: 'finance' },
+  { label: 'Tech', key: 'tech' },
+  { label: 'LGBTQ+ rights', key: 'lgbtq' },
+  { label: 'Sports', key: 'sports' },
+  { label: 'Politics', key: 'politics' },
+  { label: 'Mental health', key: 'mental-health-awareness' },
+  { label: 'Finance', key: 'finance' },
+  { label: 'Climate', key: 'climate' },
+  { label: 'Music & TV', key: 'music-entertainment' },
+  { label: 'Justice reform', key: 'criminal-justice' },
   { label: 'Social media', key: 'social-media' },
-  { label: 'Music and entertainment', key: 'music-entertainment' },
-  { label: 'Mental health awareness', key: 'mental-health-awareness' },
-  { label: 'Criminal justice reform', key: 'criminal-justice' },
   { label: "Women's rights", key: 'womens-rights' },
   { label: 'Immigration', key: 'immigration' },
-  { label: 'Climate and environment', key: 'climate' },
-  { label: 'Sports', key: 'sports' },
 ];
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
@@ -58,8 +59,9 @@ export default function InterestsScreen() {
       header="What do you want to catch up on?"
       subtext="A lot changed while you were away. Pick what you're curious about and we'll bring you up to speed."
       onContinue={handleContinue}
-      continueLabel="Take me in"
+      continueLabel="Build my plan"
       continueDisabled={interests.length === 0}
+      featuredCta
     >
       <View accessible={false}>
         <View className="flex-row flex-wrap gap-2">

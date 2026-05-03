@@ -1,4 +1,4 @@
-export type ConvictionType = 'non-violent' | 'drug-related' | 'violent' | 'rather-not-say';
+export type ConvictionType = 'non-violent' | 'drug-related' | 'violent' | 'other' | 'rather-not-say';
 
 export type EducationLevel =
   | 'less-than-high-school'

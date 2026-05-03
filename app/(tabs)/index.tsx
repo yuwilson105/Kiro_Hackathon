@@ -5,7 +5,6 @@ import { View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useShallow } from 'zustand/shallow';
 
-import { CompanionMessage } from '@/components/home/companion-message';
 import { HeroGreeting } from '@/components/home/hero-greeting';
 import { MoodQuickCheck } from '@/components/home/mood-quick-check';
 import { NearbyResource } from '@/components/home/nearby-resource';
@@ -104,12 +103,7 @@ export default function HomeScreen() {
         />
       </Animated.View>
 
-      {/* 4. Companion message */}
-      <Animated.View entering={reduced ? enter.fade(360) : enter.fadeUp(360)}>
-        <CompanionMessage />
-      </Animated.View>
-
-      {/* 5. Mood quick check — moved lower, lighter-weight engagement */}
+      {/* 4. Mood quick check */}
       <Animated.View entering={reduced ? enter.fade(480) : enter.fadeUp(480)}>
         <MoodQuickCheck />
       </Animated.View>
