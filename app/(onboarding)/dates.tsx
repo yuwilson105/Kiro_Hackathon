@@ -121,7 +121,7 @@ function MonthYearPickerModal({
           style={[styles.sheet, sheetAnimStyle, { paddingBottom: insets.bottom + 16 }]}
           onPress={(e) => e.stopPropagation()}
         >
-          {/* Drag handle — pan down to dismiss */}
+          {/* Drag handle - pan down to dismiss */}
           <GestureDetector gesture={dismissGesture}>
             <View style={styles.handleArea}>
               <View style={styles.handle} accessibilityElementsHidden importantForAccessibility="no" />

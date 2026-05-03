@@ -36,14 +36,20 @@ export type PriorityKey =
 export type InterestKey =
   | 'lgbtq'
   | 'tech'
+  | 'ai'
+  | 'phones'
   | 'politics'
+  | 'voting'
   | 'finance'
   | 'social-media'
   | 'music-entertainment'
   | 'mental-health-awareness'
+  | 'healthcare'
   | 'criminal-justice'
   | 'womens-rights'
   | 'immigration'
+  | 'housing'
+  | 'jobs'
   | 'climate'
   | 'sports';
 

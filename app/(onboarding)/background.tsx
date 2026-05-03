@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
@@ -74,19 +74,40 @@ export default function BackgroundScreen() {
   const setProfile = useStore((s) => s.setProfile);
   const reduced = useReducedMotion();
 
-  const [conviction, setConviction] = useState<ConvictionType | null>(null);
-  const [convictionOther, setConvictionOther] = useState('');
+  // Seed each field from the persisted profile so navigating Back -> Forward
+  // doesn't wipe the user's answers. Lazy initializer reads the store once
+  // on mount; the useEffect below keeps the store in sync on every edit.
+  const [conviction, setConviction] = useState<ConvictionType | null>(
+    () => useStore.getState().profile.conviction,
+  );
+  const [convictionOther, setConvictionOther] = useState(
+    () => useStore.getState().profile.convictionDetails ?? '',
+  );
 
-  const [education, setEducation] = useState<EducationLevel | null>(null);
-  const [educationOther, setEducationOther] = useState('');
+  const [education, setEducation] = useState<EducationLevel | null>(
+    () => useStore.getState().profile.education,
+  );
+  const [educationOther, setEducationOther] = useState(
+    () => useStore.getState().profile.educationOther ?? '',
+  );
 
-  const [workHistory, setWorkHistory] = useState<WorkType[]>([]);
-  const [workOther, setWorkOther] = useState('');
+  const [workHistory, setWorkHistory] = useState<WorkType[]>(
+    () => useStore.getState().profile.workHistory ?? [],
+  );
+  const [workOther, setWorkOther] = useState(
+    () => useStore.getState().profile.workOther ?? '',
+  );
 
-  const [housing, setHousing] = useState<HousingStatus | null>(null);
-  const [housingOther, setHousingOther] = useState('');
+  const [housing, setHousing] = useState<HousingStatus | null>(
+    () => useStore.getState().profile.housing,
+  );
+  const [housingOther, setHousingOther] = useState(
+    () => useStore.getState().profile.housingOther ?? '',
+  );
 
-  const [idStatus, setIdStatus] = useState<IdStatus | null>(null);
+  const [idStatus, setIdStatus] = useState<IdStatus | null>(
+    () => useStore.getState().profile.idStatus,
+  );
 
   const [skipEducation, setSkipEducation] = useState(false);
   const [skipWork, setSkipWork] = useState(false);
@@ -110,11 +131,46 @@ export default function BackgroundScreen() {
     );
   };
 
+  // Persist every edit to the store so Back/Forward navigation never loses work.
+  // Continue handler can rely on the store being current.
+  useEffect(() => {
+    setProfile({
+      conviction,
+      convictionDetails: conviction === 'other' ? convictionOther.trim() : '',
+      education,
+      educationOther: education === 'other' ? educationOther.trim() : '',
+      workHistory,
+      workOther: workHistory.includes('other') ? workOther.trim() : '',
+      housing,
+      housingOther: housing === 'other' ? housingOther.trim() : '',
+      idStatus,
+    });
+  }, [
+    conviction,
+    convictionOther,
+    education,
+    educationOther,
+    workHistory,
+    workOther,
+    housing,
+    housingOther,
+    idStatus,
+    setProfile,
+  ]);
+
   // Validation: every question except conviction is mandatory.
-  const educationValid = education !== null && (education !== 'other' || educationOther.trim().length > 0);
-  const workValid = workHistory.length > 0 && (!workHistory.includes('other') || workOther.trim().length > 0);
-  const housingValid = housing !== null && (housing !== 'other' || housingOther.trim().length > 0);
-  const idValid = idStatus !== null;
+  // "I'd rather not say" (skip*) counts as a complete answer - it intentionally
+  // clears the question's selection state.
+  const educationValid =
+    skipEducation ||
+    (education !== null && (education !== 'other' || educationOther.trim().length > 0));
+  const workValid =
+    skipWork ||
+    (workHistory.length > 0 && (!workHistory.includes('other') || workOther.trim().length > 0));
+  const housingValid =
+    skipHousing ||
+    (housing !== null && (housing !== 'other' || housingOther.trim().length > 0));
+  const idValid = skipId || idStatus !== null;
   const canContinue = educationValid && workValid && housingValid && idValid;
 
   const handleContinue = () => {
@@ -138,13 +194,12 @@ export default function BackgroundScreen() {
   return (
     <OnboardingShell
       step={3}
-      header="Tell us a little about yourself."
-      headerClassName="font-medium text-2xl text-text leading-8"
+      header={'Tell us a little\nabout yourself.'}
       subtext="This shapes your plan. Be as honest as you can. There's no wrong answer here."
       onContinue={handleContinue}
       continueDisabled={!canContinue}
     >
-      {/* Q1 — Conviction (the only optional question) */}
+      {/* Q1 - Conviction (the only optional question) */}
       <Animated.View entering={cardEntering(0)}>
         <Card variant="plain" padding="md">
           <View
@@ -180,7 +235,7 @@ export default function BackgroundScreen() {
         </Card>
       </Animated.View>
 
-      {/* Q2 — Education */}
+      {/* Q2 - Education */}
       <Animated.View entering={cardEntering(1)} className="mt-4">
         <Card variant="plain" padding="md">
           <View
@@ -222,7 +277,7 @@ export default function BackgroundScreen() {
         </Card>
       </Animated.View>
 
-      {/* Q3 — Work history (multi-select) */}
+      {/* Q3 - Work history (multi-select) */}
       <Animated.View entering={cardEntering(2)} className="mt-4">
         <Card variant="plain" padding="md">
           <View
@@ -264,7 +319,7 @@ export default function BackgroundScreen() {
         </Card>
       </Animated.View>
 
-      {/* Q4 — Housing */}
+      {/* Q4 - Housing */}
       <Animated.View entering={cardEntering(3)} className="mt-4">
         <Card variant="plain" padding="md">
           <View
@@ -306,7 +361,7 @@ export default function BackgroundScreen() {
         </Card>
       </Animated.View>
 
-      {/* Q5 — ID status */}
+      {/* Q5 - ID status */}
       <Animated.View entering={cardEntering(4)} className="mt-4">
         <Card variant="plain" padding="md">
           <View
@@ -322,6 +377,7 @@ export default function BackgroundScreen() {
                   key={opt.value}
                   label={opt.label}
                   selected={idStatus === opt.value && !skipId}
+                  size="sm"
                   onPress={() => {
                     setIdStatus(opt.value);
                     setSkipId(false);
@@ -330,8 +386,9 @@ export default function BackgroundScreen() {
                 />
               ))}
               <PillButton
-                label="I'd rather not say"
+                label="Rather not say"
                 selected={skipId}
+                size="sm"
                 onPress={() => toggleSkip(setSkipId, () => setIdStatus(null))}
                 accessibilityLabel="I'd rather not say about ID"
               />
@@ -343,7 +400,7 @@ export default function BackgroundScreen() {
   );
 }
 
-// ── OtherInput — inline text input shown when "Other" is selected ─────────────
+// ── OtherInput - inline text input shown when "Other" is selected ─────────────
 
 function OtherInput({
   value,

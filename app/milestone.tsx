@@ -146,7 +146,7 @@ export default function MilestoneScreen() {
       accessibilityRole="summary"
       accessibilityLabel={title}
     >
-      {/* Confetti overlay — full screen, pointer events none */}
+      {/* Confetti overlay - full screen, pointer events none */}
       <View
         style={{ position: 'absolute', top: 0, left: 0, width, height, zIndex: 0 }}
         pointerEvents="none"
@@ -166,7 +166,7 @@ export default function MilestoneScreen() {
         scrollEnabled={false}
         style={{ zIndex: 1 }}
       >
-        {/* Flame bloom — delayed 200ms per milestone choreography */}
+        {/* Flame bloom - delayed 200ms per milestone choreography */}
         <Animated.View entering={enter.zoom(200)}>
           <FlameLogo size={140} loop={false} />
         </Animated.View>

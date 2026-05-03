@@ -85,7 +85,7 @@ export function StepLocation({ onContinue }: Props) {
     opacity: 0.5 + continueProgress.value * 0.5,
   }));
 
-  // Shimmer for "Finding you…" — a bar that sweeps across, not a spinner.
+  // Shimmer for "Finding you…" - a bar that sweeps across, not a spinner.
   const shimmerX = useSharedValue(-1);
   const shimmerFade = useSharedValue(0);
 
@@ -225,7 +225,7 @@ export function StepLocation({ onContinue }: Props) {
             </Pressable>
           ) : null}
 
-          {/* Shimmer bar — only visible while detecting */}
+          {/* Shimmer bar - only visible while detecting */}
           <View pointerEvents="none" style={styles.shimmerTrack}>
             <Animated.View style={[styles.shimmerBar, shimmerStyle]} />
           </View>

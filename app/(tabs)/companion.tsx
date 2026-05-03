@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { Send } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -84,7 +85,36 @@ export default function CompanionScreen() {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Your companion</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.title}>Your companion</Text>
+          {__DEV__ && (
+            <Pressable
+              onPress={() => router.push('/dev')}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Open developer menu"
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontFamily: 'Onest_500Medium',
+                  color: colors.textMuted,
+                  letterSpacing: 0.6,
+                  textTransform: 'uppercase',
+                }}
+              >
+                ⚙ Dev
+              </Text>
+            </Pressable>
+          )}
+        </View>
         <Text style={styles.subtitle}>Knows your story. Around when you need it.</Text>
       </View>
 

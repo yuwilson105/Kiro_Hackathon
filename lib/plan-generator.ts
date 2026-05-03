@@ -158,7 +158,7 @@ function packIntoWeeks(steps: PlanStep[]): PlanWeek[] {
 /**
  * Generate a full Plan from a Profile.
  * Returns an empty Plan only if the profile itself is missing.
- * (firstName is purely cosmetic — used for greetings, not plan logic.)
+ * (firstName is purely cosmetic - used for greetings, not plan logic.)
  */
 export function generatePlan(profile: Profile): Plan {
   if (!profile) {
@@ -225,10 +225,10 @@ export function regeneratePlanFromStep(
 /**
  * Compute the display status of a single step.
  *
- * - 'locked'      — at least one prerequisite is not yet complete.
- * - 'in-progress' — the step is in the inProgressSteps set.
- * - 'complete'    — the step id exists in completedSteps.
- * - 'pending'     — all prereqs done, not started, not complete.
+ * - 'locked'      - at least one prerequisite is not yet complete.
+ * - 'in-progress' - the step is in the inProgressSteps set.
+ * - 'complete'    - the step id exists in completedSteps.
+ * - 'pending'     - all prereqs done, not started, not complete.
  */
 export function computeStepStatus(
   stepId: string,

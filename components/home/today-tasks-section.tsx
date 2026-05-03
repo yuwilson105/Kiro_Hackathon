@@ -90,7 +90,7 @@ export function TodayTasksSection({
   );
 }
 
-// ── BuildPlanCta — pill with leading sparkle + trailing arrow ───────────────
+// ── BuildPlanCta - pill with leading sparkle + trailing arrow ───────────────
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 

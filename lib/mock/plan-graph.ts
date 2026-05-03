@@ -2,7 +2,7 @@ import type { PlanStep } from '@/types/plan';
 
 /**
  * Static DAG of ~25 life-rebuilding steps for SecondChance.
- * Prerequisites form a real directed acyclic graph — downstream steps will
+ * Prerequisites form a real directed acyclic graph - downstream steps will
  * only appear after their upstream prereqs are complete.
  *
  * Resource details are Bay Area / SF / Oakland organisations with
