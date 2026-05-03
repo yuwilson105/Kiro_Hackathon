@@ -31,6 +31,15 @@ type Props = {
 
 export function CategoryFilter({ selected, onSelect }: Props) {
   const scrollRef = useRef<ScrollView>(null);
+  const offsetsRef = useRef<Record<string, number>>({});
+
+  const handleSelect = (id: CategoryOption) => {
+    onSelect(id);
+    // Auto-scroll the tapped pill into view. "All" goes to 0; others land with
+    // 24px of leading padding so the pill isn't hugging the screen edge.
+    const x = id === 'all' ? 0 : Math.max(0, (offsetsRef.current[id] ?? 0) - 24);
+    scrollRef.current?.scrollTo({ x, animated: true });
+  };
 
   return (
     <ScrollView
@@ -43,11 +52,17 @@ export function CategoryFilter({ selected, onSelect }: Props) {
       {CATEGORIES.map((cat, i) => {
         const cappedIndex = Math.min(i, 8);
         return (
-          <Animated.View key={cat.id} entering={enter.fadeUp(stagger(cappedIndex, 40))}>
+          <Animated.View
+            key={cat.id}
+            onLayout={(e) => {
+              offsetsRef.current[cat.id] = e.nativeEvent.layout.x;
+            }}
+            entering={enter.fadeUp(stagger(cappedIndex, 40))}
+          >
             <PillButton
               label={cat.label}
               selected={selected === cat.id}
-              onPress={() => onSelect(cat.id)}
+              onPress={() => handleSelect(cat.id)}
               size="sm"
               accessibilityLabel={`Filter by ${cat.label}`}
             />

@@ -56,25 +56,11 @@ export default function NameScreen() {
         }}
       >
         <View style={{ flex: 1, justifyContent: 'flex-start' }}>
-          <Animated.Text
-            entering={fade(stagger(0))}
-            style={styles.eyebrow}
-          >
-            FIRST, A SOFT INTRODUCTION
+          <Animated.Text entering={fade(stagger(0))} style={styles.header}>
+            What's your name?
           </Animated.Text>
 
-          <Animated.Text entering={fade(stagger(1, 80))} style={styles.header}>
-            What should we{'\n'}call you?
-          </Animated.Text>
-
-          <Animated.Text
-            entering={fade(stagger(2, 80))}
-            style={styles.subtext}
-          >
-            First name is plenty. We use it to greet you, nothing else.
-          </Animated.Text>
-
-          <Animated.View entering={fade(stagger(3, 80))} style={{ marginTop: 32 }}>
+          <Animated.View entering={fade(stagger(1, 80))} style={{ marginTop: 32 }}>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -92,7 +78,7 @@ export default function NameScreen() {
           </Animated.View>
         </View>
 
-        <Animated.View entering={fade(stagger(4, 100))}>
+        <Animated.View entering={fade(stagger(2, 100))}>
           <Button
             label="Continue"
             variant="primary"

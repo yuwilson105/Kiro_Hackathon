@@ -34,7 +34,7 @@ export type PriorityKey =
   | 'staying-out';
 
 export type InterestKey =
-  | 'lgbtq'
+  | 'civil-rights'
   | 'tech'
   | 'ai'
   | 'phones'
@@ -46,7 +46,6 @@ export type InterestKey =
   | 'mental-health-awareness'
   | 'healthcare'
   | 'criminal-justice'
-  | 'womens-rights'
   | 'immigration'
   | 'housing'
   | 'jobs'

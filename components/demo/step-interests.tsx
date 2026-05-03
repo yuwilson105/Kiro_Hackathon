@@ -38,7 +38,7 @@ type Interest = {
 };
 
 const INTERESTS: readonly Interest[] = [
-  { id: 'lgbtq', label: 'LGBTQ+', Icon: HeartHandshake },
+  { id: 'civil-rights', label: 'Civil rights', Icon: HeartHandshake },
   { id: 'tech', label: 'Tech & apps', Icon: Smartphone },
   { id: 'politics', label: 'Politics & law', Icon: Scale },
   { id: 'finance', label: 'Money & finance', Icon: Wallet },
@@ -46,7 +46,6 @@ const INTERESTS: readonly Interest[] = [
   { id: 'music', label: 'Music & entertainment', Icon: Music2 },
   { id: 'mental-health', label: 'Mental health', Icon: Brain },
   { id: 'justice', label: 'Justice reform', Icon: Gavel },
-  { id: 'womens-rights', label: "Women's rights", Icon: Flower2 },
   { id: 'immigration', label: 'Immigration', Icon: Globe },
   { id: 'climate', label: 'Climate', Icon: Leaf },
   { id: 'sports', label: 'Sports', Icon: Dumbbell },

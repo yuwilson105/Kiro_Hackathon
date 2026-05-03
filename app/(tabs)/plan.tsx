@@ -1,10 +1,15 @@
 import { router } from 'expo-router';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedScrollHandler,
+  useReducedMotion,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 import { FloatingNextButton } from '@/components/plan/floating-next-button';
+import { PlanRail } from '@/components/plan/plan-rail';
 import { WeekSection } from '@/components/plan/week-section';
 import { enter } from '@/lib/motion';
 import { computeStepStatus } from '@/lib/plan-generator';
@@ -58,25 +63,53 @@ export default function PlanScreen() {
   const completedSteps = useStore((s) => s.completedSteps);
   const inProgressSteps = useStore((s) => s.inProgressSteps);
 
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<Animated.ScrollView>(null);
   // refs to each week section for scroll targeting
   const weekOffsets = useRef<number[]>([]);
 
-  const handleScrollToNext = useCallback(() => {
-    if (!plan) return;
-    // Find the first non-complete, non-locked step across all weeks.
+  // Rail: measured Y offsets per week within the weeks container.
+  // Stored as state so the rail re-renders when layouts settle.
+  const [railOffsets, setRailOffsets] = useState<number[]>([]);
+  // Total height of the weeks container so the rail tail reaches the bottom.
+  const [weeksContentHeight, setWeeksContentHeight] = useState(0);
+
+  // Live scroll position + the Y offset of the next pending step,
+  // both shared values so the floating button can animate its arrow
+  // direction on the UI thread without re-rendering this screen.
+  const scrollY = useSharedValue(0);
+  const nextStepY = useSharedValue<number | null>(null);
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
+
+  const computeNextStepY = useCallback((): number | null => {
+    if (!plan) return null;
     for (let wi = 0; wi < plan.weeks.length; wi++) {
       const week = plan.weeks[wi];
       for (const step of week.steps) {
         const status = computeStepStatus(step.id, completedSteps, inProgressSteps, plan);
         if (status === 'pending' || status === 'in-progress') {
-          const offset = weekOffsets.current[wi] ?? 0;
-          scrollRef.current?.scrollTo({ y: offset, animated: !reduced });
-          return;
+          const offset = weekOffsets.current[wi];
+          return offset ?? null;
         }
       }
     }
-  }, [plan, completedSteps, inProgressSteps, reduced]);
+    return null;
+  }, [plan, completedSteps, inProgressSteps]);
+
+  // Recompute when plan/state changes; layout-driven recompute lives in onLayout below.
+  useEffect(() => {
+    nextStepY.value = computeNextStepY();
+  }, [computeNextStepY, nextStepY]);
+
+  const handleScrollToNext = useCallback(() => {
+    const target = computeNextStepY();
+    if (target === null) return;
+    scrollRef.current?.scrollTo({ y: target, animated: !reduced });
+  }, [computeNextStepY, reduced]);
 
   // Empty / loading state.
   if (!plan || plan.weeks.length === 0) {
@@ -109,10 +142,31 @@ export default function PlanScreen() {
 
   const headerEntering = reduced ? enter.fade(0) : enter.fadeUp(0);
 
+  const currentIdx = plan
+    ? findCurrentWeekIndex(plan.weeks, completedSteps, inProgressSteps)
+    : 0;
+
+  // Build rail nodes from measured offsets
+  const visibleWeeks = plan.weeks.filter((w) => w.steps.length > 0);
+  const railNodes = visibleWeeks.map((week, i) => {
+    const resolvedState: WeekState =
+      i < currentIdx ? 'past' : i === currentIdx ? 'current' : 'future';
+    return {
+      state: resolvedState,
+      offsetY: railOffsets[i] ?? 0,
+    };
+  });
+
+  // Left padding to give the rail + nodes room (node is 10px, add 8px gap)
+  const RAIL_LEFT_OFFSET = 18; // px from ScrollView left edge to rail centre
+  const WEEKS_PADDING_LEFT = RAIL_LEFT_OFFSET + 10 + 8; // 36px total
+
   return (
     <View className="flex-1 bg-bg">
-      <ScrollView
+      <Animated.ScrollView
         ref={scrollRef}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingTop: insets.top + 16,
@@ -130,37 +184,66 @@ export default function PlanScreen() {
           </Text>
         </Animated.View>
 
-        {/* Week sections */}
-        {plan.weeks.map((week, i) => {
-          if (week.steps.length === 0) return null;
-          const weekState = classifyWeek(week, completedSteps, inProgressSteps);
-          // Correct future classification: anything after the current week is future.
-          const currentIdx = findCurrentWeekIndex(plan.weeks, completedSteps, inProgressSteps);
-          const resolvedState: WeekState =
-            i < currentIdx ? 'past' : i === currentIdx ? 'current' : 'future';
+        {/* Weeks container — relative so the rail can be absolutely positioned */}
+        <View
+          style={{ position: 'relative', paddingLeft: WEEKS_PADDING_LEFT }}
+          onLayout={(e) => setWeeksContentHeight(e.nativeEvent.layout.height)}
+        >
+          {/* Timeline rail — rendered behind week content */}
+          <PlanRail
+            nodes={railNodes}
+            contentHeight={weeksContentHeight}
+          />
 
-          return (
-            <View
-              key={week.index}
-              onLayout={(e) => {
-                weekOffsets.current[i] = e.nativeEvent.layout.y;
-              }}
-            >
-              <WeekSection
-                week={week}
-                weekState={resolvedState}
-                plan={plan}
-                completedSteps={completedSteps}
-                inProgressSteps={inProgressSteps}
-                weekIndex={i}
-              />
-            </View>
-          );
-        })}
-      </ScrollView>
+          {/* Week sections */}
+          {plan.weeks.map((week, i) => {
+            if (week.steps.length === 0) return null;
+            const resolvedState: WeekState =
+              i < currentIdx ? 'past' : i === currentIdx ? 'current' : 'future';
+
+            // Track visual index (excluding empty weeks) for rail offset mapping
+            const visibleIdx = visibleWeeks.findIndex((w) => w.index === week.index);
+
+            return (
+              <View
+                key={week.index}
+                onLayout={(e) => {
+                  const y = e.nativeEvent.layout.y;
+                  // Store in weekOffsets for FloatingNextButton scroll targeting.
+                  // weekOffsets is relative to the inner padded container, so add
+                  // ScrollView header offset when scrolling.
+                  weekOffsets.current[i] = y + (insets.top + 16);
+                  nextStepY.value = computeNextStepY();
+
+                  // Store midpoint Y of this week's header row for the rail node.
+                  // Use the top edge + a small offset to align with the week label row.
+                  setRailOffsets((prev) => {
+                    const next = [...prev];
+                    next[visibleIdx] = y + 12; // ~centre of the week header text
+                    return next;
+                  });
+                }}
+              >
+                <WeekSection
+                  week={week}
+                  weekState={resolvedState}
+                  plan={plan}
+                  completedSteps={completedSteps}
+                  inProgressSteps={inProgressSteps}
+                  weekIndex={i}
+                />
+              </View>
+            );
+          })}
+        </View>
+      </Animated.ScrollView>
 
       {/* Floating next button */}
-      <FloatingNextButton scrollRef={scrollRef} onPress={handleScrollToNext} />
+      <FloatingNextButton
+        scrollY={scrollY}
+        nextStepY={nextStepY}
+        onPress={handleScrollToNext}
+      />
     </View>
   );
 }

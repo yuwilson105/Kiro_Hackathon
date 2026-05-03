@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { useShallow } from 'zustand/shallow';
 
@@ -123,12 +123,29 @@ export default function HomeScreen() {
 
       {/* 5. Today's discovery — section with article, resource, video stacked */}
       <Animated.View entering={reduced ? enter.fade(500) : enter.fadeUp(500)} className="gap-3">
-        <Text
-          className="font-medium uppercase tracking-wider text-text-muted"
-          style={{ fontSize: 10, letterSpacing: 0.8, marginLeft: 2 }}
+        {/* Full-width separator above the section */}
+        <View
+          style={{
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: colors.border,
+            marginTop: 8,
+            marginBottom: 4,
+          }}
+          accessibilityElementsHidden
           importantForAccessibility="no"
+        />
+        <Text
+          style={{
+            fontFamily: 'HankenGrotesk_500Medium',
+            fontWeight: '500',
+            fontSize: 26,
+            lineHeight: 30,
+            letterSpacing: -0.5,
+            color: colors.text,
+            marginBottom: 4,
+          }}
         >
-          TODAY'S DISCOVERY
+          Today's discovery
         </Text>
         <TodaysDiscovery />
         <NearbyResource />

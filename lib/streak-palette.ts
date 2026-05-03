@@ -1,8 +1,11 @@
 // Streak-driven flame palette.
 //
 // Day 0 = current warm orange flame.
-// Day 30+ = electric blue.
+// Day 100+ = electric blue (the trophy state).
 // Path: warm → coral/magenta → violet → cool indigo → electric blue.
+// Stops scaled so full blue arrives at day 100 — earlier ramps felt premature
+// (a 30-day streak read as fully "earned blue" before the user actually had
+// long-term consistency). 90 days reads as nearly blue; 100+ is fully there.
 // We hold chroma at every stop so intermediates never go muddy. Days between
 // stops interpolate in OKLab (perceptually uniform), not RGB — RGB lerps
 // through warm↔cool produce washed-out brown mids; OKLab preserves chroma.
@@ -25,7 +28,7 @@ const STOPS: readonly Stop[] = [
     },
   },
   {
-    day: 5,
+    day: 17,
     palette: {
       outer: ['#FFFAEB', '#FFDC8A', '#FF9E54', '#FF5C40', '#C83F46'],
       inner: ['#FFFEF0', '#FFDC8A'],
@@ -33,7 +36,7 @@ const STOPS: readonly Stop[] = [
     },
   },
   {
-    day: 10,
+    day: 33,
     palette: {
       outer: ['#FFF5EC', '#FFC894', '#FF7E78', '#E8447A', '#A8327A'],
       inner: ['#FFFCF0', '#FFC894'],
@@ -41,7 +44,7 @@ const STOPS: readonly Stop[] = [
     },
   },
   {
-    day: 15,
+    day: 50,
     palette: {
       outer: ['#FFF0F0', '#F5B0C8', '#D87BB8', '#9C4ABF', '#6B2DA8'],
       inner: ['#FFFAF8', '#F5B0C8'],
@@ -49,7 +52,7 @@ const STOPS: readonly Stop[] = [
     },
   },
   {
-    day: 20,
+    day: 67,
     palette: {
       outer: ['#F4F0FF', '#C8B0E8', '#8C7FD8', '#5A4FC8', '#3D2EA8'],
       inner: ['#FAF8FF', '#C8B0E8'],
@@ -57,7 +60,7 @@ const STOPS: readonly Stop[] = [
     },
   },
   {
-    day: 25,
+    day: 83,
     palette: {
       outer: ['#EEF2FF', '#A8C0F0', '#6E8AE8', '#3F5FD8', '#2541B8'],
       inner: ['#F4F8FF', '#A8C0F0'],
@@ -65,7 +68,7 @@ const STOPS: readonly Stop[] = [
     },
   },
   {
-    day: 30,
+    day: 100,
     palette: {
       outer: ['#F0F8FF', '#BCD8FF', '#5A8FFF', '#2E5BF0', '#1E3FA8'],
       inner: ['#F4FAFF', '#BCD8FF'],
@@ -137,7 +140,7 @@ function lerpHex(a: string, b: string, t: number): string {
 
 export function paletteForStreak(days: number): FlamePalette {
   if (days <= 0) return STOPS[0].palette;
-  if (days >= 30) return STOPS[STOPS.length - 1].palette;
+  if (days >= 100) return STOPS[STOPS.length - 1].palette;
 
   let i = 0;
   for (let k = 0; k < STOPS.length - 1; k++) {

@@ -155,6 +155,7 @@ export default function MilestoneScreen() {
       </View>
 
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
           alignItems: 'center',

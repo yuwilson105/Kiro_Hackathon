@@ -18,7 +18,7 @@ import type { InterestKey } from '@/types/profile';
 
 const CATEGORY_LABEL: Record<InterestKey, string> = {
   finance: 'FINANCE',
-  lgbtq: 'LGBTQ+',
+  'civil-rights': 'RIGHTS',
   politics: 'POLITICS',
   voting: 'VOTING',
   'criminal-justice': 'LAW',
@@ -29,7 +29,6 @@ const CATEGORY_LABEL: Record<InterestKey, string> = {
   'mental-health-awareness': 'WELLNESS',
   healthcare: 'HEALTHCARE',
   'music-entertainment': 'CULTURE',
-  'womens-rights': "WOMEN'S",
   immigration: 'IMMIGRATION',
   housing: 'HOUSING',
   jobs: 'JOBS',
@@ -39,7 +38,7 @@ const CATEGORY_LABEL: Record<InterestKey, string> = {
 
 const CATEGORY_COLOR: Record<InterestKey, string> = {
   finance: colors.accent,
-  lgbtq: colors.success,
+  'civil-rights': colors.success,
   politics: colors.danger,
   voting: colors.primaryDeep,
   'criminal-justice': colors.primaryDeep,
@@ -50,7 +49,6 @@ const CATEGORY_COLOR: Record<InterestKey, string> = {
   'mental-health-awareness': colors.primary,
   healthcare: colors.primary,
   'music-entertainment': colors.textMuted,
-  'womens-rights': colors.primary,
   immigration: colors.textMuted,
   housing: colors.successDeep,
   jobs: colors.primaryDeep,
