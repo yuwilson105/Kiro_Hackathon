@@ -1,20 +1,20 @@
 import { router } from 'expo-router';
 import { ChevronDown, ChevronRight } from 'lucide-react-native';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import Animated, {
-  useReducedMotion,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
+    useAnimatedStyle,
+    useReducedMotion,
+    useSharedValue,
+    withSpring,
+    withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -479,6 +479,7 @@ export default function DatesScreen() {
         subtext="This helps us understand what changed while you were away."
         onContinue={handleContinue}
         continueDisabled={!canContinue}
+        hideBack={true}
       >
         <View className="gap-3">
           <DateCard
