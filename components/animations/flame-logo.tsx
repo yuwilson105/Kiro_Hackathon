@@ -10,13 +10,13 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-const OUTER_COLORS = ['#FFF4D6', '#FFD86B', '#FF8A1F', '#E5421A', '#8C1A0A'];
-const OUTER_POSITIONS = [0, 0.18, 0.45, 0.75, 1];
+const OUTER_COLORS = ['#FFFAEB', '#FFE08A', '#FFAA48', '#FF6B2C', '#D44A1F'];
+const OUTER_POSITIONS = [0, 0.2, 0.5, 0.8, 1];
 
-const INNER_COLORS = ['#FFFDE8', '#FFD86B'];
+const INNER_COLORS = ['#FFFEF0', '#FFE08A'];
 const INNER_POSITIONS = [0, 1];
 
-const GLOW_HUE = '#FF8A1F';
+const GLOW_HUE = '#FFA64A';
 
 const flamePath = Skia.Path.MakeFromSVGString(
   'M52 4 C58 18, 76 30, 76 58 C76 80, 64 96, 50 96 C36 96, 24 80, 24 58 C24 30, 38 14, 52 4 Z'
@@ -37,8 +37,8 @@ function hexToRgba(hex: string, alpha: number) {
 }
 
 const HALO_COLORS = [
-  hexToRgba(GLOW_HUE, 0.85),
-  hexToRgba(GLOW_HUE, 0.4),
+  hexToRgba(GLOW_HUE, 0.5),
+  hexToRgba(GLOW_HUE, 0.22),
   hexToRgba(GLOW_HUE, 0),
 ];
 
@@ -110,7 +110,7 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
         <Group opacity={haloOpacity}>
           <Path path={haloPath} style="fill">
             <RadialGradient
-              c={vec(50, 56)}
+              c={vec(50, 50)}
               r={50}
               colors={HALO_COLORS}
               positions={[0, 0.45, 1]}
@@ -120,16 +120,16 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
         <Group transform={transform} origin={vec(50, 60)}>
           <Path path={flamePath} style="fill">
             <RadialGradient
-              c={vec(50, 72)}
-              r={58}
+              c={vec(50, 50)}
+              r={56}
               colors={OUTER_COLORS}
               positions={OUTER_POSITIONS}
             />
           </Path>
-          <Path path={innerPath} style="fill" opacity={0.78}>
+          <Path path={innerPath} style="fill" opacity={0.65}>
             <RadialGradient
-              c={vec(50, 74)}
-              r={32}
+              c={vec(50, 58)}
+              r={34}
               colors={INNER_COLORS}
               positions={INNER_POSITIONS}
             />

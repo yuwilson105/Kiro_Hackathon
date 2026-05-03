@@ -12,19 +12,19 @@ import Animated, {
 import Svg, { Defs, Path, RadialGradient as SvgRadialGradient, Stop } from 'react-native-svg';
 
 const OUTER_STOPS = [
-  { offset: '0', color: '#FFF4D6' },
-  { offset: '0.18', color: '#FFD86B' },
-  { offset: '0.45', color: '#FF8A1F' },
-  { offset: '0.75', color: '#E5421A' },
-  { offset: '1', color: '#8C1A0A' },
+  { offset: '0', color: '#FFFAEB' },
+  { offset: '0.2', color: '#FFE08A' },
+  { offset: '0.5', color: '#FFAA48' },
+  { offset: '0.8', color: '#FF6B2C' },
+  { offset: '1', color: '#D44A1F' },
 ];
 
 const INNER_STOPS = [
-  { offset: '0', color: '#FFFDE8' },
-  { offset: '1', color: '#FFD86B' },
+  { offset: '0', color: '#FFFEF0' },
+  { offset: '1', color: '#FFE08A' },
 ];
 
-const GLOW_HUE = '#FF8A1F';
+const GLOW_HUE = '#FFA64A';
 
 const OUTER_PATH =
   'M52 4 C58 18, 76 30, 76 58 C76 80, 64 96, 50 96 C36 96, 24 80, 24 58 C24 30, 38 14, 52 4 Z';
@@ -128,12 +128,12 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
             <SvgRadialGradient
               id={ids.halo}
               cx="50"
-              cy="56"
+              cy="50"
               r="50"
               gradientUnits="userSpaceOnUse"
             >
-              <Stop offset="0" stopColor={GLOW_HUE} stopOpacity="0.85" />
-              <Stop offset="0.45" stopColor={GLOW_HUE} stopOpacity="0.4" />
+              <Stop offset="0" stopColor={GLOW_HUE} stopOpacity="0.5" />
+              <Stop offset="0.45" stopColor={GLOW_HUE} stopOpacity="0.22" />
               <Stop offset="1" stopColor={GLOW_HUE} stopOpacity="0" />
             </SvgRadialGradient>
           </Defs>
@@ -146,8 +146,8 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
             <SvgRadialGradient
               id={ids.outer}
               cx="50"
-              cy="72"
-              r="58"
+              cy="50"
+              r="56"
               gradientUnits="userSpaceOnUse"
             >
               {OUTER_STOPS.map((s, i) => (
@@ -157,8 +157,8 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
             <SvgRadialGradient
               id={ids.inner}
               cx="50"
-              cy="74"
-              r="32"
+              cy="58"
+              r="34"
               gradientUnits="userSpaceOnUse"
             >
               {INNER_STOPS.map((s, i) => (
@@ -167,7 +167,7 @@ export function FlameLogo({ size = 100, loop = true }: Props) {
             </SvgRadialGradient>
           </Defs>
           <Path d={OUTER_PATH} fill={`url(#${ids.outer})`} />
-          <Path d={INNER_PATH} fill={`url(#${ids.inner})`} opacity={0.78} />
+          <Path d={INNER_PATH} fill={`url(#${ids.inner})`} opacity={0.65} />
         </Svg>
       </Animated.View>
     </View>
