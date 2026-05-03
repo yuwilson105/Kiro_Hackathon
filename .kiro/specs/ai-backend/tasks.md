@@ -6,27 +6,26 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
 
 ## Tasks
 
-- [x] 1. Scaffold the backend package
-  - Create `backend/` directory with `package.json`, `tsconfig.json`, and `.env.example`
-  - Install dependencies: `express`, `openai`, `zod`, `cors`, `dotenv` (pinned versions)
-  - Install dev dependencies: `typescript`, `@types/express`, `@types/node`, `@types/cors`, `ts-node`, `tsx`
+- [ ] 1. Scaffold the backend package
+  - Create `backend/src/` directory structure with `index.ts`, `tsconfig.json`
+  - The `package.json` and dependencies already exist
   - Create `backend/src/index.ts` as the Express app entry point with JSON body parsing (64 KB limit), CORS middleware, and route mounting stubs
   - _Requirements: 6.1, 6.5, 6.6, 7.3_
 
-- [x] 2. Define shared types and validation schemas
-  - [x] 2.1 Copy frontend types into `backend/src/types/`
+- [ ] 2. Define shared types and validation schemas
+  - [ ] 2.1 Copy frontend types into `backend/src/types/`
     - Create `profile.ts`, `plan.ts`, `feed.ts`, `resource.ts` mirroring `types/` verbatim
     - Create `api.ts` with `JobListing`, `CompanionMessage`, `CompanionTone`, and `ErrorResponse` types
     - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1_
 
-  - [x] 2.2 Implement Zod validation schemas in `backend/src/validation/schemas.ts`
+  - [ ] 2.2 Implement Zod validation schemas in `backend/src/validation/schemas.ts`
     - Write `ProfileSchema` covering all Profile fields with correct enum values
     - Write `CompanionRequestSchema` requiring `message` (min length 1) and `profile`
     - Export a `validate<T>` helper that returns a typed result or throws a 400 error
     - _Requirements: 1.9, 2.8, 3.7, 3.8, 4.7, 5.5_
 
-- [x] 3. Implement the prompt builder and privacy layer
-  - [x] 3.1 Implement `buildPromptContext` in `backend/src/services/promptBuilder.ts`
+- [ ] 3. Implement the prompt builder and privacy layer
+  - [ ] 3.1 Implement `buildPromptContext` in `backend/src/services/promptBuilder.ts`
     - Derive `gapYears`, `gapStartYear`, `gapEndYear` from ISO date strings
     - Map `conviction` to `convictionCategory` ('non-violent' | 'drug-related' | 'violent' | 'unspecified') — never forward the raw value
     - Omit `firstName` entirely from the returned `SafePromptContext` object
@@ -38,10 +37,10 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - **Property 10: SafePromptContext gapYears is non-negative** — for any Profile where gapEnd >= gapStart, gapYears must be ≥ 0
     - **Validates: Requirements 6.3, 6.4**
 
-- [x] 4. Implement the OpenAI client wrapper
-  - [x] 4.1 Implement `callLLM` in `backend/src/services/openai.ts`
-    - Initialize the OpenAI client from `OPENAI_API_KEY` env var
-    - Call `chat.completions.create` with `model: "gpt-4o"`, `response_format: { type: "json_object" }`, and `max_tokens: 4096`
+- [ ] 4. Implement the Groq client wrapper
+  - [ ] 4.1 Implement `callLLM` in `backend/src/services/groq.ts`
+    - Initialize the OpenAI client pointed at Groq's base URL (`https://api.groq.com/openai/v1`) using `GROQ_API_KEY` env var
+    - Call `chat.completions.create` with `model: "llama-3.3-70b-versatile"`, `response_format: { type: "json_object" }`, and `max_tokens: 4096`
     - Enforce per-call timeout using `AbortSignal.timeout(timeoutMs)`
     - On API error or timeout, throw a typed `LLMError` with a `retryAfter` hint (default 30 seconds)
     - Parse and return the JSON response body as type `T`
@@ -53,8 +52,8 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - Test that valid JSON responses are parsed and returned correctly
     - _Requirements: 7.1, 7.2_
 
-- [x] 5. Implement crisis detection service
-  - [x] 5.1 Implement `detectCrisis` in `backend/src/services/crisisDetector.ts`
+- [ ] 5. Implement crisis detection service
+  - [ ] 5.1 Implement `detectCrisis` in `backend/src/services/crisisDetector.ts`
     - Port the `CRISIS_PHRASES` substring scan from `lib/companion-voice.ts` exactly
     - Function must be pure (no side effects, no async)
     - _Requirements: 5.2_
@@ -65,23 +64,23 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - Test that neutral messages return `false`
     - **Validates: Requirements 5.2**
 
-- [x] 6. Implement middleware
+- [ ] 6. Implement middleware
   - Create `backend/src/middleware/errorHandler.ts` — catches all errors, formats `ErrorResponse` JSON, logs `{ path, status, timestamp }` without any Profile field values
   - Create `backend/src/middleware/requestLogger.ts` — logs 4xx and 5xx responses with path, status code, and timestamp
   - Wire both middleware into `src/index.ts`
   - _Requirements: 6.6, 7.2, 7.5_
 
-- [x] 7. Implement GET /health
+- [ ] 7. Implement GET /health
   - Create `backend/src/routes/health.ts`
   - Return `{ status: "ok", timestamp: new Date().toISOString() }` with HTTP 200
   - Mount at `GET /health` in `src/index.ts`
   - _Requirements: 7.3_
 
-- [-] 8. Checkpoint — Ensure all tests pass
+- [ ] 8. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 9. Implement POST /plan/generate
-  - [~] 9.1 Create `backend/src/routes/plan.ts`
+  - [ ] 9.1 Create `backend/src/routes/plan.ts`
     - Validate request body with `ProfileSchema`; return 400 if `firstName` or `priorities` are missing
     - Call `buildPromptContext` to produce the safe context
     - Build a system prompt that specifies the `Plan` JSON schema, the 12-hour-per-week cap, urgency ordering rules, prerequisite ordering rules, and location-specific resource instruction
@@ -96,7 +95,7 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - **Validates: Requirements 1.5, 1.6, 1.7**
 
 - [ ] 10. Implement POST /jobs/recommend
-  - [~] 10.1 Create `backend/src/routes/jobs.ts`
+  - [ ] 10.1 Create `backend/src/routes/jobs.ts`
     - Validate request body with `ProfileSchema`; return 400 if `city` is null
     - Call `buildPromptContext`
     - Build a system prompt specifying the `JobListing[]` schema, 5–20 count range, `matchScore` 0.0–1.0 range, felon-friendly prioritization, and work category matching
@@ -111,7 +110,7 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - **Validates: Requirements 2.5, 2.6**
 
 - [ ] 11. Implement POST /feed/generate
-  - [~] 11.1 Create `backend/src/routes/feed.ts`
+  - [ ] 11.1 Create `backend/src/routes/feed.ts`
     - Validate request body with `ProfileSchema`; return 400 if `gapStart` or `gapEnd` are null, or if `interests` is empty
     - Call `buildPromptContext`
     - Build a system prompt specifying the `FeedCard[]` schema, minimum 10 cards, one card per interest, `yearsAgo` within the gap period, and `readMinutes` 1–10
@@ -126,7 +125,7 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - **Validates: Requirements 3.3, 3.6**
 
 - [ ] 12. Implement POST /resources/find
-  - [~] 12.1 Create `backend/src/routes/resources.ts`
+  - [ ] 12.1 Create `backend/src/routes/resources.ts`
     - Validate request body with `ProfileSchema`; return 400 if `city` is null
     - Call `buildPromptContext`
     - Build a system prompt specifying the `Resource[]` schema, 5–30 count range, city/state matching, priority-to-category mapping, and felon-friendly prioritization
@@ -140,7 +139,7 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - **Validates: Requirements 4.5**
 
 - [ ] 13. Implement POST /companion/respond
-  - [~] 13.1 Create `backend/src/routes/companion.ts`
+  - [ ] 13.1 Create `backend/src/routes/companion.ts`
     - Validate request body with `CompanionRequestSchema`; return 400 if `message` is empty
     - Run `detectCrisis(message)` before any LLM call
     - If crisis detected: return hardcoded `CompanionMessage` with `isCrisis: true`, `tone: 'crisis'`, and 988 Lifeline text — no LLM call
@@ -155,11 +154,11 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - Test that the fallback response is returned on LLM failure
     - _Requirements: 5.2, 5.5_
 
-- [~] 14. Checkpoint — Ensure all tests pass
+- [ ] 14. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 15. Wire all routes and finalize the Express app
-  - [~] 15.1 Mount all route handlers in `backend/src/index.ts`
+  - [ ] 15.1 Mount all route handlers in `backend/src/index.ts`
     - Mount `GET /health`, `POST /plan/generate`, `POST /jobs/recommend`, `POST /feed/generate`, `POST /resources/find`, `POST /companion/respond`
     - Ensure error handler middleware is registered last
     - Verify 64 KB body size limit is applied globally
@@ -172,7 +171,7 @@ Build a standalone Node.js/TypeScript Express server in a `backend/` directory a
     - Test that the `/health` endpoint returns `{ status: "ok" }`
     - _Requirements: 6.6, 7.2, 7.3_
 
-- [~] 16. Final checkpoint — Ensure all tests pass
+- [ ] 16. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

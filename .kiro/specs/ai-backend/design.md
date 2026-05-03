@@ -32,8 +32,8 @@ React Native App (Expo)
 │                     └──────────────┬────────────┘    │
 │                                    │                  │
 │                     ┌──────────────▼────────────┐    │
-│                     │     OpenAI Client          │    │
-│                     │  (GPT-4o, JSON mode)       │    │
+│                     │     Groq Client            │    │
+│                     │  (OpenAI-compatible API)   │    │
 │                     └───────────────────────────┘    │
 └─────────────────────────────────────────────────────┘
 ```
@@ -42,7 +42,7 @@ React Native App (Expo)
 
 1. **Stateless** — no database, no session storage. Every request is self-contained.
 2. **Privacy-first prompt building** — a dedicated `buildPromptContext()` function transforms a `Profile` into an anonymized context object before any LLM call. `firstName` and raw `conviction` strings are never included in prompt text.
-3. **Structured JSON output** — all LLM calls use `response_format: { type: "json_object" }` with an explicit JSON schema in the system prompt, eliminating fragile string parsing.
+3. **Structured JSON output** — all LLM calls use `response_format: { type: "json_object" }` with an explicit JSON schema in the system prompt, eliminating fragile string parsing. Groq's API is OpenAI-compatible, so the same SDK and patterns apply.
 4. **Graceful degradation** — if the LLM call fails, endpoints return a minimal valid fallback response rather than a 5xx error (where a fallback is configured).
 5. **Single-file type sharing** — the server re-declares the TypeScript types from `types/` verbatim in a `src/types/` directory so the backend is a self-contained package with no dependency on the Expo project.
 
@@ -62,7 +62,7 @@ backend/
 │   │   ├── companion.ts      # POST /companion/respond
 │   │   └── health.ts         # GET /health
 │   ├── services/
-│   │   ├── openai.ts         # OpenAI client wrapper + retry logic
+│   │   ├── groq.ts           # Groq client wrapper (OpenAI-compatible) + retry logic
 │   │   ├── promptBuilder.ts  # Profile → anonymized prompt context
 │   │   └── crisisDetector.ts # Crisis phrase detection (mirrors frontend logic)
 │   ├── middleware/
@@ -95,7 +95,15 @@ export type ConvictionType =
   | "non-violent"
   | "drug-related"
   | "violent"
+  | "other"
   | "rather-not-say";
+export type EducationLevel =
+  | "less-than-high-school"
+  | "some-high-school"
+  | "high-school-diploma"
+  | "some-college"
+  | "college-degree"
+  | "other";
 export type WorkType =
   | "manual-labor"
   | "warehouse"
@@ -110,7 +118,8 @@ export type HousingStatus =
   | "halfway-house"
   | "family-friends"
   | "own-place"
-  | "no-housing";
+  | "no-housing"
+  | "other";
 export type IdStatus = "yes" | "no" | "expired";
 export type PriorityKey =
   | "finding-job"
@@ -124,14 +133,20 @@ export type PriorityKey =
 export type InterestKey =
   | "lgbtq"
   | "tech"
+  | "ai"
+  | "phones"
   | "politics"
+  | "voting"
   | "finance"
   | "social-media"
   | "music-entertainment"
   | "mental-health-awareness"
+  | "healthcare"
   | "criminal-justice"
   | "womens-rights"
   | "immigration"
+  | "housing"
+  | "jobs"
   | "climate"
   | "sports";
 export type City = { city: string; state: string };
@@ -141,9 +156,13 @@ export type Profile = {
   gapEnd: string | null;
   city: City | null;
   conviction: ConvictionType | null;
-  education: string | null;
+  convictionDetails: string;
+  education: EducationLevel | null;
+  educationOther: string;
   workHistory: WorkType[];
+  workOther: string;
   housing: HousingStatus | null;
+  housingOther: string;
   idStatus: IdStatus | null;
   priorities: PriorityKey[];
   interests: InterestKey[];
@@ -257,9 +276,9 @@ export function buildPromptContext(profile: Profile): SafePromptContext {
 
 ---
 
-### 2. OpenAI Client (`src/services/openai.ts`)
+### 2. Groq Client (`src/services/groq.ts`)
 
-Wraps the OpenAI SDK with retry logic and timeout enforcement.
+Wraps the OpenAI SDK (Groq is OpenAI-compatible) with retry logic and timeout enforcement.
 
 ```typescript
 export type LLMCallOptions = {
@@ -270,8 +289,10 @@ export type LLMCallOptions = {
 };
 
 export async function callLLM<T>(options: LLMCallOptions): Promise<T> {
-  // Uses openai.chat.completions.create with:
-  //   model: "gpt-4o"
+  // Uses OpenAI SDK pointed at Groq's base URL:
+  //   baseURL: "https://api.groq.com/openai/v1"
+  //   apiKey: process.env.GROQ_API_KEY
+  //   model: "llama-3.3-70b-versatile" (or similar)
   //   response_format: { type: "json_object" }
   //   max_tokens: 4096
   // Throws LLMError on timeout or API error
@@ -281,7 +302,7 @@ export async function callLLM<T>(options: LLMCallOptions): Promise<T> {
 **Error handling:**
 
 - Timeout enforced via `AbortSignal.timeout(options.timeoutMs)`.
-- On OpenAI API error → throws `LLMError` with `retryAfter` hint.
+- On Groq API error → throws `LLMError` with `retryAfter` hint.
 - Callers catch `LLMError` and return fallback responses.
 
 ---
@@ -385,7 +406,7 @@ Catches all errors, formats `ErrorResponse` JSON, logs `{ path, status, timestam
 ## Environment Variables
 
 ```
-OPENAI_API_KEY=          # required
+GROQ_API_KEY=            # required
 PORT=3000                # default 3000
 ALLOWED_ORIGIN=          # Expo app origin for CORS (production)
 NODE_ENV=development     # or production
